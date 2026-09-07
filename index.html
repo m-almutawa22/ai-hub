@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Hub - مركز الذكاء الاصطناعي</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a2e;
+  --border: #2a2a3e;
+  --accent: #7c3aed;
+  --accent2: #a855f7;
+  --green: #10b981;
+  --blue: #3b82f6;
+  --orange: #f59e0b;
+  --pink: #ec4899;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --danger: #ef4444;
+}
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+.logo {
+  padding: 8px 20px 24px;
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nav-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  border-right: 3px solid transparent;
+  font-size: 14px;
+}
+.nav-item:hover { background: var(--surface2); }
+.nav-item.active {
+  background: var(--surface2);
+  border-right-color: var(--accent);
+  color: var(--accent2);
+}
+.nav-icon { font-size: 20px; width: 28px; text-align: center; }
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 16px;
+}
+/* Main */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+}
+.header h2 { font-size: 18px; }
+.header-badge {
+  background: var(--surface2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+.page { display: none; }
+.page.active { display: block; }
+/* Chat */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 140px);
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.msg {
+  max-width: 80%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  line-height: 1.7;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.msg.user {
+  background: var(--accent);
+  color: white;
+  align-self: flex-start;
+  border-bottom-right-radius: 4px;
+}
+.msg.ai {
+  background: var(--surface2);
+  align-self: flex-end;
+  border-bottom-left-radius: 4px;
+  border: 1px solid var(--border);
+}
+.msg.ai code {
+  background: #0d1117;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  direction: ltr;
+  display: inline-block;
+}
+.msg.ai pre {
+  background: #0d1117;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+  direction: ltr;
+  text-align: left;
+}
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.chat-input-area textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  resize: none;
+  height: 52px;
+  font-family: inherit;
+  outline: none;
+}
+.chat-input-area textarea:focus { border-color: var(--accent); }
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Settings */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+.setting-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.setting-card h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.setting-card p {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+.setting-card input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 13px;
+  direction: ltr;
+  text-align: left;
+  outline: none;
+  font-family: monospace;
+}
+.setting-card input:focus { border-color: var(--accent); }
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.on { background: var(--green); }
+.status-dot.off { background: var(--danger); }
+/* Image Gen */
+.gen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.gen-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.gen-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.gen-card .info {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.prompt-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.prompt-box input, .prompt-box textarea {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+/* Preview */
+.preview-frame {
+  width: 100%;
+  height: calc(100vh - 220px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+}
+/* Loading */
+.loading {
+  display: inline-block;
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 999;
+  display: none;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar .nav-text, .sidebar .logo span { display: none; }
+  .logo { font-size: 16px; padding: 8px 12px 24px; text-align: center; }
+  .nav-item { justify-content: center; padding: 12px; }
+  .settings-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">🤖 <span>AI Hub</span></div>
+  <div class="nav-item active" onclick="showPage('chat')">
+    <span class="nav-icon">💬</span><span class="nav-text">محادثة Claude</span>
+  </div>
+  <div class="nav-item" onclick="showPage('images')">
+    <span class="nav-icon">🎨</span><span class="nav-text">توليد صور</span>
+  </div>
+  <div class="nav-item" onclick="showPage('website')">
+    <span class="nav-icon">🌐</span><span class="nav-text">بناء مواقع</span>
+  </div>
+  <div class="nav-item" onclick="showPage('docs')">
+    <span class="nav-icon">📄</span><span class="nav-text">مستندات</span>
+  </div>
+  <div class="nav-item" onclick="showPage('code')">
+    <span class="nav-icon">💻</span><span class="nav-text">برمجة</span>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-item" onclick="showPage('settings')">
+    <span class="nav-icon">⚙️</span><span class="nav-text">الإعدادات</span>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- CHAT PAGE -->
+  <div class="page active" id="page-chat">
+    <div class="header">
+      <h2>💬 محادثة مع Claude</h2>
+      <span class="header-badge" id="claude-status">● غير متصل</span>
+    </div>
+    <div class="content">
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg ai">مرحباً! 👋 أنا Claude، مساعدك الذكي. اسألني أي شيء أو اطلب مني كتابة كود، مقالات، أفكار، تحليل بيانات، أو أي شيء تحتاجه.</div>
+        </div>
+        <div class="chat-input-area">
+          <textarea id="chat-input" placeholder="اكتب رسالتك هنا..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+          <button class="btn btn-primary" onclick="sendChat()" id="chat-send-btn">إرسال</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGES PAGE -->
+  <div class="page" id="page-images">
+    <div class="header">
+      <h2>🎨 توليد الصور بالذكاء الاصطناعي</h2>
+      <span class="header-badge" id="img-status">● DALL-E</span>
+    </div>
+    <div class="content">
+      <div class="prompt-box">
+        <input type="text" id="img-prompt" placeholder="صف الصورة التي تريدها بالإنجليزية... مثال: A futuristic city at sunset">
+        <button class="btn btn-primary" onclick="generateImage()">توليد 🎨</button>
+      </div>
+      <div class="gen-grid" id="img-results"></div>
+    </div>
+  </div>
+
+  <!-- WEBSITE PAGE -->
+  <div class="page" id="page-website">
+    <div class="header">
+      <h2>🌐 بناء مواقع إلكترونية</h2>
+      <button class="btn btn-primary" onclick="downloadSite()" style="font-size:12px">⬇️ تحميل الكود</button>
+    </div>
+    <div class="content">
+      <div class="prompt-box">
+        <input type="text" id="site-prompt" placeholder="صف الموقع... مثال: موقع بورتفوليو لمصور فوتوغرافي بتصميم غامق">
+        <button class="btn btn-primary" onclick="buildWebsite()">ابنِ الموقع 🚀</button>
+      </div>
+      <iframe class="preview-frame" id="site-preview" sandbox="allow-scripts"></iframe>
+    </div>
+  </div>
+
+  <!-- DOCS PAGE -->
+  <div class="page" id="page-docs">
+    <div class="header">
+      <h2>📄 كاتب المستندات الذكي</h2>
+      <button class="btn btn-primary" onclick="copyDoc()" style="font-size:12px">📋 نسخ</button>
+    </div>
+    <div class="content">
+      <div class="prompt-box">
+        <input type="text" id="doc-prompt" placeholder="ما المستند الذي تريده؟ مثال: عقد شراكة بين طرفين، خطة عمل، سيرة ذاتية...">
+        <button class="btn btn-primary" onclick="generateDoc()">إنشاء 📄</button>
+      </div>
+      <div class="chat-messages" id="doc-output" style="height:calc(100vh - 260px);background:var(--surface);border-radius:12px;padding:20px;border:1px solid var(--border)">
+        <div style="color:var(--text2);text-align:center;margin-top:40px">اكتب وصف المستند وسيتم إنشاؤه فوراً</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CODE PAGE -->
+  <div class="page" id="page-code">
+    <div class="header">
+      <h2>💻 مبرمج ذكي</h2>
+      <button class="btn btn-primary" onclick="copyCode()" style="font-size:12px">📋 نسخ الكود</button>
+    </div>
+    <div class="content">
+      <div class="prompt-box">
+        <input type="text" id="code-prompt" placeholder="ما الذي تريد برمجته؟ مثال: تطبيق حاسبة بايثون، API بـ Node.js...">
+        <button class="btn btn-primary" onclick="generateCode()">برمج 💻</button>
+      </div>
+      <div class="chat-messages" id="code-output" style="height:calc(100vh - 260px);background:#0d1117;border-radius:12px;padding:20px;border:1px solid var(--border);direction:ltr;text-align:left;font-family:monospace;font-size:13px">
+        <div style="color:#666;text-align:center;margin-top:40px">Describe what you want to code...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="header">
+      <h2>⚙️ الإعدادات ومفاتيح API</h2>
+      <button class="btn btn-primary" onclick="saveSettings()" style="font-size:12px">💾 حفظ</button>
+    </div>
+    <div class="content">
+      <div class="settings-grid">
+        <div class="setting-card">
+          <h3><span class="status-dot off" id="dot-claude"></span> Claude API (Anthropic)</h3>
+          <p>للمحادثة، بناء المواقع، المستندات، والبرمجة</p>
+          <input type="password" id="key-claude" placeholder="sk-ant-api03-..." value="">
+          <p style="margin-top:8px"><a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">🔗 احصل على المفتاح مجاناً</a></p>
+        </div>
+        <div class="setting-card">
+          <h3><span class="status-dot off" id="dot-openai"></span> OpenAI API (DALL-E)</h3>
+          <p>لتوليد الصور بالذكاء الاصطناعي</p>
+          <input type="password" id="key-openai" placeholder="sk-..." value="">
+          <p style="margin-top:8px"><a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent)">🔗 احصل على المفتاح</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ STATE ============
+let chatHistory = [];
+let siteCode = '';
+
+// Load saved keys
+window.addEventListener('load', () => {
+  const ck = localStorage.getItem('key_claude') || '';
+  const ok = localStorage.getItem('key_openai') || '';
+  document.getElementById('key-claude').value = ck;
+  document.getElementById('key-openai').value = ok;
+  updateStatusDots();
+});
+
+function updateStatusDots() {
+  const ck = document.getElementById('key-claude').value;
+  const ok = document.getElementById('key-openai').value;
+  document.getElementById('dot-claude').className = 'status-dot ' + (ck ? 'on' : 'off');
+  document.getElementById('dot-openai').className = 'status-dot ' + (ok ? 'on' : 'off');
+  document.getElementById('claude-status').textContent = ck ? '● متصل' : '● غير متصل';
+  document.getElementById('claude-status').style.color = ck ? 'var(--green)' : 'var(--danger)';
+  document.getElementById('claude-status').style.borderColor = ck ? 'var(--green)' : 'var(--danger)';
+}
+
+function saveSettings() {
+  localStorage.setItem('key_claude', document.getElementById('key-claude').value);
+  localStorage.setItem('key_openai', document.getElementById('key-openai').value);
+  updateStatusDots();
+  showToast('✅ تم حفظ الإعدادات بنجاح');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ============ NAVIGATION ============
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ============ CLAUDE CHAT ============
+async function callClaude(messages, systemPrompt) {
+  const key = document.getElementById('key-claude').value;
+  if (!key) { showToast('⚠️ أدخل مفتاح Claude API في الإعدادات'); showPage('settings'); return null; }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8192,
+      system: systemPrompt || 'أنت مساعد ذكي ومفيد. أجب باللغة العربية إلا إذا طُلب غير ذلك.',
+      messages: messages
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('خطأ من Claude API: ' + err);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML += `<div class="msg user">${escapeHtml(text)}</div>`;
+  msgs.innerHTML += `<div class="msg ai" id="typing"><span class="loading"></span> جاري التفكير...</div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  chatHistory.push({ role: 'user', content: text });
+
+  try {
+    const reply = await callClaude(chatHistory);
+    if (reply) {
+      chatHistory.push({ role: 'assistant', content: reply });
+      document.getElementById('typing').innerHTML = formatText(reply);
+    }
+  } catch (e) {
+    document.getElementById('typing').innerHTML = '❌ ' + e.message;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function formatText(text) {
+  // Basic markdown-like formatting
+  return text
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============ IMAGE GENERATION ============
+async function generateImage() {
+  const prompt = document.getElementById('img-prompt').value.trim();
+  if (!prompt) return;
+  const key = document.getElementById('key-openai').value;
+  if (!key) { showToast('⚠️ أدخل مفتاح OpenAI API في الإعدادات'); return; }
+
+  const grid = document.getElementById('img-results');
+  grid.innerHTML = '<div style="text-align:center;padding:40px"><span class="loading"></span> جاري توليد الصورة...</div>';
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'dall-e-3', prompt: prompt, n: 1, size: '1024x1024' })
+    });
+    const data = await res.json();
+    if (data.data) {
+      grid.innerHTML = `<div class="gen-card">
+        <img src="${data.data[0].url}" alt="Generated">
+        <div class="info">${prompt}</div>
+      </div>` + grid.innerHTML;
+    } else {
+      grid.innerHTML = '<div style="color:var(--danger)">❌ ' + (data.error?.message || 'خطأ') + '</div>';
+    }
+  } catch (e) {
+    grid.innerHTML = '<div style="color:var(--danger)">❌ ' + e.message + '</div>';
+  }
+}
+
+// ============ WEBSITE BUILDER ============
+async function buildWebsite() {
+  const prompt = document.getElementById('site-prompt').value.trim();
+  if (!prompt) return;
+
+  const preview = document.getElementById('site-preview');
+  preview.srcdoc = '<html><body style="background:#111;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif"><div style="text-align:center"><div class="loading" style="width:40px;height:40px;border-width:3px;margin:0 auto 16px"></div>جاري بناء الموقع...</div></body></html>';
+
+  try {
+    const code = await callClaude([{
+      role: 'user',
+      content: `ابنِ لي موقع ويب كامل في ملف HTML واحد فقط. المتطلبات: ${prompt}. 
+      القواعد:
+      - اكتب كود HTML كامل يبدأ بـ <!DOCTYPE html> وينتهي بـ </html>
+      - استخدم CSS مدمج (inline أو <style>)
+      - استخدم JavaScript مدمج إذا لزم الأمر
+      - التصميم يجب أن يكون عصري وأنيق ومتجاوب مع الجوال
+      - استخدم ألوان متناسقة وخطوط واضحة
+      - لا تستخدم أي مكتبات خارجية إلا Tailwind CDN إذا أردت
+      - أجب بالكود فقط بدون أي شرح قبله أو بعده`
+    }], 'أنت مبرمج ويب محترف. أجب بكود HTML كامل فقط بدون أي نص توضيحي.');
+
+    if (code) {
+      siteCode = code;
+      // Extract HTML if wrapped in markdown
+      const match = code.match(/```html?\n?([\s\S]*?)```/);
+      const html = match ? match[1] : code;
+      preview.srcdoc = html;
+      showToast('✅ تم بناء الموقع بنجاح!');
+    }
+  } catch (e) {
+    preview.srcdoc = '<html><body style="background:#111;color:red;padding:20px;font-family:sans-serif">❌ ' + e.message + '</body></html>';
+  }
+}
+
+function downloadSite() {
+  if (!siteCode) { showToast('⚠️ ابنِ موقعاً أولاً'); return; }
+  const match = siteCode.match(/```html?\n?([\s\S]*?)```/);
+  const html = match ? match[1] : siteCode;
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'my-website.html';
+  a.click();
+  showToast('✅ تم تحميل الملف');
+}
+
+// ============ DOCUMENTS ============
+async function generateDoc() {
+  const prompt = document.getElementById('doc-prompt').value.trim();
+  if (!prompt) return;
+  const out = document.getElementById('doc-output');
+  out.innerHTML = '<div style="text-align:center;padding:40px"><span class="loading"></span> جاري إنشاء المستند...</div>';
+
+  try {
+    const reply = await callClaude([{
+      role: 'user',
+      content: `اكتب المستند التالي بشكل احترافي ومفصل: ${prompt}`
+    }], 'أنت كاتب مستندات محترف. اكتب المستند بشكل كامل ومنسق بالعربية.');
+    if (reply) out.innerHTML = '<div class="msg ai">' + formatText(reply) + '</div>';
+  } catch (e) {
+    out.innerHTML = '<div style="color:var(--danger)">❌ ' + e.message + '</div>';
+  }
+}
+
+function copyDoc() {
+  const text = document.getElementById('doc-output').innerText;
+  navigator.clipboard.writeText(text);
+  showToast('✅ تم نسخ المستند');
+}
+
+// ============ CODE ============
+async function generateCode() {
+  const prompt = document.getElementById('code-prompt').value.trim();
+  if (!prompt) return;
+  const out = document.getElementById('code-output');
+  out.innerHTML = '<div style="text-align:center;padding:40px;color:#666"><span class="loading"></span> Coding...</div>';
+
+  try {
+    const reply = await callClaude([{
+      role: 'user',
+      content: `Write clean, well-commented code for: ${prompt}. Include all necessary files and instructions to run.`
+    }], 'You are an expert programmer. Write complete, production-ready code with comments.');
+    if (reply) out.innerHTML = '<div style="color:#c9d1d9">' + formatText(reply) + '</div>';
+  } catch (e) {
+    out.innerHTML = '<div style="color:var(--danger)">❌ ' + e.message + '</div>';
+  }
+}
+
+function copyCode() {
+  const text = document.getElementById('code-output').innerText;
+  navigator.clipboard.writeText(text);
+  showToast('✅ تم نسخ الكود');
+}
+</script>
+</body>
+</html>
