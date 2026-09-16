@@ -1,0 +1,171 @@
+{
+  "id": "MfD6wYIbloXnfULA",
+  "name": "Almutawa - Error Alerts (Shared)",
+  "description": "Shared error-handling workflow. Any other workflow can reference this as its errorWorkflow setting so a failure anywhere sends an immediate Telegram alert to the office group with the workflow name and execution link.",
+  "active": true,
+  "activeVersionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+  "createdAt": "2026-09-16T16:08:41.808Z",
+  "updatedAt": "2026-09-16T16:10:48.479Z",
+  "isArchived": false,
+  "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "8c8e0487-d7f3-468c-9f8d-bef4340d9ec8",
+      "name": "On Any Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0b31db01-fc17-4250-9c2f-867b748929b0",
+      "name": "Send Error Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "=WARNING: A workflow failed.\nWorkflow: {{ $json.workflow.name }}\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}\nDetails: {{ $json.execution.url }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "fcb8f156-54f0-458c-812c-f9e640130bfb"
+    }
+  ],
+  "connections": {
+    "On Any Workflow Error": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "MfD6wYIbloXnfULA",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T16:08:41.809Z",
+      "updatedAt": "2026-09-16T16:08:41.809Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+    "workflowId": "MfD6wYIbloXnfULA",
+    "nodes": [
+      {
+        "id": "8c8e0487-d7f3-468c-9f8d-bef4340d9ec8",
+        "name": "On Any Workflow Error",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "0b31db01-fc17-4250-9c2f-867b748929b0",
+        "name": "Send Error Alert",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "-1004357436155",
+          "text": "=WARNING: A workflow failed.\nWorkflow: {{ $json.workflow.name }}\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}\nDetails: {{ $json.execution.url }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "fcb8f156-54f0-458c-812c-f9e640130bfb"
+      }
+    ],
+    "connections": {
+      "On Any Workflow Error": {
+        "main": [
+          [
+            {
+              "node": "Send Error Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial - shared error alert workflow",
+    "description": "Initial version: Error Trigger receives failures from any workflow that references this as its errorWorkflow, and sends a Telegram alert with the failing workflow's name and a link to the execution.",
+    "autosaved": false,
+    "createdAt": "2026-09-16T16:08:41.809Z",
+    "updatedAt": "2026-09-16T16:08:41.809Z",
+    "workflowPublishHistory": [
+      {
+        "id": 2,
+        "workflowId": "MfD6wYIbloXnfULA",
+        "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T16:10:56.215Z"
+      }
+    ]
+  }
+}
