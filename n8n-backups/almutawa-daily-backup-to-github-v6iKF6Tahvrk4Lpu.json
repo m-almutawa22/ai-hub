@@ -1,0 +1,379 @@
+{
+  "id": "v6iKF6Tahvrk4Lpu",
+  "name": "Almutawa - Daily Backup to GitHub",
+  "description": "Daily automated backup workflow: lists all n8n workflows via the API, exports each one's full JSON, and commits it to the GitHub repo m-almutawa22/ai-hub under n8n-backups/, updating existing files or creating new ones. Sends a Telegram summary to the off",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-16T16:08:23.101Z",
+  "updatedAt": "2026-09-16T16:11:02.834Z",
+  "isArchived": false,
+  "versionId": "9aa306d9-28b6-4db1-b054-6edfde2a9c82",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "14bf5f27-8213-4f2d-8bb8-15216a8af274",
+      "name": "Every Day at 3 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        272
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 3,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "01e37f15-67f4-4380-a143-ab3c2025362d",
+      "name": "List All Workflows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        272
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "05aa530e-9e94-4075-9f29-61422ca3d636",
+      "name": "Extract Workflow List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        272
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.first().json.data || [];\nreturn items.map(function(wf) { return { json: { id: wf.id, name: wf.name, active: wf.active } }; });"
+      }
+    },
+    {
+      "id": "1040d574-1bf9-4e8a-88b6-f27de6341000",
+      "name": "Send Backup Summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "=Daily backup completed.\nAll workflows exported to GitHub (m-almutawa22/ai-hub).\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "executeOnce": true,
+      "webhookId": "e34e60bb-e474-4451-876b-e8c728a49dd0"
+    },
+    {
+      "id": "045bdd00-8581-4617-bbf3-7eb6a75bb037",
+      "name": "Get Workflow Full Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        192
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "63407b07-309f-4023-8df4-7273db850797",
+      "name": "Build Backup File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        192
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const wf = $input.item.json;\nconst safeName = String(wf.name || \"workflow\").toLowerCase().replace(/[^a-z0-9]+/g, \"-\").replace(/(^-|-$)/g, \"\");\nconst filePath = \"n8n-backups/\" + safeName + \"-\" + wf.id + \".json\";\nconst fileContent = JSON.stringify(wf, null, 2);\nconst commitMessage = \"Auto backup: \" + wf.name + \" (\" + wf.id + \") - \" + new Date().toISOString();\nreturn { json: { filePath: filePath, fileContent: fileContent, commitMessage: commitMessage, workflowName: wf.name } };"
+      }
+    },
+    {
+      "id": "fbc470dc-ae79-4154-9afa-8e11a82599f8",
+      "name": "Update Backup File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        272
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "m-almutawa22"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai-hub"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ $json.commitMessage }}"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "JcspQmaBsDM50abz",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "46a05696-94e4-4693-8040-dfeec65951b7"
+    },
+    {
+      "id": "5c7f3ddc-bca4-4ef6-9367-3f0f261466a4",
+      "name": "Loop Each Workflow",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        272
+      ],
+      "parameters": {
+        "batchSize": 1
+      }
+    },
+    {
+      "id": "9fc90adb-f851-4494-b5a8-5d60030455ff",
+      "name": "Create Backup File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        336
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "m-almutawa22"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai-hub"
+        },
+        "filePath": "={{ $('Build Backup File').item.json.filePath }}",
+        "fileContent": "={{ $('Build Backup File').item.json.fileContent }}",
+        "commitMessage": "={{ $('Build Backup File').item.json.commitMessage }}"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "JcspQmaBsDM50abz",
+          "name": "GitHub account"
+        }
+      },
+      "webhookId": "f16087bd-8e5b-4116-8c98-b8180a0a2ea4"
+    }
+  ],
+  "connections": {
+    "Every Day at 3 AM": {
+      "main": [
+        [
+          {
+            "node": "List All Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All Workflows": {
+      "main": [
+        [
+          {
+            "node": "Extract Workflow List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Workflow List": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflow Full Details": {
+      "main": [
+        [
+          {
+            "node": "Build Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Backup File": {
+      "main": [
+        [
+          {
+            "node": "Update Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Backup File": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Each Workflow": {
+      "main": [
+        [
+          {
+            "node": "Send Backup Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Workflow Full Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Backup File": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "v6iKF6Tahvrk4Lpu",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T16:08:23.103Z",
+      "updatedAt": "2026-09-16T16:08:23.103Z"
+    }
+  ],
+  "activeVersion": null
+}
