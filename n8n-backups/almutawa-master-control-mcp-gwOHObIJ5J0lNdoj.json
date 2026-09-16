@@ -1,0 +1,659 @@
+{
+  "id": "gwOHObIJ5J0lNdoj",
+  "name": "Almutawa - Master Control (MCP)",
+  "description": "Master control workflow rebuilding the MCP Server Trigger with the 6 n8n API management tools (list/get/create/update/activate/deactivate workflows), recreated after volume-related data loss.",
+  "active": true,
+  "activeVersionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+  "createdAt": "2026-09-16T15:14:43.543Z",
+  "updatedAt": "2026-09-16T16:10:59.742Z",
+  "isArchived": false,
+  "versionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+  "versionCounter": 8,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "almutawa-control",
+        "instructions": "This MCP server controls the Almutawa Tourism n8n instance. Always call List Workflows before creating or updating anything. Never call Activate Workflow unless the business owner has explicitly approved it in the current conversation."
+      },
+      "id": "53e00e87-2f70-4d2d-9346-93aee08791f5",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        112
+      ],
+      "webhookId": "a491d5fe-4a7e-4c2a-aec5-711783e60c1c"
+    },
+    {
+      "parameters": {
+        "toolDescription": "List all workflows currently in this n8n instance, including their id, name, and whether each is active or inactive. Use this first whenever you need to know what workflows exist before creating, updating, or activating anything.",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37c175f0-9e48-4e88-845a-870d7a30d827",
+      "name": "List Workflows",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the full details of one specific workflow by its ID, including all its nodes and settings, and whether it is active. Use this to inspect or back up a single workflow before changing it.",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to fetch', 'string') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2d779ca1-5170-4bbe-a1a2-a55567178224",
+      "name": "Get Workflow (Export)",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        128,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Create a brand new workflow in this n8n instance. The new workflow is ALWAYS created INACTIVE by default for safety, even if not explicitly stated, so it never runs automatically. Requires a name and the full nodes/connections JSON structure for the workflow.",
+        "method": "POST",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('workflow_definition', 'The complete workflow JSON object to create, containing name, nodes, connections, and settings with active always set to false', 'json') }}",
+        "options": {}
+      },
+      "id": "0b6209c5-521f-40b0-a052-bf7be0016133",
+      "name": "Create Workflow (Draft Only)",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        256,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Update an existing workflow by its ID (for example changing its nodes, connections, or settings). This does NOT change whether the workflow is active or inactive; use the separate Activate/Deactivate tools for that.",
+        "method": "PATCH",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to update', 'string') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $fromAI('workflow_update', 'The partial or full workflow JSON fields to update', 'json') }}",
+        "options": {}
+      },
+      "id": "1b4af6b4-8a8e-4dcc-8e40-33a29285495d",
+      "name": "Update Workflow",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        384,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Activate a specific workflow by its ID, making it live and able to run automatically (for example start responding to WhatsApp messages). ONLY use this tool when the business owner has explicitly said yes in plain conversation. Never call this on your own initiative.",
+        "method": "POST",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to activate', 'string') }}/activate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a70feabf-4b0a-4e70-904c-0e813d614cf0",
+      "name": "Activate Workflow (Needs Owner Approval)",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        512,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Deactivate (pause) a specific workflow by its ID so it stops running automatically. Useful before making a change to a live workflow, or if the owner asks to pause something.",
+        "method": "POST",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to deactivate', 'string') }}/deactivate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fe1970e7-422f-4825-a41b-a5a36421069b",
+      "name": "Deactivate Workflow",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        640,
+        336
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "List Workflows": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflow (Export)": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Workflow (Draft Only)": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Workflow (Needs Owner Approval)": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate",
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "gwOHObIJ5J0lNdoj",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T15:14:43.545Z",
+      "updatedAt": "2026-09-16T15:14:43.545Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+    "workflowId": "gwOHObIJ5J0lNdoj",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "almutawa-control",
+          "instructions": "This MCP server controls the Almutawa Tourism n8n instance. Always call List Workflows before creating or updating anything. Never call Activate Workflow unless the business owner has explicitly approved it in the current conversation."
+        },
+        "id": "53e00e87-2f70-4d2d-9346-93aee08791f5",
+        "name": "MCP Server Trigger",
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2.1,
+        "position": [
+          256,
+          112
+        ],
+        "webhookId": "a491d5fe-4a7e-4c2a-aec5-711783e60c1c"
+      },
+      {
+        "parameters": {
+          "toolDescription": "List all workflows currently in this n8n instance, including their id, name, and whether each is active or inactive. Use this first whenever you need to know what workflows exist before creating, updating, or activating anything.",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "37c175f0-9e48-4e88-845a-870d7a30d827",
+        "name": "List Workflows",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          0,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Get the full details of one specific workflow by its ID, including all its nodes and settings, and whether it is active. Use this to inspect or back up a single workflow before changing it.",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to fetch', 'string') }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "2d779ca1-5170-4bbe-a1a2-a55567178224",
+        "name": "Get Workflow (Export)",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          128,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Create a brand new workflow in this n8n instance. The new workflow is ALWAYS created INACTIVE by default for safety, even if not explicitly stated, so it never runs automatically. Requires a name and the full nodes/connections JSON structure for the workflow.",
+          "method": "POST",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $fromAI('workflow_definition', 'The complete workflow JSON object to create, containing name, nodes, connections, and settings with active always set to false', 'json') }}",
+          "options": {}
+        },
+        "id": "0b6209c5-521f-40b0-a052-bf7be0016133",
+        "name": "Create Workflow (Draft Only)",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          256,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Update an existing workflow by its ID (for example changing its nodes, connections, or settings). This does NOT change whether the workflow is active or inactive; use the separate Activate/Deactivate tools for that.",
+          "method": "PATCH",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to update', 'string') }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $fromAI('workflow_update', 'The partial or full workflow JSON fields to update', 'json') }}",
+          "options": {}
+        },
+        "id": "1b4af6b4-8a8e-4dcc-8e40-33a29285495d",
+        "name": "Update Workflow",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          384,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Activate a specific workflow by its ID, making it live and able to run automatically (for example start responding to WhatsApp messages). ONLY use this tool when the business owner has explicitly said yes in plain conversation. Never call this on your own initiative.",
+          "method": "POST",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to activate', 'string') }}/activate",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a70feabf-4b0a-4e70-904c-0e813d614cf0",
+        "name": "Activate Workflow (Needs Owner Approval)",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          512,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Deactivate (pause) a specific workflow by its ID so it stops running automatically. Useful before making a change to a live workflow, or if the owner asks to pause something.",
+          "method": "POST",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to deactivate', 'string') }}/deactivate",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "fe1970e7-422f-4825-a41b-a5a36421069b",
+        "name": "Deactivate Workflow",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          640,
+          336
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "List Workflows": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Workflow (Export)": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Workflow (Draft Only)": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Workflow": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Activate Workflow (Needs Owner Approval)": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deactivate Workflow": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com",
+    "name": "Version 0e588d4e",
+    "description": "",
+    "autosaved": true,
+    "createdAt": "2026-09-16T15:21:19.407Z",
+    "updatedAt": "2026-09-16T15:22:02.000Z",
+    "workflowPublishHistory": [
+      {
+        "id": 1,
+        "workflowId": "gwOHObIJ5J0lNdoj",
+        "versionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T15:22:02.115Z"
+      },
+      {
+        "id": 4,
+        "workflowId": "gwOHObIJ5J0lNdoj",
+        "versionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T16:10:59.837Z"
+      },
+      {
+        "id": 3,
+        "workflowId": "gwOHObIJ5J0lNdoj",
+        "versionId": "0e588d4e-57ab-4b3d-8dd5-d7d2025150fb",
+        "event": "deactivated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T16:10:59.818Z"
+      }
+    ]
+  }
+}
