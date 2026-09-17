@@ -1,0 +1,814 @@
+{
+  "id": "E29TvhWucpQdtRIG",
+  "name": "Almutawa - Mohamed AI Assistant (Telegram)",
+  "description": "Private always-on AI assistant for Mohamed, reachable only via his personal Telegram chat (locked to his chat ID). Powered by GPT-5-mini with conversation memory, and equipped with the same n8n management tools (List/Get/Activate/Deactivate Workflow) plus",
+  "active": true,
+  "activeVersionId": "d6c55cec-317d-4439-93b2-68a6efa6daf1",
+  "createdAt": "2026-09-16T17:08:33.896Z",
+  "updatedAt": "2026-09-16T17:08:37.261Z",
+  "isArchived": false,
+  "versionId": "d6c55cec-317d-4439-93b2-68a6efa6daf1",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "958621e1-7aac-4b38-b080-b2bfa1c77091",
+      "name": "Mohamed Private Chat",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        112
+      ],
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "8132574840"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "cec91b8c-266d-4406-a210-7c660aed3c8b"
+    },
+    {
+      "id": "4381dfef-80b0-4533-b1a9-2be3c43c7d70",
+      "name": "Mohamed Assistant",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        112
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are Mohamed's private operations assistant for Al-Mutawa Tourism, running inside n8n and reachable only through his personal Telegram chat. Speak Arabic (Gulf/Bahraini tone) by default unless he writes in English. You have tools to: List Workflows, Get Workflow, Activate Workflow, Deactivate Workflow, and Search Packages (Airtable). Critical safety rule: NEVER call Activate Workflow unless Mohamed has explicitly said yes/فعّل/وافقت in this exact conversation for that specific workflow. If asked to activate something without prior explicit confirmation in this chat, ask him to confirm first instead of calling the tool. Keep answers concise and practical."
+        }
+      }
+    },
+    {
+      "id": "cade16f8-4e89-4a4d-b3bc-ba77fc60fd04",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        336
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "95b19e6a-feac-4f0f-9a11-f8ff7d73ed90",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        336
+      ],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Mohamed Private Chat').item.json.message.chat.id }}",
+        "contextWindowLength": 10
+      }
+    },
+    {
+      "id": "0f4ffee6-f159-4353-972d-11623611f17e",
+      "name": "List Workflows",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        336
+      ],
+      "parameters": {
+        "toolDescription": "List all workflows currently in this n8n instance, including their id, name, and whether each is active or inactive.",
+        "method": "GET",
+        "url": "https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "c8bb19c5-7850-41a8-a40b-bc12f4cd87bf",
+      "name": "Get Workflow",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        608,
+        336
+      ],
+      "parameters": {
+        "toolDescription": "Get the full details of one specific workflow by its ID.",
+        "method": "GET",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to fetch', 'string') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "a1363774-9436-4476-8744-80bdb08d96ac",
+      "name": "Activate Workflow",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        736,
+        336
+      ],
+      "parameters": {
+        "toolDescription": "Activate a specific workflow by its ID. ONLY call this after Mohamed has explicitly said yes in this chat. Never call this on your own initiative.",
+        "method": "POST",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to activate', 'string') }}/activate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "abd16bef-f8c2-48ab-8862-42cc0e16f5e2",
+      "name": "Deactivate Workflow",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        864,
+        336
+      ],
+      "parameters": {
+        "toolDescription": "Deactivate (pause) a specific workflow by its ID.",
+        "method": "POST",
+        "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to deactivate', 'string') }}/deactivate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "5cae123f-c6f8-4597-aa24-99c6786b4644",
+      "name": "Search Packages",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'An optional Airtable formula to filter packages, e.g. by destination or status. Leave empty to list recent packages.') }}",
+        "returnAll": false,
+        "limit": 10
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "7907c5af-a06e-4816-88b5-bc9937f837fe",
+      "name": "Reply to Mohamed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        112
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Mohamed Private Chat').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "c86d57a5-2bf6-4415-9df5-6576d2dc99a5"
+    }
+  ],
+  "connections": {
+    "Mohamed Private Chat": {
+      "main": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mohamed Assistant": {
+      "main": [
+        [
+          {
+            "node": "Reply to Mohamed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Workflows": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Packages": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mohamed Assistant",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "E29TvhWucpQdtRIG",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T17:08:33.898Z",
+      "updatedAt": "2026-09-16T17:08:33.898Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "d6c55cec-317d-4439-93b2-68a6efa6daf1",
+    "workflowId": "E29TvhWucpQdtRIG",
+    "nodes": [
+      {
+        "id": "958621e1-7aac-4b38-b080-b2bfa1c77091",
+        "name": "Mohamed Private Chat",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.5,
+        "position": [
+          0,
+          112
+        ],
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {
+            "chatIds": "8132574840"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "cec91b8c-266d-4406-a210-7c660aed3c8b"
+      },
+      {
+        "id": "4381dfef-80b0-4533-b1a9-2be3c43c7d70",
+        "name": "Mohamed Assistant",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          544,
+          112
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message.text }}",
+          "options": {
+            "systemMessage": "You are Mohamed's private operations assistant for Al-Mutawa Tourism, running inside n8n and reachable only through his personal Telegram chat. Speak Arabic (Gulf/Bahraini tone) by default unless he writes in English. You have tools to: List Workflows, Get Workflow, Activate Workflow, Deactivate Workflow, and Search Packages (Airtable). Critical safety rule: NEVER call Activate Workflow unless Mohamed has explicitly said yes/فعّل/وافقت in this exact conversation for that specific workflow. If asked to activate something without prior explicit confirmation in this chat, ask him to confirm first instead of calling the tool. Keep answers concise and practical."
+          }
+        }
+      },
+      {
+        "id": "cade16f8-4e89-4a4d-b3bc-ba77fc60fd04",
+        "name": "OpenAI Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          224,
+          336
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "95b19e6a-feac-4f0f-9a11-f8ff7d73ed90",
+        "name": "Conversation Memory",
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.4,
+        "position": [
+          352,
+          336
+        ],
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Mohamed Private Chat').item.json.message.chat.id }}",
+          "contextWindowLength": 10
+        }
+      },
+      {
+        "id": "0f4ffee6-f159-4353-972d-11623611f17e",
+        "name": "List Workflows",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          480,
+          336
+        ],
+        "parameters": {
+          "toolDescription": "List all workflows currently in this n8n instance, including their id, name, and whether each is active or inactive.",
+          "method": "GET",
+          "url": "https://n8n-production-47b1.up.railway.app/api/v1/workflows",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "c8bb19c5-7850-41a8-a40b-bc12f4cd87bf",
+        "name": "Get Workflow",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          608,
+          336
+        ],
+        "parameters": {
+          "toolDescription": "Get the full details of one specific workflow by its ID.",
+          "method": "GET",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to fetch', 'string') }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "a1363774-9436-4476-8744-80bdb08d96ac",
+        "name": "Activate Workflow",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          736,
+          336
+        ],
+        "parameters": {
+          "toolDescription": "Activate a specific workflow by its ID. ONLY call this after Mohamed has explicitly said yes in this chat. Never call this on your own initiative.",
+          "method": "POST",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to activate', 'string') }}/activate",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "abd16bef-f8c2-48ab-8862-42cc0e16f5e2",
+        "name": "Deactivate Workflow",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          864,
+          336
+        ],
+        "parameters": {
+          "toolDescription": "Deactivate (pause) a specific workflow by its ID.",
+          "method": "POST",
+          "url": "=https://n8n-production-47b1.up.railway.app/api/v1/workflows/{{ $fromAI('workflow_id', 'The ID of the workflow to deactivate', 'string') }}/deactivate",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "5cae123f-c6f8-4597-aa24-99c6786b4644",
+        "name": "Search Packages",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          992,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'An optional Airtable formula to filter packages, e.g. by destination or status. Leave empty to list recent packages.') }}",
+          "returnAll": false,
+          "limit": 10
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "7907c5af-a06e-4816-88b5-bc9937f837fe",
+        "name": "Reply to Mohamed",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1200,
+          112
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $('Mohamed Private Chat').item.json.message.chat.id }}",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "c86d57a5-2bf6-4415-9df5-6576d2dc99a5"
+      }
+    ],
+    "connections": {
+      "Mohamed Private Chat": {
+        "main": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mohamed Assistant": {
+        "main": [
+          [
+            {
+              "node": "Reply to Mohamed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Conversation Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Workflows": {
+        "ai_tool": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Workflow": {
+        "ai_tool": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Activate Workflow": {
+        "ai_tool": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deactivate Workflow": {
+        "ai_tool": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Packages": {
+        "ai_tool": [
+          [
+            {
+              "node": "Mohamed Assistant",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial - personal Telegram AI assistant",
+    "description": "Initial version: Telegram Trigger locked to Mohamed's personal chat ID, AI Agent (GPT-5-mini + buffer window memory keyed by chat id) with tools to list/get/activate/deactivate n8n workflows and search the Airtable Packages table, replying back in the same chat.",
+    "autosaved": false,
+    "createdAt": "2026-09-16T17:08:33.898Z",
+    "updatedAt": "2026-09-16T17:08:33.898Z",
+    "workflowPublishHistory": [
+      {
+        "id": 7,
+        "workflowId": "E29TvhWucpQdtRIG",
+        "versionId": "d6c55cec-317d-4439-93b2-68a6efa6daf1",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T17:08:39.745Z"
+      }
+    ]
+  }
+}
