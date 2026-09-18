@@ -1,0 +1,157 @@
+{
+  "id": "GAkjs4eK8WcSbM1f",
+  "name": "TEMP - Create Glossary Table",
+  "description": "Throwaway one-off workflow used to create the Glossary table in Airtable via the metadata API, then deleted.",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-17T08:23:41.004Z",
+  "updatedAt": "2026-09-17T17:23:38.924Z",
+  "isArchived": false,
+  "versionId": "7c30da9e-46e1-4359-94cb-04a03c69863d",
+  "versionCounter": 5,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "9b84a077-6e26-4e98-a1b6-6f002f8b4c72",
+      "name": "Run Once",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "4581bcba-cdfd-4696-8607-ad835d3b7750",
+      "name": "Fix Seats",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [],
+          "value": {
+            "Seats Available": 50,
+            "id": "recMwGKmMZrVMZDd2"
+          }
+        },
+        "operation": "update",
+        "options": {
+          "typecast": true
+        },
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Packages",
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "c393dfef-7b72-4cc1-9fb8-42cf3fd01fa5",
+      "name": "List Packages",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "FIND(\"ظبي\",{Destination})>0",
+        "operation": "search",
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Packages",
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Run Once": {
+      "main": [
+        [
+          {
+            "node": "Fix Seats",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "GAkjs4eK8WcSbM1f",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-17T08:23:41.007Z",
+      "updatedAt": "2026-09-17T08:23:41.007Z"
+    }
+  ],
+  "activeVersion": null
+}
