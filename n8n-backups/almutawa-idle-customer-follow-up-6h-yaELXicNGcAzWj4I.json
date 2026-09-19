@@ -1,0 +1,445 @@
+{
+  "id": "yaELXicNGcAzWj4I",
+  "name": "Almutawa - Idle Customer Follow-up (6h)",
+  "description": "Hourly job that scans inbound WhatsApp messages, finds customers whose most recent message was sent 6-7 hours ago with no reply from them since, and posts a summary to the office Telegram group as a nudge for personal follow-up.",
+  "active": true,
+  "activeVersionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+  "createdAt": "2026-09-16T19:35:26.294Z",
+  "updatedAt": "2026-09-17T05:15:52.385Z",
+  "isArchived": false,
+  "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "02a751d4-24d0-464d-a2a4-4d3275629dbc",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "da465054-73af-4c58-92a9-3cb2e1c0062e",
+      "name": "Fetch Inbound Messages (48h)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH",
+          "cachedResultName": "Messages"
+        },
+        "filterByFormula": "={{ 'AND({Direction}=\"Inbound\", IS_AFTER({Timestamp}, DATEADD(NOW(), -48, \"hours\")))' }}",
+        "returnAll": true,
+        "sort": {
+          "property": [
+            {
+              "field": "Timestamp",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "ae70b1fa-fd21-4b32-b2d8-66954e3e1601",
+      "name": "Find Customers Idle 6h+",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nconst now = new Date();\nconst latestByPhone = {};\nfor (const it of items) {\n  const f = it.json.fields || {};\n  const phone = f[\"Phone\"];\n  const ts = f[\"Timestamp\"];\n  if (!phone || !ts) continue;\n  if (!latestByPhone[phone] || new Date(ts) > new Date(latestByPhone[phone].fields.Timestamp)) {\n    latestByPhone[phone] = it.json;\n  }\n}\nconst results = [];\nfor (const phone in latestByPhone) {\n  const rec = latestByPhone[phone];\n  const ts = new Date(rec.fields[\"Timestamp\"]);\n  const hours = (now - ts) / 3600000;\n  if (hours >= 6 && hours < 7) {\n    const customerLinks = rec.fields[\"Customer\"] || [];\n    results.push({ json: { phone: phone, message: rec.fields[\"Message Content\"] || \"\", timestamp: rec.fields[\"Timestamp\"], customerId: customerLinks[0] || \"\" } });\n  }\n}\nreturn results;"
+      }
+    },
+    {
+      "id": "e2a1dce3-4fcc-4e1f-9323-27fb944da888",
+      "name": "Send Idle Customer Summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Find Customers Idle 6h+').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Find Customers Idle 6h+').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "9a36a5fb-8210-48af-90f6-a804f5d72cef"
+    },
+    {
+      "id": "07537c14-1f1e-469b-aa4f-93d6ecb73a5e",
+      "name": "Get Customer Profile",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        112
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "id": "={{ $json.customerId }}",
+        "operation": "get",
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Fetch Inbound Messages (48h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Inbound Messages (48h)": {
+      "main": [
+        [
+          {
+            "node": "Find Customers Idle 6h+",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Customers Idle 6h+": {
+      "main": [
+        [
+          {
+            "node": "Get Customer Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Customer Profile": {
+      "main": [
+        [
+          {
+            "node": "Send Idle Customer Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": {
+    "node:Every Hour": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "yaELXicNGcAzWj4I",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T19:35:26.297Z",
+      "updatedAt": "2026-09-16T19:35:26.297Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+    "workflowId": "yaELXicNGcAzWj4I",
+    "nodes": [
+      {
+        "id": "02a751d4-24d0-464d-a2a4-4d3275629dbc",
+        "name": "Every Hour",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "da465054-73af-4c58-92a9-3cb2e1c0062e",
+        "name": "Fetch Inbound Messages (48h)",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH",
+            "cachedResultName": "Messages"
+          },
+          "filterByFormula": "={{ 'AND({Direction}=\"Inbound\", IS_AFTER({Timestamp}, DATEADD(NOW(), -48, \"hours\")))' }}",
+          "returnAll": true,
+          "sort": {
+            "property": [
+              {
+                "field": "Timestamp",
+                "direction": "desc"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "ae70b1fa-fd21-4b32-b2d8-66954e3e1601",
+        "name": "Find Customers Idle 6h+",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const items = $input.all();\nconst now = new Date();\nconst latestByPhone = {};\nfor (const it of items) {\n  const f = it.json.fields || {};\n  const phone = f[\"Phone\"];\n  const ts = f[\"Timestamp\"];\n  if (!phone || !ts) continue;\n  if (!latestByPhone[phone] || new Date(ts) > new Date(latestByPhone[phone].fields.Timestamp)) {\n    latestByPhone[phone] = it.json;\n  }\n}\nconst results = [];\nfor (const phone in latestByPhone) {\n  const rec = latestByPhone[phone];\n  const ts = new Date(rec.fields[\"Timestamp\"]);\n  const hours = (now - ts) / 3600000;\n  if (hours >= 6 && hours < 7) {\n    const customerLinks = rec.fields[\"Customer\"] || [];\n    results.push({ json: { phone: phone, message: rec.fields[\"Message Content\"] || \"\", timestamp: rec.fields[\"Timestamp\"], customerId: customerLinks[0] || \"\" } });\n  }\n}\nreturn results;"
+        }
+      },
+      {
+        "id": "e2a1dce3-4fcc-4e1f-9323-27fb944da888",
+        "name": "Send Idle Customer Summary",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "-1004357436155",
+          "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Find Customers Idle 6h+').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Find Customers Idle 6h+').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "9a36a5fb-8210-48af-90f6-a804f5d72cef"
+      },
+      {
+        "id": "07537c14-1f1e-469b-aa4f-93d6ecb73a5e",
+        "name": "Get Customer Profile",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          660,
+          112
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "id": "={{ $json.customerId }}",
+          "operation": "get",
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every Hour": {
+        "main": [
+          [
+            {
+              "node": "Fetch Inbound Messages (48h)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Inbound Messages (48h)": {
+        "main": [
+          [
+            {
+              "node": "Find Customers Idle 6h+",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Customers Idle 6h+": {
+        "main": [
+          [
+            {
+              "node": "Get Customer Profile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Customer Profile": {
+        "main": [
+          [
+            {
+              "node": "Send Idle Customer Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Use real profile summary in idle follow-up, translate to Arabic",
+    "description": "Added nodes: Get Customer Profile\nUpdated nodes: Find Customers Idle 6h+, Send Idle Customer Summary\nConnections: 2 added, 1 removed",
+    "autosaved": false,
+    "createdAt": "2026-09-17T05:15:52.386Z",
+    "updatedAt": "2026-09-17T05:15:52.386Z",
+    "workflowPublishHistory": [
+      {
+        "id": 29,
+        "workflowId": "yaELXicNGcAzWj4I",
+        "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-17T05:15:54.323Z"
+      }
+    ]
+  }
+}
