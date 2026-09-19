@@ -1,0 +1,1148 @@
+{
+  "id": "ODvwErB57FWNSzgn",
+  "name": "Almutawa - Office Booking Report (Telegram)",
+  "description": "Third booking intake channel: staff in the office Telegram group can type a message starting with \"سجل حجز\" describing a walk-in/phone/cash booking, and the AI agent finds the matching package, logs the customer and booking, decrements remaining seats, an",
+  "active": true,
+  "activeVersionId": "0ea7ab4b-924a-4e21-986b-57fe45a9f1a4",
+  "createdAt": "2026-09-17T10:58:08.013Z",
+  "updatedAt": "2026-09-17T11:25:25.560Z",
+  "isArchived": false,
+  "versionId": "0ea7ab4b-924a-4e21-986b-57fe45a9f1a4",
+  "versionCounter": 6,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "ea18d5c5-eabd-4faa-bf7c-1d147b461ba3",
+      "name": "Office Group Message",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        112
+      ],
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "-1004357436155"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "9ab44bac-153e-47e8-b52a-0bd13e5fb1ce"
+    },
+    {
+      "id": "03d2fcda-d484-48fd-849f-3a7172930558",
+      "name": "Is Booking Report?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        112
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ !$json.message.from.is_bot && ( ($json.message.text || '').indexOf('سجل حجز') === 0 || ($json.message.text || '').indexOf('/حجز') === 0 || ($json.message.text || '').toLowerCase().indexOf('/booking') === 0 || ($json.message.text || '').toLowerCase().indexOf('/newbooking') === 0 || ($json.message.reply_to_message && $json.message.reply_to_message.from && $json.message.reply_to_message.from.is_bot) ) }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "6a1cdb07-40a2-4b09-9ab0-b061c4aaabf8",
+      "name": "Office Booking Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        640,
+        112
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "A staff member at Al-Mutawa Tourism office is reporting or continuing a booking conversation in the office Telegram group, so it gets logged into the same system as WhatsApp and website bookings. They may start with \"سجل حجز\", \"/حجز\", \"/booking\", or \"/newbooking\" followed by free-text details in Arabic, OR they may be replying to one of your own previous messages to answer a clarifying question you asked — use the conversation memory to stay on the same booking thread in that case.\n\nIMPORTANT: If the message is JUST the bare trigger command with no other details (e.g. only \"/newbooking\" or \"سجل حجز\" and nothing else, ignoring any \"@botname\" suffix Telegram may append), you MUST call the \"List Current Available Packages\" tool (NOT Search Packages) — it needs no input and always returns the current offerings directly. Present the results as a short numbered list in Arabic (destination, date, price, seats left) and ask staff to reply (using Telegram's Reply feature) with the number, or to just type the details directly if their package isn't listed. Never say you \"couldn't retrieve the list\" — always call this tool first.\n\nSteps:\n1) If staff already named a destination/package, call Search Packages (Any Status) with a formula matching it. Otherwise use List Current Available Packages as described above.\n2) If the search returns MORE THAN ONE plausible package (different dates, room/transport types, or prices for the same destination), DO NOT guess or book anything yet. Instead reply with a short numbered list in Arabic showing each option's key differences (التاريخ, النوع, السعر, المقاعد المتبقية) and ask staff to reply with the number they want. Stop there for this turn.\n3) Once a single specific package is confirmed, proceed: call Upsert Customer with name and phone (ask for whichever is missing before booking, don't guess).\n4) Call Create Office Booking using the returned customer and package record ids, travelers count, and infer booking/payment status from context (cash/payment mentioned → Confirmed/Paid; otherwise Pending/Unpaid).\n5) Call Update Package Seats to set the new remaining seat count (current minus travelers).\n6) Reply in Arabic (Gulf dialect), SHORT, confirming the booking was logged, mentioning the customer name, package (with its specific date), and the new remaining seat count — start with an emoji like 📝, then key details on separate lines.\n\nAlways ask staff to use Telegram's Reply feature (not a fresh message) when answering your clarifying questions, since that's how the system recognizes it's part of the same booking."
+        }
+      }
+    },
+    {
+      "id": "657186df-ed05-499d-9d37-34cbed172f5a",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        336
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "bf3b3b6c-f7e2-478f-b20c-158cd576dc74",
+      "name": "Search Packages (Any Status)",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find the package staff mentioned by name/destination, e.g. FIND(\"الأحساء\",{Destination})>0. Search across all statuses since staff may reference any package.') }}",
+        "returnAll": false,
+        "limit": 5
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "8bf511e5-8eba-4e5b-9d7c-3a28f5f928db",
+      "name": "Upsert Customer",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Phone"
+          ],
+          "value": {
+            "Phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', 'Customer phone number as stated by staff, in international format if possible') }}",
+            "Full Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('full_name', 'Customer full name as stated by staff') }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "df3f6464-192b-4819-9a1e-6ff8c51405ba",
+      "name": "Create Office Booking",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblZ6AQCBmEY2KYHr",
+          "cachedResultName": "Bookings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer": "={{ [ $fromAI('customer_record_id', 'The Airtable record ID returned by Upsert Customer', 'string') ] }}",
+            "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package, from Search Packages results', 'string') ] }}",
+            "Number of Travelers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('num_travelers', 'Number of travelers in this booking', 'number') }}",
+            "Booking Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('booking_status', 'Confirmed if staff says it is already booked/paid in the office, Pending otherwise') }}",
+            "Payment Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('payment_status', 'Paid if staff mentions payment was received (cash/transfer), otherwise Unpaid') }}",
+            "Special Requests": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('notes', 'Any extra notes staff mentioned, or empty string') }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "5b896ffa-f655-4ff4-b676-94a243927726",
+      "name": "Update Package Seats",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('package_record_id_2', 'Same Airtable package record ID used for the booking') }}",
+            "Seats Available": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('new_seats_available', 'The NEW remaining seat count = current Seats Available (from Search Packages result) minus the number of travelers in this booking. Compute this yourself.', 'number') }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "a1ff02ce-1991-4e66-b0d4-a67e37915ee8",
+      "name": "Confirm in Group",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        112
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "7d939645-830d-4f42-ba6e-606fd8c008f3"
+    },
+    {
+      "id": "62b22356-44a1-4995-81ed-2e2d0949273a",
+      "name": "Booking Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1360,
+        480
+      ],
+      "parameters": {
+        "contextWindowLength": 14,
+        "sessionIdType": "customKey",
+        "sessionKey": "office-booking-thread"
+      }
+    },
+    {
+      "id": "b2edacc4-6fdb-4e3c-be35-8a22b9cbc21c",
+      "name": "Is New Package Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        280,
+        260
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ !$json.message.from.is_bot && ($json.message.text || '').toLowerCase().indexOf('/newpackage') === 0 }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "bee5affb-fee0-42ef-bab2-f90f6a3805cf",
+      "name": "Send Package Form Link",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        260
+      ],
+      "parameters": {
+        "additionalFields": {
+          "appendAttribution": false
+        },
+        "chatId": "-1004357436155",
+        "operation": "sendMessage",
+        "resource": "message",
+        "text": "📋 *لإضافة باقة جديدة*\nافتح هذا الرابط وعبئ النموذج:\nhttps://n8n-production-47b1.up.railway.app/form/add-package"
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "0057dddc-0cd5-457b-9e42-cd661e1b8a3f"
+    },
+    {
+      "id": "582b1af8-0ec4-4452-ab7c-7ec31ce24ff4",
+      "name": "List Current Available Packages",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        260
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()))",
+        "limit": 20,
+        "operation": "search",
+        "resource": "record",
+        "returnAll": false,
+        "sort": {
+          "property": [
+            {
+              "direction": "asc",
+              "field": "Departure Date"
+            }
+          ]
+        },
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Packages",
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7"
+        },
+        "toolDescription": "List all currently Active, visible, future-dated packages with their id, Title, Destination, Departure Date, Price, and Seats Available. ALWAYS use this tool (not Search Packages) when staff sends the bare command with no destination/details, to show what is currently available."
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Office Group Message": {
+      "main": [
+        [
+          {
+            "node": "Is Booking Report?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is New Package Command?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Booking Report?": {
+      "main": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Office Booking Agent": {
+      "main": [
+        [
+          {
+            "node": "Confirm in Group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Packages (Any Status)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Customer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Office Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Package Seats": {
+      "ai_tool": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Package Command?": {
+      "main": [
+        [
+          {
+            "node": "Send Package Form Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Current Available Packages": {
+      "ai_tool": [
+        [
+          {
+            "node": "Office Booking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ODvwErB57FWNSzgn",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-17T10:58:08.015Z",
+      "updatedAt": "2026-09-17T10:58:08.015Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "0ea7ab4b-924a-4e21-986b-57fe45a9f1a4",
+    "workflowId": "ODvwErB57FWNSzgn",
+    "nodes": [
+      {
+        "id": "ea18d5c5-eabd-4faa-bf7c-1d147b461ba3",
+        "name": "Office Group Message",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.5,
+        "position": [
+          0,
+          112
+        ],
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {
+            "chatIds": "-1004357436155"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "9ab44bac-153e-47e8-b52a-0bd13e5fb1ce"
+      },
+      {
+        "id": "03d2fcda-d484-48fd-849f-3a7172930558",
+        "name": "Is Booking Report?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          224,
+          112
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ !$json.message.from.is_bot && ( ($json.message.text || '').indexOf('سجل حجز') === 0 || ($json.message.text || '').indexOf('/حجز') === 0 || ($json.message.text || '').toLowerCase().indexOf('/booking') === 0 || ($json.message.text || '').toLowerCase().indexOf('/newbooking') === 0 || ($json.message.reply_to_message && $json.message.reply_to_message.from && $json.message.reply_to_message.from.is_bot) ) }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "6a1cdb07-40a2-4b09-9ab0-b061c4aaabf8",
+        "name": "Office Booking Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          640,
+          112
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message.text }}",
+          "options": {
+            "systemMessage": "A staff member at Al-Mutawa Tourism office is reporting or continuing a booking conversation in the office Telegram group, so it gets logged into the same system as WhatsApp and website bookings. They may start with \"سجل حجز\", \"/حجز\", \"/booking\", or \"/newbooking\" followed by free-text details in Arabic, OR they may be replying to one of your own previous messages to answer a clarifying question you asked — use the conversation memory to stay on the same booking thread in that case.\n\nIMPORTANT: If the message is JUST the bare trigger command with no other details (e.g. only \"/newbooking\" or \"سجل حجز\" and nothing else, ignoring any \"@botname\" suffix Telegram may append), you MUST call the \"List Current Available Packages\" tool (NOT Search Packages) — it needs no input and always returns the current offerings directly. Present the results as a short numbered list in Arabic (destination, date, price, seats left) and ask staff to reply (using Telegram's Reply feature) with the number, or to just type the details directly if their package isn't listed. Never say you \"couldn't retrieve the list\" — always call this tool first.\n\nSteps:\n1) If staff already named a destination/package, call Search Packages (Any Status) with a formula matching it. Otherwise use List Current Available Packages as described above.\n2) If the search returns MORE THAN ONE plausible package (different dates, room/transport types, or prices for the same destination), DO NOT guess or book anything yet. Instead reply with a short numbered list in Arabic showing each option's key differences (التاريخ, النوع, السعر, المقاعد المتبقية) and ask staff to reply with the number they want. Stop there for this turn.\n3) Once a single specific package is confirmed, proceed: call Upsert Customer with name and phone (ask for whichever is missing before booking, don't guess).\n4) Call Create Office Booking using the returned customer and package record ids, travelers count, and infer booking/payment status from context (cash/payment mentioned → Confirmed/Paid; otherwise Pending/Unpaid).\n5) Call Update Package Seats to set the new remaining seat count (current minus travelers).\n6) Reply in Arabic (Gulf dialect), SHORT, confirming the booking was logged, mentioning the customer name, package (with its specific date), and the new remaining seat count — start with an emoji like 📝, then key details on separate lines.\n\nAlways ask staff to use Telegram's Reply feature (not a fresh message) when answering your clarifying questions, since that's how the system recognizes it's part of the same booking."
+          }
+        }
+      },
+      {
+        "id": "657186df-ed05-499d-9d37-34cbed172f5a",
+        "name": "OpenAI Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          448,
+          336
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "bf3b3b6c-f7e2-478f-b20c-158cd576dc74",
+        "name": "Search Packages (Any Status)",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          576,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find the package staff mentioned by name/destination, e.g. FIND(\"الأحساء\",{Destination})>0. Search across all statuses since staff may reference any package.') }}",
+          "returnAll": false,
+          "limit": 5
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "8bf511e5-8eba-4e5b-9d7c-3a28f5f928db",
+        "name": "Upsert Customer",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          704,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "Phone"
+            ],
+            "value": {
+              "Phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', 'Customer phone number as stated by staff, in international format if possible') }}",
+              "Full Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('full_name', 'Customer full name as stated by staff') }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "df3f6464-192b-4819-9a1e-6ff8c51405ba",
+        "name": "Create Office Booking",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          832,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblZ6AQCBmEY2KYHr",
+            "cachedResultName": "Bookings"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Customer": "={{ [ $fromAI('customer_record_id', 'The Airtable record ID returned by Upsert Customer', 'string') ] }}",
+              "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package, from Search Packages results', 'string') ] }}",
+              "Number of Travelers": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('num_travelers', 'Number of travelers in this booking', 'number') }}",
+              "Booking Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('booking_status', 'Confirmed if staff says it is already booked/paid in the office, Pending otherwise') }}",
+              "Payment Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('payment_status', 'Paid if staff mentions payment was received (cash/transfer), otherwise Unpaid') }}",
+              "Special Requests": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('notes', 'Any extra notes staff mentioned, or empty string') }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "5b896ffa-f655-4ff4-b676-94a243927726",
+        "name": "Update Package Seats",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          960,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "update",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id"
+            ],
+            "value": {
+              "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('package_record_id_2', 'Same Airtable package record ID used for the booking') }}",
+              "Seats Available": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('new_seats_available', 'The NEW remaining seat count = current Seats Available (from Search Packages result) minus the number of travelers in this booking. Compute this yourself.', 'number') }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "a1ff02ce-1991-4e66-b0d4-a67e37915ee8",
+        "name": "Confirm in Group",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1168,
+          112
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "-1004357436155",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "7d939645-830d-4f42-ba6e-606fd8c008f3"
+      },
+      {
+        "id": "62b22356-44a1-4995-81ed-2e2d0949273a",
+        "name": "Booking Conversation Memory",
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.4,
+        "position": [
+          1360,
+          480
+        ],
+        "parameters": {
+          "contextWindowLength": 14,
+          "sessionIdType": "customKey",
+          "sessionKey": "office-booking-thread"
+        }
+      },
+      {
+        "id": "b2edacc4-6fdb-4e3c-be35-8a22b9cbc21c",
+        "name": "Is New Package Command?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          280,
+          260
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ !$json.message.from.is_bot && ($json.message.text || '').toLowerCase().indexOf('/newpackage') === 0 }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "bee5affb-fee0-42ef-bab2-f90f6a3805cf",
+        "name": "Send Package Form Link",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          520,
+          260
+        ],
+        "parameters": {
+          "additionalFields": {
+            "appendAttribution": false
+          },
+          "chatId": "-1004357436155",
+          "operation": "sendMessage",
+          "resource": "message",
+          "text": "📋 *لإضافة باقة جديدة*\nافتح هذا الرابط وعبئ النموذج:\nhttps://n8n-production-47b1.up.railway.app/form/add-package"
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "0057dddc-0cd5-457b-9e42-cd661e1b8a3f"
+      },
+      {
+        "id": "582b1af8-0ec4-4452-ab7c-7ec31ce24ff4",
+        "name": "List Current Available Packages",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          1360,
+          260
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()))",
+          "limit": 20,
+          "operation": "search",
+          "resource": "record",
+          "returnAll": false,
+          "sort": {
+            "property": [
+              {
+                "direction": "asc",
+                "field": "Departure Date"
+              }
+            ]
+          },
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Packages",
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7"
+          },
+          "toolDescription": "List all currently Active, visible, future-dated packages with their id, Title, Destination, Departure Date, Price, and Seats Available. ALWAYS use this tool (not Search Packages) when staff sends the bare command with no destination/details, to show what is currently available."
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Office Group Message": {
+        "main": [
+          [
+            {
+              "node": "Is Booking Report?",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Is New Package Command?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Booking Report?": {
+        "main": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Office Booking Agent": {
+        "main": [
+          [
+            {
+              "node": "Confirm in Group",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Packages (Any Status)": {
+        "ai_tool": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Customer": {
+        "ai_tool": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Office Booking": {
+        "ai_tool": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Package Seats": {
+        "ai_tool": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Booking Conversation Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is New Package Command?": {
+        "main": [
+          [
+            {
+              "node": "Send Package Form Link",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Current Available Packages": {
+        "ai_tool": [
+          [
+            {
+              "node": "Office Booking Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Add reliable fixed-formula tool for listing available packages",
+    "description": "Added nodes: List Current Available Packages\nUpdated nodes: Office Booking Agent\nConnections: 1 added, 0 removed",
+    "autosaved": false,
+    "createdAt": "2026-09-17T11:25:25.561Z",
+    "updatedAt": "2026-09-17T11:25:25.561Z",
+    "workflowPublishHistory": [
+      {
+        "id": 43,
+        "workflowId": "ODvwErB57FWNSzgn",
+        "versionId": "0ea7ab4b-924a-4e21-986b-57fe45a9f1a4",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-17T11:25:29.372Z"
+      }
+    ]
+  }
+}
