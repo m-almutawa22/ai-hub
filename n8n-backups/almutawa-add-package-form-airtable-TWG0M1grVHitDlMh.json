@@ -1,0 +1,664 @@
+{
+  "id": "TWG0M1grVHitDlMh",
+  "name": "Almutawa - Add Package (Form + Airtable)",
+  "description": "Form-based package intake workflow: staff fill a webform with all package details plus design/ad options; the record is saved to Airtable (Packages table) as Draft, and a Telegram summary is sent to the office group including the requested design style, r",
+  "active": true,
+  "activeVersionId": "b15fce11-70cd-4688-9e7b-bb008222c5ee",
+  "createdAt": "2026-09-16T16:43:22.779Z",
+  "updatedAt": "2026-09-16T16:43:26.394Z",
+  "isArchived": false,
+  "versionId": "b15fce11-70cd-4688-9e7b-bb008222c5ee",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "b8ab8924-b4b7-4b3e-a7d1-c466cdee8202",
+      "name": "Add Package Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "formTitle": "إضافة باقة سياحية جديدة - مكتب المطوع",
+        "formDescription": "عبّي كل التفاصيل، وخيارات التصميم بالأسفل تُستخدم لتصميم الإعلان لاحقاً.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "title",
+              "fieldLabel": "اسم الباقة / العنوان",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "destination",
+              "fieldLabel": "الوجهة (الدولة/المدينة)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldName": "transportType",
+              "fieldLabel": "وسيلة النقل",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Flight"
+                  },
+                  {
+                    "option": "Bus"
+                  },
+                  {
+                    "option": "Sea"
+                  },
+                  {
+                    "option": "Train"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "departureDate",
+              "fieldLabel": "تاريخ الذهاب",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldName": "returnDate",
+              "fieldLabel": "تاريخ العودة",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldName": "durationDays",
+              "fieldLabel": "عدد الأيام",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldName": "price",
+              "fieldLabel": "السعر (بالدينار)",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldName": "seatsAvailable",
+              "fieldLabel": "عدد المقاعد المتاحة",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldName": "packageType",
+              "fieldLabel": "نوع الباقة",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Standard"
+                  },
+                  {
+                    "option": "Luxury"
+                  },
+                  {
+                    "option": "Family"
+                  },
+                  {
+                    "option": "Group"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "includesVisa",
+              "fieldLabel": "تشمل التأشيرة؟",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "نعم"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "isVisible",
+              "fieldLabel": "تظهر للعملاء مباشرة؟",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "نعم"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "description",
+              "fieldLabel": "الوصف التفصيلي",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldName": "images",
+              "fieldLabel": "صور الباقة",
+              "fieldType": "file",
+              "requiredField": false,
+              "multipleFiles": true,
+              "acceptFileTypes": ".jpg,.jpeg,.png"
+            },
+            {
+              "fieldName": "designType",
+              "fieldLabel": "نوع تصميم الإعلان",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "منشور مربع (Instagram Post)"
+                  },
+                  {
+                    "option": "ستوري (Story)"
+                  },
+                  {
+                    "option": "بانر أفقي (Banner)"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "designStyle",
+              "fieldLabel": "أسلوب التصميم",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "فخم وهادئ"
+                  },
+                  {
+                    "option": "حماسي وملون"
+                  },
+                  {
+                    "option": "عائلي بسيط"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldName": "ctaText",
+              "fieldLabel": "نص الدعوة للعمل (مثل: احجز الآن)",
+              "fieldType": "text",
+              "requiredField": true,
+              "defaultValue": "احجز الآن"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "إضافة الباقة",
+          "path": "add-package"
+        }
+      },
+      "webhookId": "6561a02e-a956-4820-80f6-88b624e90a7a"
+    },
+    {
+      "id": "7f82a7ff-63bb-4720-be91-5dba5034fa2b",
+      "name": "Save Package to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.title }}",
+            "Destination": "={{ $json.destination }}",
+            "Transport Type": "={{ $json.transportType }}",
+            "Departure Date": "={{ $json.departureDate }}",
+            "Return Date": "={{ $json.returnDate }}",
+            "Duration Days": "={{ $json.durationDays }}",
+            "Price": "={{ $json.price }}",
+            "Seats Available": "={{ $json.seatsAvailable }}",
+            "Package Type": "={{ $json.packageType }}",
+            "Includes Visa": "={{ $json.includesVisa === \"نعم\" }}",
+            "Is Visible": "={{ $json.isVisible === \"نعم\" }}",
+            "Status": "Draft",
+            "Description": "={{ $json.description }}\n\n[Design request] Type: {{ $json.designType }} | Style: {{ $json.designStyle }} | CTA: {{ $json.ctaText }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "1cdd4b4f-5735-46e7-9fe8-6d8eb3486991",
+      "name": "Notify Team - New Package",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "=New package added.\nTitle: {{ $('Add Package Form').item.json.title }}\nDestination: {{ $('Add Package Form').item.json.destination }}\nPrice: {{ $('Add Package Form').item.json.price }}\nStatus: Draft (not visible to customers yet)\nDesign requested: {{ $('Add Package Form').item.json.designType }} - {{ $('Add Package Form').item.json.designStyle }}\nRecord: https://airtable.com/appPB4D3VkkSJKjRK/tblbCLAD8HLLwA9R7/{{ $json.id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "606da545-5af2-4ed3-9e84-9a32970a8029"
+    }
+  ],
+  "connections": {
+    "Add Package Form": {
+      "main": [
+        [
+          {
+            "node": "Save Package to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Package to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Team - New Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "TWG0M1grVHitDlMh",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T16:43:22.782Z",
+      "updatedAt": "2026-09-16T16:43:22.782Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b15fce11-70cd-4688-9e7b-bb008222c5ee",
+    "workflowId": "TWG0M1grVHitDlMh",
+    "nodes": [
+      {
+        "id": "b8ab8924-b4b7-4b3e-a7d1-c466cdee8202",
+        "name": "Add Package Form",
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.6,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "formTitle": "إضافة باقة سياحية جديدة - مكتب المطوع",
+          "formDescription": "عبّي كل التفاصيل، وخيارات التصميم بالأسفل تُستخدم لتصميم الإعلان لاحقاً.",
+          "formFields": {
+            "values": [
+              {
+                "fieldName": "title",
+                "fieldLabel": "اسم الباقة / العنوان",
+                "fieldType": "text",
+                "requiredField": true
+              },
+              {
+                "fieldName": "destination",
+                "fieldLabel": "الوجهة (الدولة/المدينة)",
+                "fieldType": "text",
+                "requiredField": true
+              },
+              {
+                "fieldName": "transportType",
+                "fieldLabel": "وسيلة النقل",
+                "fieldType": "dropdown",
+                "requiredField": true,
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Flight"
+                    },
+                    {
+                      "option": "Bus"
+                    },
+                    {
+                      "option": "Sea"
+                    },
+                    {
+                      "option": "Train"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "departureDate",
+                "fieldLabel": "تاريخ الذهاب",
+                "fieldType": "date",
+                "requiredField": true
+              },
+              {
+                "fieldName": "returnDate",
+                "fieldLabel": "تاريخ العودة",
+                "fieldType": "date",
+                "requiredField": true
+              },
+              {
+                "fieldName": "durationDays",
+                "fieldLabel": "عدد الأيام",
+                "fieldType": "number",
+                "requiredField": true
+              },
+              {
+                "fieldName": "price",
+                "fieldLabel": "السعر (بالدينار)",
+                "fieldType": "number",
+                "requiredField": true
+              },
+              {
+                "fieldName": "seatsAvailable",
+                "fieldLabel": "عدد المقاعد المتاحة",
+                "fieldType": "number",
+                "requiredField": true
+              },
+              {
+                "fieldName": "packageType",
+                "fieldLabel": "نوع الباقة",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Standard"
+                    },
+                    {
+                      "option": "Luxury"
+                    },
+                    {
+                      "option": "Family"
+                    },
+                    {
+                      "option": "Group"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "includesVisa",
+                "fieldLabel": "تشمل التأشيرة؟",
+                "fieldType": "checkbox",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "نعم"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "isVisible",
+                "fieldLabel": "تظهر للعملاء مباشرة؟",
+                "fieldType": "checkbox",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "نعم"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "description",
+                "fieldLabel": "الوصف التفصيلي",
+                "fieldType": "textarea",
+                "requiredField": true
+              },
+              {
+                "fieldName": "images",
+                "fieldLabel": "صور الباقة",
+                "fieldType": "file",
+                "requiredField": false,
+                "multipleFiles": true,
+                "acceptFileTypes": ".jpg,.jpeg,.png"
+              },
+              {
+                "fieldName": "designType",
+                "fieldLabel": "نوع تصميم الإعلان",
+                "fieldType": "dropdown",
+                "requiredField": true,
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "منشور مربع (Instagram Post)"
+                    },
+                    {
+                      "option": "ستوري (Story)"
+                    },
+                    {
+                      "option": "بانر أفقي (Banner)"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "designStyle",
+                "fieldLabel": "أسلوب التصميم",
+                "fieldType": "dropdown",
+                "requiredField": true,
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "فخم وهادئ"
+                    },
+                    {
+                      "option": "حماسي وملون"
+                    },
+                    {
+                      "option": "عائلي بسيط"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "ctaText",
+                "fieldLabel": "نص الدعوة للعمل (مثل: احجز الآن)",
+                "fieldType": "text",
+                "requiredField": true,
+                "defaultValue": "احجز الآن"
+              }
+            ]
+          },
+          "options": {
+            "appendAttribution": false,
+            "buttonLabel": "إضافة الباقة",
+            "path": "add-package"
+          }
+        },
+        "webhookId": "6561a02e-a956-4820-80f6-88b624e90a7a"
+      },
+      {
+        "id": "7f82a7ff-63bb-4720-be91-5dba5034fa2b",
+        "name": "Save Package to Airtable",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Title": "={{ $json.title }}",
+              "Destination": "={{ $json.destination }}",
+              "Transport Type": "={{ $json.transportType }}",
+              "Departure Date": "={{ $json.departureDate }}",
+              "Return Date": "={{ $json.returnDate }}",
+              "Duration Days": "={{ $json.durationDays }}",
+              "Price": "={{ $json.price }}",
+              "Seats Available": "={{ $json.seatsAvailable }}",
+              "Package Type": "={{ $json.packageType }}",
+              "Includes Visa": "={{ $json.includesVisa === \"نعم\" }}",
+              "Is Visible": "={{ $json.isVisible === \"نعم\" }}",
+              "Status": "Draft",
+              "Description": "={{ $json.description }}\n\n[Design request] Type: {{ $json.designType }} | Style: {{ $json.designStyle }} | CTA: {{ $json.ctaText }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "1cdd4b4f-5735-46e7-9fe8-6d8eb3486991",
+        "name": "Notify Team - New Package",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "-1004357436155",
+          "text": "=New package added.\nTitle: {{ $('Add Package Form').item.json.title }}\nDestination: {{ $('Add Package Form').item.json.destination }}\nPrice: {{ $('Add Package Form').item.json.price }}\nStatus: Draft (not visible to customers yet)\nDesign requested: {{ $('Add Package Form').item.json.designType }} - {{ $('Add Package Form').item.json.designStyle }}\nRecord: https://airtable.com/appPB4D3VkkSJKjRK/tblbCLAD8HLLwA9R7/{{ $json.id }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "606da545-5af2-4ed3-9e84-9a32970a8029"
+      }
+    ],
+    "connections": {
+      "Add Package Form": {
+        "main": [
+          [
+            {
+              "node": "Save Package to Airtable",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Package to Airtable": {
+        "main": [
+          [
+            {
+              "node": "Notify Team - New Package",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial - package intake form",
+    "description": "Initial version: n8n Form Trigger collects package fields (destination, dates, price, seats, transport, visa, images) plus ad-design preferences (design type, style, CTA text). Saves to Airtable Packages table as Draft/hidden by default, then notifies the office Telegram group with a link to the record.",
+    "autosaved": false,
+    "createdAt": "2026-09-16T16:43:22.783Z",
+    "updatedAt": "2026-09-16T16:43:22.783Z",
+    "workflowPublishHistory": [
+      {
+        "id": 6,
+        "workflowId": "TWG0M1grVHitDlMh",
+        "versionId": "b15fce11-70cd-4688-9e7b-bb008222c5ee",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-16T16:43:28.163Z"
+      }
+    ]
+  }
+}
