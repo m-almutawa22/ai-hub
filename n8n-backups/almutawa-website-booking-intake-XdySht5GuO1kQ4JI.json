@@ -1,0 +1,726 @@
+{
+  "id": "XdySht5GuO1kQ4JI",
+  "name": "Almutawa - Website Booking Intake",
+  "description": "Website booking intake: receives a booking request from the public marketing site (package id, name, phone, travelers, notes), decrements the package's remaining seats, upserts the customer, creates a Pending booking, notifies the office Telegram group wi",
+  "active": true,
+  "activeVersionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+  "createdAt": "2026-09-17T10:30:09.580Z",
+  "updatedAt": "2026-09-17T10:30:13.303Z",
+  "isArchived": false,
+  "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "d624b657-d739-4e00-b6d9-39679800a112",
+      "name": "Website Booking Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "website-booking",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "bc3916c7-4f3e-4910-8b8c-e547108c3304"
+    },
+    {
+      "id": "2a8d15b9-3cb0-4f84-8d78-ccc62997c3d4",
+      "name": "Get Package",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "get",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "id": "={{ $json.body.packageId }}"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "fea5d207-e1f9-409f-a8f0-0b07330c0123",
+      "name": "Compute Remaining Seats",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const pkg = $input.first().json;\nconst travelers = Number($(\"Website Booking Intake\").first().json.body.travelers) || 1;\nconst current = Number(pkg.fields[\"Seats Available\"]) || 0;\nconst remaining = Math.max(current - travelers, 0);\nreturn [{ json: { packageId: pkg.id, packageTitle: pkg.fields[\"Title\"], remaining: remaining, travelers: travelers } }];"
+      }
+    },
+    {
+      "id": "d23f87bf-1071-423d-b48c-30fbbd8bc693",
+      "name": "Update Remaining Seats",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $json.packageId }}",
+            "Seats Available": "={{ $json.remaining }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "6f46fd9b-44f6-42c0-ab14-f34ead004a24",
+      "name": "Upsert Website Customer",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Phone"
+          ],
+          "value": {
+            "Phone": "={{ $('Website Booking Intake').item.json.body.phone }}",
+            "Full Name": "={{ $('Website Booking Intake').item.json.body.name }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "824eb858-4eae-4fef-a859-15ce5ac3f90c",
+      "name": "Create Website Booking",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblZ6AQCBmEY2KYHr",
+          "cachedResultName": "Bookings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer": "={{ [$json.id] }}",
+            "Package": "={{ [$('Website Booking Intake').item.json.body.packageId] }}",
+            "Number of Travelers": "={{ $('Website Booking Intake').item.json.body.travelers }}",
+            "Booking Status": "Pending",
+            "Payment Status": "Unpaid",
+            "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}"
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "5096fbf2-1950-452f-93a3-a1b26ccfffd7",
+      "name": "Notify Team - Website Booking",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "=🌐 *حجز جديد من الموقع الإلكتروني*\nالعميل: {{ $('Website Booking Intake').item.json.body.name }}\nرقم الهاتف: {{ $('Website Booking Intake').item.json.body.phone }}\nالباقة: {{ $('Compute Remaining Seats').item.json.packageTitle }}\nعدد المسافرين: {{ $('Website Booking Intake').item.json.body.travelers }}\nملاحظات: {{ $('Website Booking Intake').item.json.body.notes || 'لا يوجد' }}\n\n🪑 المقاعد المتبقية بهذي الباقة: {{ $('Compute Remaining Seats').item.json.remaining }}\n\n⚠️ بانتظار تأكيد الفريق والدفع.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "5a80780c-810c-4854-bc60-288a37b83834"
+    },
+    {
+      "id": "d41b5fed-1c84-42ee-ae76-3f672b4b04ef",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const r = $(\"Compute Remaining Seats\").first().json;\nreturn [{ json: { success: true, remaining: r.remaining, packageTitle: r.packageTitle } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Website Booking Intake": {
+      "main": [
+        [
+          {
+            "node": "Get Package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Package": {
+      "main": [
+        [
+          {
+            "node": "Compute Remaining Seats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Remaining Seats": {
+      "main": [
+        [
+          {
+            "node": "Update Remaining Seats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Remaining Seats": {
+      "main": [
+        [
+          {
+            "node": "Upsert Website Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Website Customer": {
+      "main": [
+        [
+          {
+            "node": "Create Website Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Website Booking": {
+      "main": [
+        [
+          {
+            "node": "Notify Team - Website Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team - Website Booking": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "XdySht5GuO1kQ4JI",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-17T10:30:09.582Z",
+      "updatedAt": "2026-09-17T10:30:09.582Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+    "workflowId": "XdySht5GuO1kQ4JI",
+    "nodes": [
+      {
+        "id": "d624b657-d739-4e00-b6d9-39679800a112",
+        "name": "Website Booking Intake",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "website-booking",
+          "authentication": "none",
+          "responseMode": "lastNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "bc3916c7-4f3e-4910-8b8c-e547108c3304"
+      },
+      {
+        "id": "2a8d15b9-3cb0-4f84-8d78-ccc62997c3d4",
+        "name": "Get Package",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "get",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "id": "={{ $json.body.packageId }}"
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "fea5d207-e1f9-409f-a8f0-0b07330c0123",
+        "name": "Compute Remaining Seats",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const pkg = $input.first().json;\nconst travelers = Number($(\"Website Booking Intake\").first().json.body.travelers) || 1;\nconst current = Number(pkg.fields[\"Seats Available\"]) || 0;\nconst remaining = Math.max(current - travelers, 0);\nreturn [{ json: { packageId: pkg.id, packageTitle: pkg.fields[\"Title\"], remaining: remaining, travelers: travelers } }];"
+        }
+      },
+      {
+        "id": "d23f87bf-1071-423d-b48c-30fbbd8bc693",
+        "name": "Update Remaining Seats",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "update",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id"
+            ],
+            "value": {
+              "id": "={{ $json.packageId }}",
+              "Seats Available": "={{ $json.remaining }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "6f46fd9b-44f6-42c0-ab14-f34ead004a24",
+        "name": "Upsert Website Customer",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "Phone"
+            ],
+            "value": {
+              "Phone": "={{ $('Website Booking Intake').item.json.body.phone }}",
+              "Full Name": "={{ $('Website Booking Intake').item.json.body.name }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "824eb858-4eae-4fef-a859-15ce5ac3f90c",
+        "name": "Create Website Booking",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblZ6AQCBmEY2KYHr",
+            "cachedResultName": "Bookings"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Customer": "={{ [$json.id] }}",
+              "Package": "={{ [$('Website Booking Intake').item.json.body.packageId] }}",
+              "Number of Travelers": "={{ $('Website Booking Intake').item.json.body.travelers }}",
+              "Booking Status": "Pending",
+              "Payment Status": "Unpaid",
+              "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}"
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "5096fbf2-1950-452f-93a3-a1b26ccfffd7",
+        "name": "Notify Team - Website Booking",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1344,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "-1004357436155",
+          "text": "=🌐 *حجز جديد من الموقع الإلكتروني*\nالعميل: {{ $('Website Booking Intake').item.json.body.name }}\nرقم الهاتف: {{ $('Website Booking Intake').item.json.body.phone }}\nالباقة: {{ $('Compute Remaining Seats').item.json.packageTitle }}\nعدد المسافرين: {{ $('Website Booking Intake').item.json.body.travelers }}\nملاحظات: {{ $('Website Booking Intake').item.json.body.notes || 'لا يوجد' }}\n\n🪑 المقاعد المتبقية بهذي الباقة: {{ $('Compute Remaining Seats').item.json.remaining }}\n\n⚠️ بانتظار تأكيد الفريق والدفع.",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "5a80780c-810c-4854-bc60-288a37b83834"
+      },
+      {
+        "id": "d41b5fed-1c84-42ee-ae76-3f672b4b04ef",
+        "name": "Build Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const r = $(\"Compute Remaining Seats\").first().json;\nreturn [{ json: { success: true, remaining: r.remaining, packageTitle: r.packageTitle } }];"
+        }
+      }
+    ],
+    "connections": {
+      "Website Booking Intake": {
+        "main": [
+          [
+            {
+              "node": "Get Package",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Package": {
+        "main": [
+          [
+            {
+              "node": "Compute Remaining Seats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compute Remaining Seats": {
+        "main": [
+          [
+            {
+              "node": "Update Remaining Seats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Remaining Seats": {
+        "main": [
+          [
+            {
+              "node": "Upsert Website Customer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Website Customer": {
+        "main": [
+          [
+            {
+              "node": "Create Website Booking",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Website Booking": {
+        "main": [
+          [
+            {
+              "node": "Notify Team - Website Booking",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Team - Website Booking": {
+        "main": [
+          [
+            {
+              "node": "Build Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial - website booking intake",
+    "description": "Initial version: public CORS-enabled webhook for the marketing site's booking modal. Looks up the package, computes and updates remaining seats, upserts the customer by phone, creates a Pending/Unpaid booking, sends a Telegram notification including remaining seats, and responds with JSON for the site to show a confirmation.",
+    "autosaved": false,
+    "createdAt": "2026-09-17T10:30:09.582Z",
+    "updatedAt": "2026-09-17T10:30:09.582Z",
+    "workflowPublishHistory": [
+      {
+        "id": 34,
+        "workflowId": "XdySht5GuO1kQ4JI",
+        "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-17T10:30:15.750Z"
+      }
+    ]
+  }
+}
