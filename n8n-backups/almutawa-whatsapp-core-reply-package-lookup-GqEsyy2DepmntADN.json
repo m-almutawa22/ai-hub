@@ -1,0 +1,2488 @@
+{
+  "id": "GqEsyy2DepmntADN",
+  "name": "Almutawa - WhatsApp Core (Reply + Package Lookup)",
+  "description": "Core WhatsApp customer-service workflow via Twilio. Receives inbound WhatsApp messages, recognizes returning customers by phone number (upsert into Airtable Customers), saves the message, pulls recent conversation history for context, replies via an AI ag",
+  "active": true,
+  "activeVersionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+  "createdAt": "2026-09-16T17:45:21.815Z",
+  "updatedAt": "2026-09-18T13:03:56.325Z",
+  "isArchived": false,
+  "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+  "versionCounter": 24,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "ff385e6f-fdf7-4a84-a07a-d7d57f2f9591",
+      "name": "WhatsApp Inbound",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-inbound",
+        "authentication": "none",
+        "responseMode": "onReceived",
+        "options": {
+          "noResponseBody": true
+        }
+      },
+      "webhookId": "ce905137-d585-4171-a8e4-90af2bcf6f72"
+    },
+    {
+      "id": "21f3b3f5-6013-462d-85e8-aa21ab8575e4",
+      "name": "Normalize Incoming Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        112
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b = $input.first().json.body || {};\nconst rawFrom = b.From || \"\";\nconst cleanPhone = rawFrom.replace(\"whatsapp:\", \"\").trim();\nreturn [{ json: { rawFrom: rawFrom, cleanPhone: cleanPhone, messageText: b.Body || \"\", profileName: b.ProfileName || \"\", messageSid: b.MessageSid || \"\" } }];"
+      }
+    },
+    {
+      "id": "732cfd30-66b9-4095-93b9-465179b4ab1f",
+      "name": "Upsert Customer",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        112
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Phone"
+          ],
+          "value": {
+            "Phone": "={{ $json.cleanPhone }}",
+            "Full Name": "={{ $json.profileName }}",
+            "WhatsApp Opt-In": true
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "0ec69a4c-e534-40f2-841b-9cbf0b2e0cec",
+      "name": "Save Inbound Message",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        112
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH",
+          "cachedResultName": "Messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
+            "Customer": "={{ [$json.id] }}",
+            "Role": "Customer",
+            "Message Content": "={{ $('Normalize Incoming Message').item.json.messageText }}",
+            "Direction": "Inbound",
+            "WA SID": "={{ $('Normalize Incoming Message').item.json.messageSid }}",
+            "Is Processed": false
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "c22ed90e-e10b-45bb-8a30-f56b6c83a728",
+      "name": "Fetch Recent Messages",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        112
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH",
+          "cachedResultName": "Messages"
+        },
+        "filterByFormula": "={{ '{Phone} = \"' + $('Normalize Incoming Message').item.json.cleanPhone + '\"' }}",
+        "returnAll": false,
+        "limit": 10,
+        "sort": {
+          "property": [
+            {
+              "field": "Timestamp",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "f4185ec5-9fb7-41db-a3be-a7f7dd7a99b6",
+      "name": "Build Conversation Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        112
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json.fields || {};\n  const role = f[\"Role\"] === \"Assistant\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f[\"Message Content\"] || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerFields = $(\"Upsert Customer\").first().json.fields || {};\nconst customerNotes = customerFields[\"Notes\"] || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
+      }
+    },
+    {
+      "id": "b9127e43-5362-4e92-8a95-ae6cb9c0097d",
+      "name": "WhatsApp Reply Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1344,
+        112
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.promptText }}",
+        "options": {
+          "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريبياً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقة الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, or has a payment question, in addition to giving them a warm reassuring reply (not instead of it)."
+        }
+      }
+    },
+    {
+      "id": "633b91ae-b15b-4675-9c66-4f5ddba26a05",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        336
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "1c9fd80f-a6ec-4309-b528-94d187ef5b06",
+      "name": "Search Live Packages",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        336
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblbCLAD8HLLwA9R7",
+          "cachedResultName": "Packages"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find matching packages. MUST always be wrapped as: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), <your extra conditions here>). Always require Is Visible=TRUE, Status=Active, and a future Departure Date. CRITICAL: use your own general world knowledge to resolve what the customer actually means before building the formula. Customers often name a landmark, shrine, island, or nickname instead of the official Title/Destination stored in the system — e.g. \"زيارة الإمام الحسين\" means Karbala, Iraq; \"السيدة زينب\" means Damascus, Syria; \"جزيرة ياس/يأس\" means Abu Dhabi, UAE. Search BOTH the Title and Destination fields with OR, and include every relevant term your reasoning surfaces (the landmark name AND the city/country AND common spelling variants), e.g: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), OR(FIND(\"ياس\",{Title})>0, FIND(\"يأس\",{Title})>0, FIND(\"أبو ظبي\",{Destination})>0)). If your first search returns nothing, try again with broader/alternate terms derived from your own knowledge before telling the customer nothing is available.') }}",
+        "returnAll": false,
+        "limit": 8
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "f584a0f0-26bb-41ee-aaee-1961b39ca104",
+      "name": "Save Outbound Message",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        112
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH",
+          "cachedResultName": "Messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
+            "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
+            "Role": "Assistant",
+            "Message Content": "={{ $('WhatsApp Reply Agent').item.json.output }}",
+            "Direction": "Outbound",
+            "WA SID": "={{ $json.sid }}",
+            "Is Processed": true
+          },
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "107c5f44-cc5f-48c9-8143-5a10e1c295a6",
+      "name": "Send WhatsApp Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1696,
+        112
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "To",
+              "value": "={{ $('Normalize Incoming Message').item.json.rawFrom }}"
+            },
+            {
+              "name": "MessagingServiceSid",
+              "value": "MG4cf17c1ce3add815f97ff92153a3033d"
+            },
+            {
+              "name": "Body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "contentType": "form-urlencoded",
+        "method": "POST",
+        "nodeCredentialType": "twilioApi",
+        "options": {},
+        "sendBody": true,
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json"
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "99d89bd9-56b1-45ec-b603-b01000d59aae",
+      "name": "Update Customer Profile",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        480
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Phone"
+          ],
+          "schema": [],
+          "value": {
+            "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}",
+            "Phone": "={{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}"
+          }
+        },
+        "operation": "upsert",
+        "options": {
+          "typecast": true
+        },
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        },
+        "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes.",
+        "parameters": {
+          "columns": {
+            "value": {
+              "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "89b0a289-0ea3-4f29-9db5-f410ad04ac65",
+      "name": "Register Booking",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        640
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "schema": [],
+          "value": {
+            "Booking Status": "Pending",
+            "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
+            "Number of Travelers": "={{ $fromAI('num_travelers', 'Number of travelers for this booking', 'number') }}",
+            "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package being booked, starting with rec... , as returned by the Search Live Packages tool', 'string') ] }}",
+            "Payment Status": "Unpaid",
+            "Special Requests": "={{ $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') }}"
+          }
+        },
+        "operation": "create",
+        "options": {
+          "typecast": true
+        },
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Bookings",
+          "mode": "id",
+          "value": "tblZ6AQCBmEY2KYHr"
+        },
+        "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) — it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "8b98d8b0-7da4-468b-9638-bb69f147317c",
+      "name": "Notify Team - Booking Confirmed",
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        640
+      ],
+      "parameters": {
+        "additionalFields": {
+          "appendAttribution": false
+        },
+        "chatId": "-1004357436155",
+        "operation": "sendMessage",
+        "resource": "message",
+        "text": "=📋 *طلب حجز جديد*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالباقة: {{ $fromAI('package_name', 'Name/destination of the package being booked, written in Arabic', 'string') }}\nتاريخ السفر: {{ $fromAI('travel_date', 'Departure date of the booking in YYYY-MM-DD format', 'string') }}\nعدد المسافرين: {{ $fromAI('num_travelers_text', 'Number of travelers as a number', 'string') }}\nالسعر الإجمالي: {{ $fromAI('total_price_text', 'Total price for the booking including BHD currency', 'string') }}\nملاحظات: {{ $fromAI('special_requests_text', 'Any special requests in Arabic, or لا يوجد if none', 'string') }}\n\n⚠️ بانتظار تأكيد الفريق والدفع.",
+        "toolDescription": "Send a notification to the office Telegram group with the full details of a new booking request. ALWAYS call this immediately after successfully calling Register Booking. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect), since the office team reads Arabic."
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "52aa596a-f9aa-4fcd-86a8-cd2c6e8649ec"
+    },
+    {
+      "id": "1bd795e2-af66-4f00-b6da-4fcd60bb7e85",
+      "name": "Escalate to Team",
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        800
+      ],
+      "parameters": {
+        "additionalFields": {
+          "appendAttribution": false
+        },
+        "chatId": "-1004357436155",
+        "operation": "sendMessage",
+        "resource": "message",
+        "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short summary in Arabic of why this customer needs human attention and what they are asking for', 'string') }}",
+        "toolDescription": "Notify the office team that a customer needs personal human follow-up — call this whenever the customer sounds frustrated, upset, explicitly asks for a human/staff member, or has a complaint. Call this in addition to giving the customer a reassuring reply, not instead of it. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "1cd39ef2-e813-4ebf-8e72-cdb2fc9b13ab"
+    },
+    {
+      "id": "06b3cd72-807c-452e-a8ed-34f9f53d1023",
+      "name": "Wait Before Reply",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        112
+      ],
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "webhookId": "23bc24ed-b783-4d52-a9d2-1f65b8dcb1b8"
+    },
+    {
+      "id": "337613b6-c8e9-48d9-94b9-d89c008ba6cb",
+      "name": "Get Latest Message For Phone",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        860,
+        112
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "={{ 'AND({Phone}=\"' + $('Normalize Incoming Message').item.json.cleanPhone + '\", {Direction}=\"Inbound\")' }}",
+        "limit": 1,
+        "operation": "search",
+        "resource": "record",
+        "returnAll": false,
+        "sort": {
+          "property": [
+            {
+              "direction": "desc",
+              "field": "Timestamp"
+            }
+          ]
+        },
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Messages",
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "3d9c2cf7-160f-449f-8188-945c76ab6c7b",
+      "name": "Determine If Still Latest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        112
+      ],
+      "parameters": {
+        "jsCode": "const latest = $input.first().json;\nconst savedId = $('Save Inbound Message').item.json.id;\nconst isLatest = latest && latest.id === savedId;\nreturn [{ json: { isLatest: isLatest } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "ef99db26-1db7-495a-8a60-fbdaaafc7fdb",
+      "name": "Is Latest Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1020,
+        112
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isLatest }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "c0612499-eff0-44c7-9fb8-9ecb6e577b1d",
+      "name": "Has Media?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        280,
+        112
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.NumMedia }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "0"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "ba28fa76-c834-436a-a930-5c70594f71b6",
+      "name": "Download Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        360,
+        60
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "twilioApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        },
+        "url": "={{ $json.body.MediaUrl0 }}",
+        "onError": "continueErrorOutput",
+        "retryOnFail": true,
+        "maxTries": 3,
+        "waitBetweenTries": 3000
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "6d6e00d2-7727-432c-a2da-c60c74f7366e",
+      "name": "Is Audio?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        440,
+        60
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.MediaContentType0 }}",
+              "operator": {
+                "operation": "startsWith",
+                "type": "string"
+              },
+              "rightValue": "audio"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "d4dc3b95-9cd9-4cba-b44c-02d8e05320eb",
+      "name": "Transcribe Voice",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "binaryPropertyName": "data",
+        "operation": "transcribe",
+        "options": {},
+        "resource": "audio"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "4417d398-a4dc-4f99-8211-568e2bef6a26",
+      "name": "Inject Transcription Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.text || raw.content || '';\nconst originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[رسالة صوتية]: ' + text });\nreturn [{ json: { body: newBody } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "4e0de4c8-5a0c-4652-a353-8dcadb2378a4",
+      "name": "Analyze Image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        520,
+        120
+      ],
+      "parameters": {
+        "binaryPropertyName": "data",
+        "inputType": "base64",
+        "operation": "analyze",
+        "options": {},
+        "resource": "image",
+        "text": "حلل هذي الصورة وجاوب بصيغة JSON فقط بدون أي نص إضافي أو markdown: {\"is_travel_document\": true او false, \"description\": وصف قصير بالعربي لما تظهره الصورة}. is_travel_document يكون true فقط إذا كانت الصورة جواز سفر او بطاقة هوية شخصية رسمية.",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "77cd7188-ba01-494b-8aec-f4b3644f2449",
+      "name": "Process Image Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        120
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.text || raw.data || JSON.stringify(raw);\nlet parsed = { is_travel_document: false, description: 'صورة ارسلها العميل' };\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nconst originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[صورة]: ' + (parsed.description || '') });\nreturn [{ json: { body: newBody, isTravelDocument: !!parsed.is_travel_document }, binary: $input.item.binary }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "f7377921-21a1-411a-86d8-ac806d3adfb1",
+      "name": "Is Travel Document?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        680,
+        180
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isTravelDocument }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "1cd94263-e08c-4a80-845e-d47e53957c8c",
+      "name": "Forward Document to Team",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        220
+      ],
+      "parameters": {
+        "additionalFields": {
+          "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}"
+        },
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "chatId": "-1004357436155",
+        "operation": "sendPhoto",
+        "resource": "message"
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "79c47b6e-fff4-4677-81a6-eb513c2705af"
+    },
+    {
+      "id": "d318f372-8037-4691-963d-3d36cef5f46d",
+      "name": "Get Live Exchange Rate",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1488,
+        960
+      ],
+      "parameters": {
+        "method": "GET",
+        "toolDescription": "Get the current live exchange rate from Bahraini Dinar (BHD) to another currency, for any currency OTHER than Saudi Riyal (SAR) or US Dollar (USD) — those two have fixed office rates you already know (1 BHD = 10 SAR, 1 USD = 0.387 BHD) and should NOT use this tool. Returns the current rate; multiply the BHD price by the returned rate to get the converted amount. Always tell the customer this is today's approximate live rate.",
+        "url": "=https://api.frankfurter.app/latest?from=BHD&to={{ $fromAI('currency_code', 'The 3-letter ISO currency code the customer asked about, e.g. EUR, GBP, KWD, AED, EGP', 'string') }}"
+      }
+    },
+    {
+      "id": "19220307-5129-4b01-b7e3-0ee49cb19e81",
+      "name": "Media Download Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[تعذر تحميل رسالة العميل الصوتية/المرفقة - مشكلة مؤقتة من واتساب]' });\nreturn [{ json: { body: newBody } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    }
+  ],
+  "connections": {
+    "Normalize Incoming Message": {
+      "main": [
+        [
+          {
+            "node": "Upsert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Customer": {
+      "main": [
+        [
+          {
+            "node": "Save Inbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Recent Messages": {
+      "main": [
+        [
+          {
+            "node": "Build Conversation Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Conversation Context": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Live Packages": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Reply Agent": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Reply": {
+      "main": [
+        [
+          {
+            "node": "Save Outbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Customer Profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team - Booking Confirmed": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate to Team": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Inbound Message": {
+      "main": [
+        [
+          {
+            "node": "Wait Before Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Reply": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Message For Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Message For Phone": {
+      "main": [
+        [
+          {
+            "node": "Determine If Still Latest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine If Still Latest": {
+      "main": [
+        [
+          {
+            "node": "Is Latest Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Latest Message?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Recent Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Inbound": {
+      "main": [
+        [
+          {
+            "node": "Has Media?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Media?": {
+      "main": [
+        [
+          {
+            "node": "Download Media",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Incoming Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Media": {
+      "main": [
+        [
+          {
+            "node": "Is Audio?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Media Download Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Audio?": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice": {
+      "main": [
+        [
+          {
+            "node": "Inject Transcription Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inject Transcription Text": {
+      "main": [
+        [
+          {
+            "node": "Normalize Incoming Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image": {
+      "main": [
+        [
+          {
+            "node": "Process Image Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Image Analysis": {
+      "main": [
+        [
+          {
+            "node": "Normalize Incoming Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Travel Document?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Travel Document?": {
+      "main": [
+        [
+          {
+            "node": "Forward Document to Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Live Exchange Rate": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Media Download Failed": {
+      "main": [
+        [
+          {
+            "node": "Normalize Incoming Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "GqEsyy2DepmntADN",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-16T17:45:21.818Z",
+      "updatedAt": "2026-09-16T17:45:21.818Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+    "workflowId": "GqEsyy2DepmntADN",
+    "nodes": [
+      {
+        "id": "ff385e6f-fdf7-4a84-a07a-d7d57f2f9591",
+        "name": "WhatsApp Inbound",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "whatsapp-inbound",
+          "authentication": "none",
+          "responseMode": "onReceived",
+          "options": {
+            "noResponseBody": true
+          }
+        },
+        "webhookId": "ce905137-d585-4171-a8e4-90af2bcf6f72"
+      },
+      {
+        "id": "21f3b3f5-6013-462d-85e8-aa21ab8575e4",
+        "name": "Normalize Incoming Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          112
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b = $input.first().json.body || {};\nconst rawFrom = b.From || \"\";\nconst cleanPhone = rawFrom.replace(\"whatsapp:\", \"\").trim();\nreturn [{ json: { rawFrom: rawFrom, cleanPhone: cleanPhone, messageText: b.Body || \"\", profileName: b.ProfileName || \"\", messageSid: b.MessageSid || \"\" } }];"
+        }
+      },
+      {
+        "id": "732cfd30-66b9-4095-93b9-465179b4ab1f",
+        "name": "Upsert Customer",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          112
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "Phone"
+            ],
+            "value": {
+              "Phone": "={{ $json.cleanPhone }}",
+              "Full Name": "={{ $json.profileName }}",
+              "WhatsApp Opt-In": true
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "0ec69a4c-e534-40f2-841b-9cbf0b2e0cec",
+        "name": "Save Inbound Message",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          672,
+          112
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH",
+            "cachedResultName": "Messages"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
+              "Customer": "={{ [$json.id] }}",
+              "Role": "Customer",
+              "Message Content": "={{ $('Normalize Incoming Message').item.json.messageText }}",
+              "Direction": "Inbound",
+              "WA SID": "={{ $('Normalize Incoming Message').item.json.messageSid }}",
+              "Is Processed": false
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "c22ed90e-e10b-45bb-8a30-f56b6c83a728",
+        "name": "Fetch Recent Messages",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          112
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH",
+            "cachedResultName": "Messages"
+          },
+          "filterByFormula": "={{ '{Phone} = \"' + $('Normalize Incoming Message').item.json.cleanPhone + '\"' }}",
+          "returnAll": false,
+          "limit": 10,
+          "sort": {
+            "property": [
+              {
+                "field": "Timestamp",
+                "direction": "desc"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "f4185ec5-9fb7-41db-a3be-a7f7dd7a99b6",
+        "name": "Build Conversation Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          112
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json.fields || {};\n  const role = f[\"Role\"] === \"Assistant\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f[\"Message Content\"] || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerFields = $(\"Upsert Customer\").first().json.fields || {};\nconst customerNotes = customerFields[\"Notes\"] || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
+        }
+      },
+      {
+        "id": "b9127e43-5362-4e92-8a95-ae6cb9c0097d",
+        "name": "WhatsApp Reply Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1344,
+          112
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.promptText }}",
+          "options": {
+            "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريبياً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقة الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, or has a payment question, in addition to giving them a warm reassuring reply (not instead of it)."
+          }
+        }
+      },
+      {
+        "id": "633b91ae-b15b-4675-9c66-4f5ddba26a05",
+        "name": "OpenAI Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1360,
+          336
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "1c9fd80f-a6ec-4309-b528-94d187ef5b06",
+        "name": "Search Live Packages",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          1488,
+          336
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblbCLAD8HLLwA9R7",
+            "cachedResultName": "Packages"
+          },
+          "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find matching packages. MUST always be wrapped as: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), <your extra conditions here>). Always require Is Visible=TRUE, Status=Active, and a future Departure Date. CRITICAL: use your own general world knowledge to resolve what the customer actually means before building the formula. Customers often name a landmark, shrine, island, or nickname instead of the official Title/Destination stored in the system — e.g. \"زيارة الإمام الحسين\" means Karbala, Iraq; \"السيدة زينب\" means Damascus, Syria; \"جزيرة ياس/يأس\" means Abu Dhabi, UAE. Search BOTH the Title and Destination fields with OR, and include every relevant term your reasoning surfaces (the landmark name AND the city/country AND common spelling variants), e.g: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), OR(FIND(\"ياس\",{Title})>0, FIND(\"يأس\",{Title})>0, FIND(\"أبو ظبي\",{Destination})>0)). If your first search returns nothing, try again with broader/alternate terms derived from your own knowledge before telling the customer nothing is available.') }}",
+          "returnAll": false,
+          "limit": 8
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "f584a0f0-26bb-41ee-aaee-1961b39ca104",
+        "name": "Save Outbound Message",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1920,
+          112
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH",
+            "cachedResultName": "Messages"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
+              "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
+              "Role": "Assistant",
+              "Message Content": "={{ $('WhatsApp Reply Agent').item.json.output }}",
+              "Direction": "Outbound",
+              "WA SID": "={{ $json.sid }}",
+              "Is Processed": true
+            },
+            "schema": []
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "107c5f44-cc5f-48c9-8143-5a10e1c295a6",
+        "name": "Send WhatsApp Reply",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1696,
+          112
+        ],
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "To",
+                "value": "={{ $('Normalize Incoming Message').item.json.rawFrom }}"
+              },
+              {
+                "name": "MessagingServiceSid",
+                "value": "MG4cf17c1ce3add815f97ff92153a3033d"
+              },
+              {
+                "name": "Body",
+                "value": "={{ $json.output }}"
+              }
+            ]
+          },
+          "contentType": "form-urlencoded",
+          "method": "POST",
+          "nodeCredentialType": "twilioApi",
+          "options": {},
+          "sendBody": true,
+          "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json"
+        },
+        "credentials": {
+          "twilioApi": {
+            "id": "NIIn1eNIQz6Zu5UB",
+            "name": "Twilio account"
+          }
+        }
+      },
+      {
+        "id": "99d89bd9-56b1-45ec-b603-b01000d59aae",
+        "name": "Update Customer Profile",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          1488,
+          480
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "Phone"
+            ],
+            "schema": [],
+            "value": {
+              "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}",
+              "Phone": "={{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}"
+            }
+          },
+          "operation": "upsert",
+          "options": {
+            "typecast": true
+          },
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          },
+          "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes.",
+          "parameters": {
+            "columns": {
+              "value": {
+                "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}"
+              }
+            }
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "89b0a289-0ea3-4f29-9db5-f410ad04ac65",
+        "name": "Register Booking",
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.2,
+        "position": [
+          1488,
+          640
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "schema": [],
+            "value": {
+              "Booking Status": "Pending",
+              "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
+              "Number of Travelers": "={{ $fromAI('num_travelers', 'Number of travelers for this booking', 'number') }}",
+              "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package being booked, starting with rec... , as returned by the Search Live Packages tool', 'string') ] }}",
+              "Payment Status": "Unpaid",
+              "Special Requests": "={{ $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') }}"
+            }
+          },
+          "operation": "create",
+          "options": {
+            "typecast": true
+          },
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Bookings",
+            "mode": "id",
+            "value": "tblZ6AQCBmEY2KYHr"
+          },
+          "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) — it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "8b98d8b0-7da4-468b-9638-bb69f147317c",
+        "name": "Notify Team - Booking Confirmed",
+        "type": "n8n-nodes-base.telegramTool",
+        "typeVersion": 1.2,
+        "position": [
+          1616,
+          640
+        ],
+        "parameters": {
+          "additionalFields": {
+            "appendAttribution": false
+          },
+          "chatId": "-1004357436155",
+          "operation": "sendMessage",
+          "resource": "message",
+          "text": "=📋 *طلب حجز جديد*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالباقة: {{ $fromAI('package_name', 'Name/destination of the package being booked, written in Arabic', 'string') }}\nتاريخ السفر: {{ $fromAI('travel_date', 'Departure date of the booking in YYYY-MM-DD format', 'string') }}\nعدد المسافرين: {{ $fromAI('num_travelers_text', 'Number of travelers as a number', 'string') }}\nالسعر الإجمالي: {{ $fromAI('total_price_text', 'Total price for the booking including BHD currency', 'string') }}\nملاحظات: {{ $fromAI('special_requests_text', 'Any special requests in Arabic, or لا يوجد if none', 'string') }}\n\n⚠️ بانتظار تأكيد الفريق والدفع.",
+          "toolDescription": "Send a notification to the office Telegram group with the full details of a new booking request. ALWAYS call this immediately after successfully calling Register Booking. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect), since the office team reads Arabic."
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "52aa596a-f9aa-4fcd-86a8-cd2c6e8649ec"
+      },
+      {
+        "id": "1bd795e2-af66-4f00-b6da-4fcd60bb7e85",
+        "name": "Escalate to Team",
+        "type": "n8n-nodes-base.telegramTool",
+        "typeVersion": 1.2,
+        "position": [
+          1616,
+          800
+        ],
+        "parameters": {
+          "additionalFields": {
+            "appendAttribution": false
+          },
+          "chatId": "-1004357436155",
+          "operation": "sendMessage",
+          "resource": "message",
+          "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short summary in Arabic of why this customer needs human attention and what they are asking for', 'string') }}",
+          "toolDescription": "Notify the office team that a customer needs personal human follow-up — call this whenever the customer sounds frustrated, upset, explicitly asks for a human/staff member, or has a complaint. Call this in addition to giving the customer a reassuring reply, not instead of it. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "1cd39ef2-e813-4ebf-8e72-cdb2fc9b13ab"
+      },
+      {
+        "id": "06b3cd72-807c-452e-a8ed-34f9f53d1023",
+        "name": "Wait Before Reply",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          780,
+          112
+        ],
+        "parameters": {
+          "amount": 20,
+          "unit": "seconds"
+        },
+        "webhookId": "23bc24ed-b783-4d52-a9d2-1f65b8dcb1b8"
+      },
+      {
+        "id": "337613b6-c8e9-48d9-94b9-d89c008ba6cb",
+        "name": "Get Latest Message For Phone",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          860,
+          112
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "={{ 'AND({Phone}=\"' + $('Normalize Incoming Message').item.json.cleanPhone + '\", {Direction}=\"Inbound\")' }}",
+          "limit": 1,
+          "operation": "search",
+          "resource": "record",
+          "returnAll": false,
+          "sort": {
+            "property": [
+              {
+                "direction": "desc",
+                "field": "Timestamp"
+              }
+            ]
+          },
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Messages",
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "3d9c2cf7-160f-449f-8188-945c76ab6c7b",
+        "name": "Determine If Still Latest",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          940,
+          112
+        ],
+        "parameters": {
+          "jsCode": "const latest = $input.first().json;\nconst savedId = $('Save Inbound Message').item.json.id;\nconst isLatest = latest && latest.id === savedId;\nreturn [{ json: { isLatest: isLatest } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "ef99db26-1db7-495a-8a60-fbdaaafc7fdb",
+        "name": "Is Latest Message?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1020,
+          112
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.isLatest }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "c0612499-eff0-44c7-9fb8-9ecb6e577b1d",
+        "name": "Has Media?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          280,
+          112
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body.NumMedia }}",
+                "operator": {
+                  "operation": "notEquals",
+                  "type": "string"
+                },
+                "rightValue": "0"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "ba28fa76-c834-436a-a930-5c70594f71b6",
+        "name": "Download Media",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          360,
+          60
+        ],
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "method": "GET",
+          "nodeCredentialType": "twilioApi",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          },
+          "url": "={{ $json.body.MediaUrl0 }}",
+          "onError": "continueErrorOutput",
+          "retryOnFail": true,
+          "maxTries": 3,
+          "waitBetweenTries": 3000
+        },
+        "credentials": {
+          "twilioApi": {
+            "id": "NIIn1eNIQz6Zu5UB",
+            "name": "Twilio account"
+          }
+        }
+      },
+      {
+        "id": "6d6e00d2-7727-432c-a2da-c60c74f7366e",
+        "name": "Is Audio?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          440,
+          60
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body.MediaContentType0 }}",
+                "operator": {
+                  "operation": "startsWith",
+                  "type": "string"
+                },
+                "rightValue": "audio"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "d4dc3b95-9cd9-4cba-b44c-02d8e05320eb",
+        "name": "Transcribe Voice",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.3,
+        "position": [
+          520,
+          0
+        ],
+        "parameters": {
+          "binaryPropertyName": "data",
+          "operation": "transcribe",
+          "options": {},
+          "resource": "audio"
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "4417d398-a4dc-4f99-8211-568e2bef6a26",
+        "name": "Inject Transcription Text",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          0
+        ],
+        "parameters": {
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.text || raw.content || '';\nconst originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[رسالة صوتية]: ' + text });\nreturn [{ json: { body: newBody } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "4e0de4c8-5a0c-4652-a353-8dcadb2378a4",
+        "name": "Analyze Image",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.3,
+        "position": [
+          520,
+          120
+        ],
+        "parameters": {
+          "binaryPropertyName": "data",
+          "inputType": "base64",
+          "operation": "analyze",
+          "options": {},
+          "resource": "image",
+          "text": "حلل هذي الصورة وجاوب بصيغة JSON فقط بدون أي نص إضافي أو markdown: {\"is_travel_document\": true او false, \"description\": وصف قصير بالعربي لما تظهره الصورة}. is_travel_document يكون true فقط إذا كانت الصورة جواز سفر او بطاقة هوية شخصية رسمية.",
+          "modelId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4o-mini"
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "77cd7188-ba01-494b-8aec-f4b3644f2449",
+        "name": "Process Image Analysis",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          120
+        ],
+        "parameters": {
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.text || raw.data || JSON.stringify(raw);\nlet parsed = { is_travel_document: false, description: 'صورة ارسلها العميل' };\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nconst originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[صورة]: ' + (parsed.description || '') });\nreturn [{ json: { body: newBody, isTravelDocument: !!parsed.is_travel_document }, binary: $input.item.binary }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "f7377921-21a1-411a-86d8-ac806d3adfb1",
+        "name": "Is Travel Document?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          680,
+          180
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.isTravelDocument }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "1cd94263-e08c-4a80-845e-d47e53957c8c",
+        "name": "Forward Document to Team",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          760,
+          220
+        ],
+        "parameters": {
+          "additionalFields": {
+            "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}"
+          },
+          "binaryData": true,
+          "binaryPropertyName": "data",
+          "chatId": "-1004357436155",
+          "operation": "sendPhoto",
+          "resource": "message"
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "webhookId": "79c47b6e-fff4-4677-81a6-eb513c2705af"
+      },
+      {
+        "id": "d318f372-8037-4691-963d-3d36cef5f46d",
+        "name": "Get Live Exchange Rate",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          1488,
+          960
+        ],
+        "parameters": {
+          "method": "GET",
+          "toolDescription": "Get the current live exchange rate from Bahraini Dinar (BHD) to another currency, for any currency OTHER than Saudi Riyal (SAR) or US Dollar (USD) — those two have fixed office rates you already know (1 BHD = 10 SAR, 1 USD = 0.387 BHD) and should NOT use this tool. Returns the current rate; multiply the BHD price by the returned rate to get the converted amount. Always tell the customer this is today's approximate live rate.",
+          "url": "=https://api.frankfurter.app/latest?from=BHD&to={{ $fromAI('currency_code', 'The 3-letter ISO currency code the customer asked about, e.g. EUR, GBP, KWD, AED, EGP', 'string') }}"
+        }
+      },
+      {
+        "id": "19220307-5129-4b01-b7e3-0ee49cb19e81",
+        "name": "Media Download Failed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          440,
+          -80
+        ],
+        "parameters": {
+          "jsCode": "const originalBody = $('WhatsApp Inbound').item.json.body;\nconst newBody = Object.assign({}, originalBody, { Body: '[تعذر تحميل رسالة العميل الصوتية/المرفقة - مشكلة مؤقتة من واتساب]' });\nreturn [{ json: { body: newBody } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      }
+    ],
+    "connections": {
+      "Normalize Incoming Message": {
+        "main": [
+          [
+            {
+              "node": "Upsert Customer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Customer": {
+        "main": [
+          [
+            {
+              "node": "Save Inbound Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Recent Messages": {
+        "main": [
+          [
+            {
+              "node": "Build Conversation Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Conversation Context": {
+        "main": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Live Packages": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp Reply Agent": {
+        "main": [
+          [
+            {
+              "node": "Send WhatsApp Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send WhatsApp Reply": {
+        "main": [
+          [
+            {
+              "node": "Save Outbound Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Customer Profile": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Register Booking": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Team - Booking Confirmed": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Escalate to Team": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Inbound Message": {
+        "main": [
+          [
+            {
+              "node": "Wait Before Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait Before Reply": {
+        "main": [
+          [
+            {
+              "node": "Get Latest Message For Phone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Latest Message For Phone": {
+        "main": [
+          [
+            {
+              "node": "Determine If Still Latest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Determine If Still Latest": {
+        "main": [
+          [
+            {
+              "node": "Is Latest Message?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Latest Message?": {
+        "main": [
+          [
+            {
+              "node": "Fetch Recent Messages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp Inbound": {
+        "main": [
+          [
+            {
+              "node": "Has Media?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Media?": {
+        "main": [
+          [
+            {
+              "node": "Download Media",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Normalize Incoming Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Media": {
+        "main": [
+          [
+            {
+              "node": "Is Audio?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Media Download Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Audio?": {
+        "main": [
+          [
+            {
+              "node": "Transcribe Voice",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Analyze Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Transcribe Voice": {
+        "main": [
+          [
+            {
+              "node": "Inject Transcription Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Inject Transcription Text": {
+        "main": [
+          [
+            {
+              "node": "Normalize Incoming Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Analyze Image": {
+        "main": [
+          [
+            {
+              "node": "Process Image Analysis",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Image Analysis": {
+        "main": [
+          [
+            {
+              "node": "Normalize Incoming Message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Is Travel Document?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Travel Document?": {
+        "main": [
+          [
+            {
+              "node": "Forward Document to Team",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Live Exchange Rate": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Media Download Failed": {
+        "main": [
+          [
+            {
+              "node": "Normalize Incoming Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Retry media download 3x before falling back to asking customer",
+    "description": "Updated nodes: Download Media",
+    "autosaved": false,
+    "createdAt": "2026-09-18T13:03:56.326Z",
+    "updatedAt": "2026-09-18T13:03:56.326Z",
+    "workflowPublishHistory": [
+      {
+        "id": 86,
+        "workflowId": "GqEsyy2DepmntADN",
+        "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-18T13:04:00.114Z"
+      }
+    ]
+  }
+}
