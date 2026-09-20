@@ -3,14 +3,14 @@
   "name": "Almutawa - Admin Dashboard API",
   "description": "Backend API for the staff admin dashboard: passcode-gated webhook supporting listBookings (joined with customer/package names), listPackages, updateBooking, and updatePackage actions against Airtable.",
   "active": true,
-  "activeVersionId": "72f2b043-e505-47ff-909a-78ddc0534703",
+  "activeVersionId": "35d57e2a-4f12-4fc8-a631-37dea957f3a0",
   "createdAt": "2026-09-17T12:55:29.553Z",
-  "updatedAt": "2026-09-18T18:21:57.781Z",
+  "updatedAt": "2026-09-19T09:05:29.468Z",
   "isArchived": false,
-  "versionId": "72f2b043-e505-47ff-909a-78ddc0534703",
-  "versionCounter": 30,
+  "versionId": "35d57e2a-4f12-4fc8-a631-37dea957f3a0",
+  "versionCounter": 45,
   "sourceWorkflowId": null,
-  "triggerCount": 5,
+  "triggerCount": 7,
   "nodes": [
     {
       "id": "8f597a41-ce9f-4a88-8cb5-4a875cb66376",
@@ -221,6 +221,27 @@
                 }
               },
               "outputKey": "generateDesign"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "deleteCustomerData"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                }
+              },
+              "outputKey": "deleteCustomerData"
             }
           ]
         },
@@ -956,6 +977,503 @@
         },
         "url": "https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png"
       }
+    },
+    {
+      "id": "6be44a47-0c5e-4460-b977-56b1c682029f",
+      "name": "Build Phone Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        960
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst phones = Array.isArray(body.phones) ? body.phones : [];\nif (!phones.length) return [{ json: { filterFormula: 'FALSE()' } }];\nconst clauses = phones.map(function(p){\n  const digits = String(p).replace(/[^0-9]/g, '');\n  return 'FIND(\"' + digits + '\", {Phone}) > 0';\n});\nconst formula = clauses.length > 1 ? ('OR(' + clauses.join(', ') + ')') : clauses[0];\nreturn [{ json: { filterFormula: formula } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "63d99d70-ffcd-4a32-8768-6d096039cf13",
+      "name": "Find Customers To Delete",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "={{ $json.filterFormula }}",
+        "operation": "search",
+        "resource": "record",
+        "returnAll": true,
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "a5870ab1-b3e5-44de-ab79-beb4f8dd7e57",
+      "name": "Delete Customer Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "id": "={{ $json.id }}",
+        "operation": "deleteRecord",
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "7c44d157-7ca3-4117-ae82-61f190bb857e",
+      "name": "Find Messages To Delete",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "={{ $('Build Phone Filter').first().json.filterFormula }}",
+        "operation": "search",
+        "resource": "record",
+        "returnAll": true,
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Messages",
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "aa751753-e6a8-4b80-bea9-04b6107f8378",
+      "name": "Delete Message Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "id": "={{ $json.id }}",
+        "operation": "deleteRecord",
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Messages",
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "936198f2-0799-4364-a329-04daf6163ffd",
+      "name": "Delete Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        960
+      ],
+      "parameters": {
+        "jsCode": "const customersDeleted = $('Find Customers To Delete').all().length;\nconst messagesDeleted = $('Find Messages To Delete').all().length;\nreturn [{ json: { success: true, customersDeleted: customersDeleted, messagesDeleted: messagesDeleted } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "7ea56fe1-24a9-4df0-9417-7bbd3394a260",
+      "name": "Explore API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1650
+      ],
+      "parameters": {
+        "authentication": "none",
+        "httpMethod": "POST",
+        "options": {
+          "allowedOrigins": "*"
+        },
+        "path": "explore-api",
+        "responseMode": "lastNode"
+      },
+      "webhookId": "64083210-a212-4494-aa3d-e5fa33192d0b"
+    },
+    {
+      "id": "8407b290-650a-418b-82dd-63db3c80e806",
+      "name": "Route Explore Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        1650
+      ],
+      "parameters": {
+        "mode": "rules",
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Unknown"
+        },
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listCities"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                }
+              },
+              "outputKey": "listCities"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "getDestinationInfo"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                }
+              },
+              "outputKey": "getDestinationInfo"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "search"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                }
+              },
+              "outputKey": "search"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "847ebe9c-c418-4dae-b4b4-3acce4356acc",
+      "name": "Unknown Explore Action Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1950
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { success:false, error:'unknown_action' } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "c9a0bd6c-27f1-4698-a1a7-8656d7b11f8f",
+      "name": "Explore OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        840,
+        1330
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "e7cf8d68-bbae-45b2-a0f9-dae1f9ffde37",
+      "name": "Wikipedia Search Tool",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1000,
+        1330
+      ],
+      "parameters": {
+        "method": "GET",
+        "toolDescription": "Search Arabic Wikipedia for a place name (country/city/landmark) to verify the correct title and related places.",
+        "url": "=https://ar.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=6&srsearch={{ encodeURIComponent($fromAI('query', 'Arabic search term for a country, city or landmark', 'string')) }}"
+      }
+    },
+    {
+      "id": "75377726-85c1-4450-8699-f00e465689a3",
+      "name": "Wikipedia Summary Tool",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        1160,
+        1330
+      ],
+      "parameters": {
+        "method": "GET",
+        "toolDescription": "Get a summary and image from Arabic Wikipedia for an exact page title (use after confirming the correct title via the search tool).",
+        "url": "=https://ar.wikipedia.org/api/rest_v1/page/summary/{{ encodeURIComponent($fromAI('title', 'The exact Arabic Wikipedia page title', 'string')) }}"
+      }
+    },
+    {
+      "id": "4c8908ab-cc50-4d29-b3d3-d7fcdd889dc4",
+      "name": "Build List Cities Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1500
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst country = (body.country || '').trim();\nreturn [{ json: { promptText: 'الدولة: ' + country } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "d900173e-3200-4db7-8e71-31b0d124601e",
+      "name": "Build Destination Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1700
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst name = (body.name || '').trim();\nconst country = (body.country || '').trim();\nreturn [{ json: { promptText: 'المكان: ' + name + (country ? (' - الدولة: ' + country) : '') } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "35620182-fa77-47b3-98c2-f0925a525834",
+      "name": "List Cities Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        840,
+        1500
+      ],
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an expert travel assistant. Given a country name, use the Wikipedia search tool to verify top tourist cities, then return ONLY valid JSON with fields country, grouped, and groups (an array of objects each with region and cities, where cities is an array of objects with name and blurb). Pick 6 to 10 cities. Split into regions if the country is large. All text values must be in Gulf Arabic. Never write anything outside the JSON."
+        },
+        "promptType": "define",
+        "text": "={{ $json.promptText }}"
+      }
+    },
+    {
+      "id": "9edaa75c-9709-406a-86b7-fc7e7d18c499",
+      "name": "Destination Info Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        840,
+        1700
+      ],
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an expert tour guide. Given a place name (country, city, or landmark), first use the Wikipedia search tool to confirm the correct title, then use the Wikipedia summary tool to get accurate info and an image if available, then return ONLY valid JSON with fields title, summary, landmarks (array of objects with name and description), and image_url. summary should be 2 to 3 paragraphs covering location and touristic significance and atmosphere. List 3 to 6 notable landmarks or activities. image_url should be the thumbnail or image url returned by the Wikipedia summary tool if present, else an empty string. All text values must be in Gulf Arabic. Never write anything outside the JSON."
+        },
+        "promptType": "define",
+        "text": "={{ $json.promptText }}"
+      }
+    },
+    {
+      "id": "4d8a3a3b-4fce-479b-a0ec-d22f2e510dfd",
+      "name": "Parse List Cities Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1500
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success:false, error:'parse_failed' } }];\nreturn [{ json: Object.assign({ success:true }, parsed) }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "eff6afaf-31fa-458d-a72a-0d0a0ab15265",
+      "name": "Parse Destination Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1700
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success:false, error:'parse_failed' } }];\nreturn [{ json: Object.assign({ success:true }, parsed) }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "cc0a095e-3dc3-4794-84a5-96e903f8d97c",
+      "name": "Wikipedia Search AR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        560,
+        1900
+      ],
+      "parameters": {
+        "method": "GET",
+        "options": {},
+        "url": "=https://ar.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=6&srsearch={{ encodeURIComponent($json.body.query) }}"
+      }
+    },
+    {
+      "id": "e6e0ed3c-8b0b-4b61-90b3-9df3f09cac7a",
+      "name": "Format Search Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        1900
+      ],
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst results = ((data.query && data.query.search) || []).map(function(r){\n  const snippet = String(r.snippet || '').replace(/<[^>]+>/g, '');\n  return { title: r.title, snippet: snippet };\n});\nreturn [{ json: { success: true, results: results } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "24320d63-d988-4143-9143-d624ecbcce0d",
+      "name": "Explore Page",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1450
+      ],
+      "parameters": {
+        "authentication": "none",
+        "httpMethod": "GET",
+        "options": {
+          "responseContentType": "text/html",
+          "responsePropertyName": "html"
+        },
+        "path": "explore",
+        "responseMode": "lastNode"
+      },
+      "webhookId": "5350e1ad-c6bb-417b-81b0-82b050a50512"
+    },
+    {
+      "id": "522e55ef-1877-487b-9670-ccf7e4813cff",
+      "name": "Explore HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        1450
+      ],
+      "parameters": {
+        "jsCode": "const html = `<!DOCTYPE html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>استكشف الوجهات | المطوع للسياحة</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Kufam:wght@600;700;800&family=Changa:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n<style>\n:root{--blue:#134576;--blue-dark:#0B2E52;--sand:#F3ECDD;--sand-soft:#FAF6EC;--gold:#DAA628;--gold-soft:#E8C25F;--line:#E3DCC9;--ink:#12302E;}\n*{box-sizing:border-box;}\nbody{margin:0;font-family:'Changa',sans-serif;background:var(--sand-soft);color:var(--ink);}\nh1,h2,h3,.brand{font-family:'Kufam','Changa',sans-serif;}\nheader{background:var(--blue);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}\nheader a.brand{color:#fff;text-decoration:none;font-weight:800;font-size:1.1rem;}\nmain{max-width:1100px;margin:0 auto;padding:28px 20px 60px;}\n.search-wrap{position:relative;max-width:560px;margin:0 auto 34px;}\n.search-wrap input{width:100%;padding:14px 18px;border-radius:999px;border:1px solid var(--line);font-family:inherit;font-size:1rem;box-shadow:0 8px 22px -14px rgba(11,46,82,0.3);}\n.search-results{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border-radius:14px;box-shadow:0 14px 30px -12px rgba(11,46,82,0.3);overflow:hidden;display:none;z-index:20;}\n.search-results.show{display:block;}\n.search-results .sr-item{padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;}\n.search-results .sr-item:last-child{border-bottom:none;}\n.search-results .sr-item:hover{background:var(--sand);}\n.search-results .sr-item b{color:var(--blue);display:block;margin-bottom:2px;}\n.search-results .sr-item span{font-size:0.82rem;color:#6b7f7c;}\nh2.section-title{color:var(--blue);font-size:1.3rem;margin:0 0 16px;}\n.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-bottom:36px;}\n.country-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 10px;text-align:center;cursor:pointer;transition:transform .15s;}\n.country-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(11,46,82,0.3);}\n.country-card .flag{font-size:2rem;margin-bottom:8px;}\n.country-card .name{font-weight:700;color:var(--blue);font-size:0.95rem;}\n#breadcrumb{font-size:0.9rem;color:#6b7f7c;margin-bottom:14px;display:none;}\n#breadcrumb a{color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer;}\n.region-block{margin-bottom:26px;}\n.region-block h3{color:var(--gold);font-size:1rem;margin:0 0 12px;}\n.city-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}\n.city-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:transform .15s;}\n.city-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(11,46,82,0.3);}\n.city-card h4{margin:0 0 6px;color:var(--blue);font-size:1.02rem;}\n.city-card p{margin:0;font-size:0.85rem;color:#4A625F;line-height:1.6;}\n#loadingMsg{text-align:center;color:#6b7f7c;padding:30px;display:none;}\n.modal-overlay{position:fixed;inset:0;background:rgba(11,46,82,0.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}\n.modal-overlay.open{display:flex;}\n.modal-box{background:#fff;border-radius:18px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto;position:relative;}\n.modal-box img{width:100%;max-height:220px;object-fit:cover;border-radius:18px 18px 0 0;}\n.modal-body{padding:24px;}\n.modal-body h3{color:var(--blue);margin:0 0 10px;font-size:1.25rem;}\n.modal-body p.summary{color:#3E5654;line-height:1.85;font-size:0.95rem;white-space:pre-line;margin-bottom:18px;}\n.landmark-item{border-top:1px solid var(--line);padding:10px 0;}\n.landmark-item b{color:var(--blue);display:block;margin-bottom:3px;}\n.landmark-item span{font-size:0.86rem;color:#4A625F;}\n.modal-close{position:absolute;top:14px;left:14px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(11,46,82,0.75);color:#fff;cursor:pointer;font-size:1rem;z-index:2;}\n.err-msg{text-align:center;color:#C0392B;padding:20px;}\n</style>\n</head>\n<body>\n<header>\n  <a class=\"brand\" href=\"https://n8n-production-47b1.up.railway.app/webhook/site\">✦ المطوع للسياحة</a>\n  <span style=\"font-weight:700;\">استكشف الوجهات</span>\n</header>\n<main>\n  <div class=\"search-wrap\">\n    <input type=\"text\" id=\"searchInput\" placeholder=\"اكتب اسم دولة، مدينة، أو معلم...\">\n    <div class=\"search-results\" id=\"searchResults\"></div>\n  </div>\n  <div id=\"breadcrumb\"><a id=\"backHome\">🏠 كل الدول</a> <span id=\"bcCountry\"></span></div>\n  <div id=\"loadingMsg\">جاري التحميل...</div>\n  <div id=\"errMsg\" class=\"err-msg\" style=\"display:none;\"></div>\n  <div id=\"countryView\">\n    <h2 class=\"section-title\">اختر دولة</h2>\n    <div class=\"country-grid\" id=\"countryGrid\"></div>\n  </div>\n  <div id=\"citiesView\" style=\"display:none;\"></div>\n</main>\n<div class=\"modal-overlay\" id=\"detailModal\">\n  <div class=\"modal-box\">\n    <button class=\"modal-close\" id=\"modalClose\">✕</button>\n    <div id=\"modalImgWrap\"></div>\n    <div class=\"modal-body\" id=\"modalBody\"></div>\n  </div>\n</div>\n<script>\n(function(){\n  var API = \"https://n8n-production-47b1.up.railway.app/webhook/explore-api\";\n  var countries = [\n    {name:\"البحرين\",flag:\"🇧🇭\"},{name:\"السعودية\",flag:\"🇸🇦\"},{name:\"الإمارات\",flag:\"🇦🇪\"},\n    {name:\"عمان\",flag:\"🇴🇲\"},{name:\"العراق\",flag:\"🇮🇶\"},{name:\"سوريا\",flag:\"🇸🇾\"},\n    {name:\"الأردن\",flag:\"🇯🇴\"},{name:\"تركيا\",flag:\"🇹🇷\"},{name:\"جورجيا\",flag:\"🇬🇪\"},\n    {name:\"أرمينيا\",flag:\"🇦🇲\"},{name:\"أذربيجان\",flag:\"🇦🇿\"},{name:\"مصر\",flag:\"🇪🇬\"}\n  ];\n  var countryGrid = document.getElementById(\"countryGrid\");\n  countries.forEach(function(c){\n    var div = document.createElement(\"div\");\n    div.className = \"country-card\";\n    div.innerHTML = '<div class=\"flag\">' + c.flag + '</div><div class=\"name\">' + c.name + '</div>';\n    div.addEventListener(\"click\", function(){ loadCities(c.name); });\n    countryGrid.appendChild(div);\n  });\n  function callApi(payload){\n    return fetch(API, { method:\"POST\", headers:{\"Content-Type\":\"application/json\"}, body: JSON.stringify(payload) }).then(function(r){ return r.json(); });\n  }\n  function showLoading(v){ document.getElementById(\"loadingMsg\").style.display = v ? \"block\" : \"none\"; }\n  function showErr(msg){ var e = document.getElementById(\"errMsg\"); e.style.display = msg ? \"block\" : \"none\"; e.textContent = msg || \"\"; }\n  function loadCities(country){\n    document.getElementById(\"countryView\").style.display = \"none\";\n    document.getElementById(\"citiesView\").style.display = \"block\";\n    document.getElementById(\"breadcrumb\").style.display = \"block\";\n    document.getElementById(\"bcCountry\").textContent = \" / \" + country;\n    document.getElementById(\"citiesView\").innerHTML = \"\";\n    showErr(\"\"); showLoading(true);\n    callApi({ action:\"listCities\", country: country }).then(function(data){\n      showLoading(false);\n      if (!data || !data.success) { showErr(\"تعذر تحميل المدن، حاول مرة ثانية\"); return; }\n      renderCities(data);\n    }).catch(function(){ showLoading(false); showErr(\"صار خطأ بالاتصال\"); });\n  }\n  function cityCardHtml(city, country){\n    return '<div class=\"city-card\" data-name=\"' + escAttr(city.name) + '\" data-country=\"' + escAttr(country) + '\"><h4>' + esc(city.name) + '</h4><p>' + esc(city.blurb || '') + '</p></div>';\n  }\n  function renderCities(data){\n    var wrap = document.getElementById(\"citiesView\");\n    var html = '';\n    if (data.grouped && Array.isArray(data.groups)) {\n      data.groups.forEach(function(g){\n        html += '<div class=\"region-block\">';\n        if (g.region) html += '<h3>' + esc(g.region) + '</h3>';\n        html += '<div class=\"city-grid\">';\n        (g.cities || []).forEach(function(c){ html += cityCardHtml(c, data.country); });\n        html += '</div></div>';\n      });\n    } else {\n      var all = [];\n      (data.groups || []).forEach(function(g){ (g.cities||[]).forEach(function(c){ all.push(c); }); });\n      html += '<div class=\"city-grid\">';\n      all.forEach(function(c){ html += cityCardHtml(c, data.country); });\n      html += '</div>';\n    }\n    wrap.innerHTML = html;\n    wrap.querySelectorAll(\".city-card\").forEach(function(card){\n      card.addEventListener(\"click\", function(){ openDetail(card.getAttribute(\"data-name\"), card.getAttribute(\"data-country\")); });\n    });\n  }\n  document.getElementById(\"backHome\").addEventListener(\"click\", function(){\n    document.getElementById(\"countryView\").style.display = \"block\";\n    document.getElementById(\"citiesView\").style.display = \"none\";\n    document.getElementById(\"breadcrumb\").style.display = \"none\";\n  });\n  function openDetail(name, country){\n    var modal = document.getElementById(\"detailModal\");\n    document.getElementById(\"modalImgWrap\").innerHTML = \"\";\n    document.getElementById(\"modalBody\").innerHTML = '<div style=\"text-align:center;padding:30px;color:#6b7f7c;\">جاري التحميل...</div>';\n    modal.classList.add(\"open\");\n    callApi({ action:\"getDestinationInfo\", name: name, country: country || \"\" }).then(function(data){\n      if (!data || !data.success) { document.getElementById(\"modalBody\").innerHTML = '<div class=\"err-msg\">تعذر تحميل التفاصيل</div>'; return; }\n      if (data.image_url) document.getElementById(\"modalImgWrap\").innerHTML = '<img src=\"' + escAttr(data.image_url) + '\">';\n      var body = '<h3>' + esc(data.title || name) + '</h3>';\n      body += '<p class=\"summary\">' + esc(data.summary || '') + '</p>';\n      (data.landmarks || []).forEach(function(l){\n        body += '<div class=\"landmark-item\"><b>' + esc(l.name) + '</b><span>' + esc(l.description || '') + '</span></div>';\n      });\n      document.getElementById(\"modalBody\").innerHTML = body;\n    }).catch(function(){ document.getElementById(\"modalBody\").innerHTML = '<div class=\"err-msg\">صار خطأ بالاتصال</div>'; });\n  }\n  document.getElementById(\"modalClose\").addEventListener(\"click\", function(){ document.getElementById(\"detailModal\").classList.remove(\"open\"); });\n  document.getElementById(\"detailModal\").addEventListener(\"click\", function(e){ if (e.target === document.getElementById(\"detailModal\")) document.getElementById(\"detailModal\").classList.remove(\"open\"); });\n  var searchInput = document.getElementById(\"searchInput\");\n  var searchResults = document.getElementById(\"searchResults\");\n  var searchTimer = null;\n  searchInput.addEventListener(\"input\", function(){\n    var q = searchInput.value.trim();\n    clearTimeout(searchTimer);\n    if (!q) { searchResults.classList.remove(\"show\"); return; }\n    searchTimer = setTimeout(function(){\n      callApi({ action:\"search\", query: q }).then(function(data){\n        if (!data || !data.success || !data.results || !data.results.length) { searchResults.classList.remove(\"show\"); return; }\n        searchResults.innerHTML = data.results.map(function(r){\n          return '<div class=\"sr-item\" data-name=\"' + escAttr(r.title) + '\"><b>' + esc(r.title) + '</b><span>' + esc(r.snippet || '') + '</span></div>';\n        }).join('');\n        searchResults.classList.add(\"show\");\n        searchResults.querySelectorAll(\".sr-item\").forEach(function(item){\n          item.addEventListener(\"click\", function(){\n            searchResults.classList.remove(\"show\");\n            searchInput.value = item.getAttribute(\"data-name\");\n            openDetail(item.getAttribute(\"data-name\"), \"\");\n          });\n        });\n      }).catch(function(){});\n    }, 400);\n  });\n  document.addEventListener(\"click\", function(e){ if (!e.target.closest(\".search-wrap\")) searchResults.classList.remove(\"show\"); });\n  function esc(s){ return String(s == null ? \"\" : s).replace(/[&<>\"']/g, function(c){ return {\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"}[c]; }); }\n  function escAttr(s){ return esc(s).replace(/\\`/g, \"&#96;\"); }\n})();\n</script>\n</body>\n</html>`;\nreturn [{ json: { html: html } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
     }
   ],
   "connections": {
@@ -1035,6 +1553,13 @@
         [
           {
             "node": "Fetch Logo Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Phone Filter",
             "type": "main",
             "index": 0
           }
@@ -1234,6 +1759,213 @@
           }
         ]
       ]
+    },
+    "Build Phone Filter": {
+      "main": [
+        [
+          {
+            "node": "Find Customers To Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Customers To Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Customer Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Customer Records": {
+      "main": [
+        [
+          {
+            "node": "Find Messages To Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Messages To Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Message Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Message Records": {
+      "main": [
+        [
+          {
+            "node": "Delete Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explore API": {
+      "main": [
+        [
+          {
+            "node": "Route Explore Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Explore Action": {
+      "main": [
+        [
+          {
+            "node": "Build List Cities Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Destination Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wikipedia Search AR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Explore Action Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build List Cities Prompt": {
+      "main": [
+        [
+          {
+            "node": "List Cities Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Destination Prompt": {
+      "main": [
+        [
+          {
+            "node": "Destination Info Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explore OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "List Cities Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Destination Info Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "List Cities Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Destination Info Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia Summary Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Destination Info Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Cities Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse List Cities Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Destination Info Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Destination Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia Search AR": {
+      "main": [
+        [
+          {
+            "node": "Format Search Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explore Page": {
+      "main": [
+        [
+          {
+            "node": "Explore HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1270,7 +2002,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "72f2b043-e505-47ff-909a-78ddc0534703",
+    "versionId": "35d57e2a-4f12-4fc8-a631-37dea957f3a0",
     "workflowId": "qACtLdIxetamrA0e",
     "nodes": [
       {
@@ -1482,6 +2214,27 @@
                   }
                 },
                 "outputKey": "generateDesign"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "deleteCustomerData"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  }
+                },
+                "outputKey": "deleteCustomerData"
               }
             ]
           },
@@ -2217,6 +2970,503 @@
           },
           "url": "https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png"
         }
+      },
+      {
+        "id": "6be44a47-0c5e-4460-b977-56b1c682029f",
+        "name": "Build Phone Filter",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          960
+        ],
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body || {};\nconst phones = Array.isArray(body.phones) ? body.phones : [];\nif (!phones.length) return [{ json: { filterFormula: 'FALSE()' } }];\nconst clauses = phones.map(function(p){\n  const digits = String(p).replace(/[^0-9]/g, '');\n  return 'FIND(\"' + digits + '\", {Phone}) > 0';\n});\nconst formula = clauses.length > 1 ? ('OR(' + clauses.join(', ') + ')') : clauses[0];\nreturn [{ json: { filterFormula: formula } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "63d99d70-ffcd-4a32-8768-6d096039cf13",
+        "name": "Find Customers To Delete",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          960
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "={{ $json.filterFormula }}",
+          "operation": "search",
+          "resource": "record",
+          "returnAll": true,
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "a5870ab1-b3e5-44de-ab79-beb4f8dd7e57",
+        "name": "Delete Customer Records",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1120,
+          960
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "id": "={{ $json.id }}",
+          "operation": "deleteRecord",
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "7c44d157-7ca3-4117-ae82-61f190bb857e",
+        "name": "Find Messages To Delete",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1344,
+          960
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "={{ $('Build Phone Filter').first().json.filterFormula }}",
+          "operation": "search",
+          "resource": "record",
+          "returnAll": true,
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Messages",
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "executeOnce": true
+      },
+      {
+        "id": "aa751753-e6a8-4b80-bea9-04b6107f8378",
+        "name": "Delete Message Records",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1568,
+          960
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "id": "={{ $json.id }}",
+          "operation": "deleteRecord",
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Messages",
+            "mode": "id",
+            "value": "tblMrAwnefYntNtUH"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "936198f2-0799-4364-a329-04daf6163ffd",
+        "name": "Delete Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1792,
+          960
+        ],
+        "parameters": {
+          "jsCode": "const customersDeleted = $('Find Customers To Delete').all().length;\nconst messagesDeleted = $('Find Messages To Delete').all().length;\nreturn [{ json: { success: true, customersDeleted: customersDeleted, messagesDeleted: messagesDeleted } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "7ea56fe1-24a9-4df0-9417-7bbd3394a260",
+        "name": "Explore API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          1650
+        ],
+        "parameters": {
+          "authentication": "none",
+          "httpMethod": "POST",
+          "options": {
+            "allowedOrigins": "*"
+          },
+          "path": "explore-api",
+          "responseMode": "lastNode"
+        },
+        "webhookId": "64083210-a212-4494-aa3d-e5fa33192d0b"
+      },
+      {
+        "id": "8407b290-650a-418b-82dd-63db3c80e806",
+        "name": "Route Explore Action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          280,
+          1650
+        ],
+        "parameters": {
+          "mode": "rules",
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "Unknown"
+          },
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listCities"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  }
+                },
+                "outputKey": "listCities"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "getDestinationInfo"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  }
+                },
+                "outputKey": "getDestinationInfo"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "search"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  }
+                },
+                "outputKey": "search"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "847ebe9c-c418-4dae-b4b4-3acce4356acc",
+        "name": "Unknown Explore Action Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          1950
+        ],
+        "parameters": {
+          "jsCode": "return [{ json: { success:false, error:'unknown_action' } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "c9a0bd6c-27f1-4698-a1a7-8656d7b11f8f",
+        "name": "Explore OpenAI Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          840,
+          1330
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "e7cf8d68-bbae-45b2-a0f9-dae1f9ffde37",
+        "name": "Wikipedia Search Tool",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          1000,
+          1330
+        ],
+        "parameters": {
+          "method": "GET",
+          "toolDescription": "Search Arabic Wikipedia for a place name (country/city/landmark) to verify the correct title and related places.",
+          "url": "=https://ar.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=6&srsearch={{ encodeURIComponent($fromAI('query', 'Arabic search term for a country, city or landmark', 'string')) }}"
+        }
+      },
+      {
+        "id": "75377726-85c1-4450-8699-f00e465689a3",
+        "name": "Wikipedia Summary Tool",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.5,
+        "position": [
+          1160,
+          1330
+        ],
+        "parameters": {
+          "method": "GET",
+          "toolDescription": "Get a summary and image from Arabic Wikipedia for an exact page title (use after confirming the correct title via the search tool).",
+          "url": "=https://ar.wikipedia.org/api/rest_v1/page/summary/{{ encodeURIComponent($fromAI('title', 'The exact Arabic Wikipedia page title', 'string')) }}"
+        }
+      },
+      {
+        "id": "4c8908ab-cc50-4d29-b3d3-d7fcdd889dc4",
+        "name": "Build List Cities Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          1500
+        ],
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body || {};\nconst country = (body.country || '').trim();\nreturn [{ json: { promptText: 'الدولة: ' + country } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "d900173e-3200-4db7-8e71-31b0d124601e",
+        "name": "Build Destination Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          1700
+        ],
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body || {};\nconst name = (body.name || '').trim();\nconst country = (body.country || '').trim();\nreturn [{ json: { promptText: 'المكان: ' + name + (country ? (' - الدولة: ' + country) : '') } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "35620182-fa77-47b3-98c2-f0925a525834",
+        "name": "List Cities Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          840,
+          1500
+        ],
+        "parameters": {
+          "options": {
+            "systemMessage": "You are an expert travel assistant. Given a country name, use the Wikipedia search tool to verify top tourist cities, then return ONLY valid JSON with fields country, grouped, and groups (an array of objects each with region and cities, where cities is an array of objects with name and blurb). Pick 6 to 10 cities. Split into regions if the country is large. All text values must be in Gulf Arabic. Never write anything outside the JSON."
+          },
+          "promptType": "define",
+          "text": "={{ $json.promptText }}"
+        }
+      },
+      {
+        "id": "9edaa75c-9709-406a-86b7-fc7e7d18c499",
+        "name": "Destination Info Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          840,
+          1700
+        ],
+        "parameters": {
+          "options": {
+            "systemMessage": "You are an expert tour guide. Given a place name (country, city, or landmark), first use the Wikipedia search tool to confirm the correct title, then use the Wikipedia summary tool to get accurate info and an image if available, then return ONLY valid JSON with fields title, summary, landmarks (array of objects with name and description), and image_url. summary should be 2 to 3 paragraphs covering location and touristic significance and atmosphere. List 3 to 6 notable landmarks or activities. image_url should be the thumbnail or image url returned by the Wikipedia summary tool if present, else an empty string. All text values must be in Gulf Arabic. Never write anything outside the JSON."
+          },
+          "promptType": "define",
+          "text": "={{ $json.promptText }}"
+        }
+      },
+      {
+        "id": "4d8a3a3b-4fce-479b-a0ec-d22f2e510dfd",
+        "name": "Parse List Cities Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1500
+        ],
+        "parameters": {
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success:false, error:'parse_failed' } }];\nreturn [{ json: Object.assign({ success:true }, parsed) }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "eff6afaf-31fa-458d-a72a-0d0a0ab15265",
+        "name": "Parse Destination Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1700
+        ],
+        "parameters": {
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success:false, error:'parse_failed' } }];\nreturn [{ json: Object.assign({ success:true }, parsed) }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "cc0a095e-3dc3-4794-84a5-96e903f8d97c",
+        "name": "Wikipedia Search AR",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          560,
+          1900
+        ],
+        "parameters": {
+          "method": "GET",
+          "options": {},
+          "url": "=https://ar.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=6&srsearch={{ encodeURIComponent($json.body.query) }}"
+        }
+      },
+      {
+        "id": "e6e0ed3c-8b0b-4b61-90b3-9df3f09cac7a",
+        "name": "Format Search Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          840,
+          1900
+        ],
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst results = ((data.query && data.query.search) || []).map(function(r){\n  const snippet = String(r.snippet || '').replace(/<[^>]+>/g, '');\n  return { title: r.title, snippet: snippet };\n});\nreturn [{ json: { success: true, results: results } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "24320d63-d988-4143-9143-d624ecbcce0d",
+        "name": "Explore Page",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          1450
+        ],
+        "parameters": {
+          "authentication": "none",
+          "httpMethod": "GET",
+          "options": {
+            "responseContentType": "text/html",
+            "responsePropertyName": "html"
+          },
+          "path": "explore",
+          "responseMode": "lastNode"
+        },
+        "webhookId": "5350e1ad-c6bb-417b-81b0-82b050a50512"
+      },
+      {
+        "id": "522e55ef-1877-487b-9670-ccf7e4813cff",
+        "name": "Explore HTML",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          280,
+          1450
+        ],
+        "parameters": {
+          "jsCode": "const html = `<!DOCTYPE html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>استكشف الوجهات | المطوع للسياحة</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Kufam:wght@600;700;800&family=Changa:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n<style>\n:root{--blue:#134576;--blue-dark:#0B2E52;--sand:#F3ECDD;--sand-soft:#FAF6EC;--gold:#DAA628;--gold-soft:#E8C25F;--line:#E3DCC9;--ink:#12302E;}\n*{box-sizing:border-box;}\nbody{margin:0;font-family:'Changa',sans-serif;background:var(--sand-soft);color:var(--ink);}\nh1,h2,h3,.brand{font-family:'Kufam','Changa',sans-serif;}\nheader{background:var(--blue);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}\nheader a.brand{color:#fff;text-decoration:none;font-weight:800;font-size:1.1rem;}\nmain{max-width:1100px;margin:0 auto;padding:28px 20px 60px;}\n.search-wrap{position:relative;max-width:560px;margin:0 auto 34px;}\n.search-wrap input{width:100%;padding:14px 18px;border-radius:999px;border:1px solid var(--line);font-family:inherit;font-size:1rem;box-shadow:0 8px 22px -14px rgba(11,46,82,0.3);}\n.search-results{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border-radius:14px;box-shadow:0 14px 30px -12px rgba(11,46,82,0.3);overflow:hidden;display:none;z-index:20;}\n.search-results.show{display:block;}\n.search-results .sr-item{padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;}\n.search-results .sr-item:last-child{border-bottom:none;}\n.search-results .sr-item:hover{background:var(--sand);}\n.search-results .sr-item b{color:var(--blue);display:block;margin-bottom:2px;}\n.search-results .sr-item span{font-size:0.82rem;color:#6b7f7c;}\nh2.section-title{color:var(--blue);font-size:1.3rem;margin:0 0 16px;}\n.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-bottom:36px;}\n.country-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 10px;text-align:center;cursor:pointer;transition:transform .15s;}\n.country-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(11,46,82,0.3);}\n.country-card .flag{font-size:2rem;margin-bottom:8px;}\n.country-card .name{font-weight:700;color:var(--blue);font-size:0.95rem;}\n#breadcrumb{font-size:0.9rem;color:#6b7f7c;margin-bottom:14px;display:none;}\n#breadcrumb a{color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer;}\n.region-block{margin-bottom:26px;}\n.region-block h3{color:var(--gold);font-size:1rem;margin:0 0 12px;}\n.city-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}\n.city-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:transform .15s;}\n.city-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px -14px rgba(11,46,82,0.3);}\n.city-card h4{margin:0 0 6px;color:var(--blue);font-size:1.02rem;}\n.city-card p{margin:0;font-size:0.85rem;color:#4A625F;line-height:1.6;}\n#loadingMsg{text-align:center;color:#6b7f7c;padding:30px;display:none;}\n.modal-overlay{position:fixed;inset:0;background:rgba(11,46,82,0.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}\n.modal-overlay.open{display:flex;}\n.modal-box{background:#fff;border-radius:18px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto;position:relative;}\n.modal-box img{width:100%;max-height:220px;object-fit:cover;border-radius:18px 18px 0 0;}\n.modal-body{padding:24px;}\n.modal-body h3{color:var(--blue);margin:0 0 10px;font-size:1.25rem;}\n.modal-body p.summary{color:#3E5654;line-height:1.85;font-size:0.95rem;white-space:pre-line;margin-bottom:18px;}\n.landmark-item{border-top:1px solid var(--line);padding:10px 0;}\n.landmark-item b{color:var(--blue);display:block;margin-bottom:3px;}\n.landmark-item span{font-size:0.86rem;color:#4A625F;}\n.modal-close{position:absolute;top:14px;left:14px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(11,46,82,0.75);color:#fff;cursor:pointer;font-size:1rem;z-index:2;}\n.err-msg{text-align:center;color:#C0392B;padding:20px;}\n</style>\n</head>\n<body>\n<header>\n  <a class=\"brand\" href=\"https://n8n-production-47b1.up.railway.app/webhook/site\">✦ المطوع للسياحة</a>\n  <span style=\"font-weight:700;\">استكشف الوجهات</span>\n</header>\n<main>\n  <div class=\"search-wrap\">\n    <input type=\"text\" id=\"searchInput\" placeholder=\"اكتب اسم دولة، مدينة، أو معلم...\">\n    <div class=\"search-results\" id=\"searchResults\"></div>\n  </div>\n  <div id=\"breadcrumb\"><a id=\"backHome\">🏠 كل الدول</a> <span id=\"bcCountry\"></span></div>\n  <div id=\"loadingMsg\">جاري التحميل...</div>\n  <div id=\"errMsg\" class=\"err-msg\" style=\"display:none;\"></div>\n  <div id=\"countryView\">\n    <h2 class=\"section-title\">اختر دولة</h2>\n    <div class=\"country-grid\" id=\"countryGrid\"></div>\n  </div>\n  <div id=\"citiesView\" style=\"display:none;\"></div>\n</main>\n<div class=\"modal-overlay\" id=\"detailModal\">\n  <div class=\"modal-box\">\n    <button class=\"modal-close\" id=\"modalClose\">✕</button>\n    <div id=\"modalImgWrap\"></div>\n    <div class=\"modal-body\" id=\"modalBody\"></div>\n  </div>\n</div>\n<script>\n(function(){\n  var API = \"https://n8n-production-47b1.up.railway.app/webhook/explore-api\";\n  var countries = [\n    {name:\"البحرين\",flag:\"🇧🇭\"},{name:\"السعودية\",flag:\"🇸🇦\"},{name:\"الإمارات\",flag:\"🇦🇪\"},\n    {name:\"عمان\",flag:\"🇴🇲\"},{name:\"العراق\",flag:\"🇮🇶\"},{name:\"سوريا\",flag:\"🇸🇾\"},\n    {name:\"الأردن\",flag:\"🇯🇴\"},{name:\"تركيا\",flag:\"🇹🇷\"},{name:\"جورجيا\",flag:\"🇬🇪\"},\n    {name:\"أرمينيا\",flag:\"🇦🇲\"},{name:\"أذربيجان\",flag:\"🇦🇿\"},{name:\"مصر\",flag:\"🇪🇬\"}\n  ];\n  var countryGrid = document.getElementById(\"countryGrid\");\n  countries.forEach(function(c){\n    var div = document.createElement(\"div\");\n    div.className = \"country-card\";\n    div.innerHTML = '<div class=\"flag\">' + c.flag + '</div><div class=\"name\">' + c.name + '</div>';\n    div.addEventListener(\"click\", function(){ loadCities(c.name); });\n    countryGrid.appendChild(div);\n  });\n  function callApi(payload){\n    return fetch(API, { method:\"POST\", headers:{\"Content-Type\":\"application/json\"}, body: JSON.stringify(payload) }).then(function(r){ return r.json(); });\n  }\n  function showLoading(v){ document.getElementById(\"loadingMsg\").style.display = v ? \"block\" : \"none\"; }\n  function showErr(msg){ var e = document.getElementById(\"errMsg\"); e.style.display = msg ? \"block\" : \"none\"; e.textContent = msg || \"\"; }\n  function loadCities(country){\n    document.getElementById(\"countryView\").style.display = \"none\";\n    document.getElementById(\"citiesView\").style.display = \"block\";\n    document.getElementById(\"breadcrumb\").style.display = \"block\";\n    document.getElementById(\"bcCountry\").textContent = \" / \" + country;\n    document.getElementById(\"citiesView\").innerHTML = \"\";\n    showErr(\"\"); showLoading(true);\n    callApi({ action:\"listCities\", country: country }).then(function(data){\n      showLoading(false);\n      if (!data || !data.success) { showErr(\"تعذر تحميل المدن، حاول مرة ثانية\"); return; }\n      renderCities(data);\n    }).catch(function(){ showLoading(false); showErr(\"صار خطأ بالاتصال\"); });\n  }\n  function cityCardHtml(city, country){\n    return '<div class=\"city-card\" data-name=\"' + escAttr(city.name) + '\" data-country=\"' + escAttr(country) + '\"><h4>' + esc(city.name) + '</h4><p>' + esc(city.blurb || '') + '</p></div>';\n  }\n  function renderCities(data){\n    var wrap = document.getElementById(\"citiesView\");\n    var html = '';\n    if (data.grouped && Array.isArray(data.groups)) {\n      data.groups.forEach(function(g){\n        html += '<div class=\"region-block\">';\n        if (g.region) html += '<h3>' + esc(g.region) + '</h3>';\n        html += '<div class=\"city-grid\">';\n        (g.cities || []).forEach(function(c){ html += cityCardHtml(c, data.country); });\n        html += '</div></div>';\n      });\n    } else {\n      var all = [];\n      (data.groups || []).forEach(function(g){ (g.cities||[]).forEach(function(c){ all.push(c); }); });\n      html += '<div class=\"city-grid\">';\n      all.forEach(function(c){ html += cityCardHtml(c, data.country); });\n      html += '</div>';\n    }\n    wrap.innerHTML = html;\n    wrap.querySelectorAll(\".city-card\").forEach(function(card){\n      card.addEventListener(\"click\", function(){ openDetail(card.getAttribute(\"data-name\"), card.getAttribute(\"data-country\")); });\n    });\n  }\n  document.getElementById(\"backHome\").addEventListener(\"click\", function(){\n    document.getElementById(\"countryView\").style.display = \"block\";\n    document.getElementById(\"citiesView\").style.display = \"none\";\n    document.getElementById(\"breadcrumb\").style.display = \"none\";\n  });\n  function openDetail(name, country){\n    var modal = document.getElementById(\"detailModal\");\n    document.getElementById(\"modalImgWrap\").innerHTML = \"\";\n    document.getElementById(\"modalBody\").innerHTML = '<div style=\"text-align:center;padding:30px;color:#6b7f7c;\">جاري التحميل...</div>';\n    modal.classList.add(\"open\");\n    callApi({ action:\"getDestinationInfo\", name: name, country: country || \"\" }).then(function(data){\n      if (!data || !data.success) { document.getElementById(\"modalBody\").innerHTML = '<div class=\"err-msg\">تعذر تحميل التفاصيل</div>'; return; }\n      if (data.image_url) document.getElementById(\"modalImgWrap\").innerHTML = '<img src=\"' + escAttr(data.image_url) + '\">';\n      var body = '<h3>' + esc(data.title || name) + '</h3>';\n      body += '<p class=\"summary\">' + esc(data.summary || '') + '</p>';\n      (data.landmarks || []).forEach(function(l){\n        body += '<div class=\"landmark-item\"><b>' + esc(l.name) + '</b><span>' + esc(l.description || '') + '</span></div>';\n      });\n      document.getElementById(\"modalBody\").innerHTML = body;\n    }).catch(function(){ document.getElementById(\"modalBody\").innerHTML = '<div class=\"err-msg\">صار خطأ بالاتصال</div>'; });\n  }\n  document.getElementById(\"modalClose\").addEventListener(\"click\", function(){ document.getElementById(\"detailModal\").classList.remove(\"open\"); });\n  document.getElementById(\"detailModal\").addEventListener(\"click\", function(e){ if (e.target === document.getElementById(\"detailModal\")) document.getElementById(\"detailModal\").classList.remove(\"open\"); });\n  var searchInput = document.getElementById(\"searchInput\");\n  var searchResults = document.getElementById(\"searchResults\");\n  var searchTimer = null;\n  searchInput.addEventListener(\"input\", function(){\n    var q = searchInput.value.trim();\n    clearTimeout(searchTimer);\n    if (!q) { searchResults.classList.remove(\"show\"); return; }\n    searchTimer = setTimeout(function(){\n      callApi({ action:\"search\", query: q }).then(function(data){\n        if (!data || !data.success || !data.results || !data.results.length) { searchResults.classList.remove(\"show\"); return; }\n        searchResults.innerHTML = data.results.map(function(r){\n          return '<div class=\"sr-item\" data-name=\"' + escAttr(r.title) + '\"><b>' + esc(r.title) + '</b><span>' + esc(r.snippet || '') + '</span></div>';\n        }).join('');\n        searchResults.classList.add(\"show\");\n        searchResults.querySelectorAll(\".sr-item\").forEach(function(item){\n          item.addEventListener(\"click\", function(){\n            searchResults.classList.remove(\"show\");\n            searchInput.value = item.getAttribute(\"data-name\");\n            openDetail(item.getAttribute(\"data-name\"), \"\");\n          });\n        });\n      }).catch(function(){});\n    }, 400);\n  });\n  document.addEventListener(\"click\", function(e){ if (!e.target.closest(\".search-wrap\")) searchResults.classList.remove(\"show\"); });\n  function esc(s){ return String(s == null ? \"\" : s).replace(/[&<>\"']/g, function(c){ return {\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"}[c]; }); }\n  function escAttr(s){ return esc(s).replace(/\\`/g, \"&#96;\"); }\n})();\n</script>\n</body>\n</html>`;\nreturn [{ json: { html: html } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
       }
     ],
     "connections": {
@@ -2296,6 +3546,13 @@
           [
             {
               "node": "Fetch Logo Image",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Build Phone Filter",
               "type": "main",
               "index": 0
             }
@@ -2495,23 +3752,230 @@
             }
           ]
         ]
+      },
+      "Build Phone Filter": {
+        "main": [
+          [
+            {
+              "node": "Find Customers To Delete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Customers To Delete": {
+        "main": [
+          [
+            {
+              "node": "Delete Customer Records",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Customer Records": {
+        "main": [
+          [
+            {
+              "node": "Find Messages To Delete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Messages To Delete": {
+        "main": [
+          [
+            {
+              "node": "Delete Message Records",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Message Records": {
+        "main": [
+          [
+            {
+              "node": "Delete Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Explore API": {
+        "main": [
+          [
+            {
+              "node": "Route Explore Action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route Explore Action": {
+        "main": [
+          [
+            {
+              "node": "Build List Cities Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Build Destination Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wikipedia Search AR",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unknown Explore Action Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build List Cities Prompt": {
+        "main": [
+          [
+            {
+              "node": "List Cities Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Destination Prompt": {
+        "main": [
+          [
+            {
+              "node": "Destination Info Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Explore OpenAI Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "List Cities Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Destination Info Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wikipedia Search Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "List Cities Agent",
+              "type": "ai_tool",
+              "index": 0
+            },
+            {
+              "node": "Destination Info Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wikipedia Summary Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "Destination Info Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Cities Agent": {
+        "main": [
+          [
+            {
+              "node": "Parse List Cities Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Destination Info Agent": {
+        "main": [
+          [
+            {
+              "node": "Parse Destination Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wikipedia Search AR": {
+        "main": [
+          [
+            {
+              "node": "Format Search Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Explore Page": {
+        "main": [
+          [
+            {
+              "node": "Explore HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Add hero search tabs (Packages/Flights/Hotels/Visa) like Booking.com",
-    "description": "Updated nodes: Public Website HTML Patch",
+    "name": "Fix backtick bug",
+    "description": "Fix unescaped backtick inside the outer template literal that broke the Explore page code",
     "autosaved": false,
-    "createdAt": "2026-09-18T18:21:57.783Z",
-    "updatedAt": "2026-09-18T18:21:57.783Z",
+    "createdAt": "2026-09-19T09:05:29.469Z",
+    "updatedAt": "2026-09-19T09:05:29.469Z",
     "workflowPublishHistory": [
       {
-        "id": 92,
+        "id": 100,
         "workflowId": "qACtLdIxetamrA0e",
-        "versionId": "72f2b043-e505-47ff-909a-78ddc0534703",
+        "versionId": "35d57e2a-4f12-4fc8-a631-37dea957f3a0",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-18T18:22:00.070Z"
+        "createdAt": "2026-09-19T09:05:31.528Z"
       }
     ]
   }
