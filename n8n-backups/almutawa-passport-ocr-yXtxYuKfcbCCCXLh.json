@@ -1,0 +1,257 @@
+{
+  "id": "yXtxYuKfcbCCCXLh",
+  "name": "Almutawa - Passport OCR",
+  "description": null,
+  "active": true,
+  "activeVersionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+  "createdAt": "2026-09-20T19:46:32.262Z",
+  "updatedAt": "2026-09-20T19:46:35.096Z",
+  "isArchived": false,
+  "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "f09d44c2-869e-4d95-8c5b-7951375514ce",
+      "name": "Passport OCR API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "passport-ocr",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "3b2a49b6-d80b-4a16-87d2-98c8449ff9f6"
+    },
+    {
+      "id": "35dc4702-3bbb-4a03-afb1-4c438afba099",
+      "name": "Analyze Passport Image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o",
+          "cachedResultName": "gpt-4o"
+        },
+        "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
+        "inputType": "url",
+        "imageUrls": "={{ $json.body.imageDataUrl }}",
+        "simplify": true,
+        "options": {
+          "detail": "high",
+          "maxTokens": 300
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "bab7a8d8-b1af-4a12-bf41-f13fd201b2a0",
+      "name": "Parse OCR Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Passport OCR API": {
+      "main": [
+        [
+          {
+            "node": "Analyze Passport Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Passport Image": {
+      "main": [
+        [
+          {
+            "node": "Parse OCR Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "yXtxYuKfcbCCCXLh",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-20T19:46:32.265Z",
+      "updatedAt": "2026-09-20T19:46:32.265Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+    "workflowId": "yXtxYuKfcbCCCXLh",
+    "nodes": [
+      {
+        "id": "f09d44c2-869e-4d95-8c5b-7951375514ce",
+        "name": "Passport OCR API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "passport-ocr",
+          "authentication": "none",
+          "responseMode": "lastNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "3b2a49b6-d80b-4a16-87d2-98c8449ff9f6"
+      },
+      {
+        "id": "35dc4702-3bbb-4a03-afb1-4c438afba099",
+        "name": "Analyze Passport Image",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.3,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4o",
+            "cachedResultName": "gpt-4o"
+          },
+          "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
+          "inputType": "url",
+          "imageUrls": "={{ $json.body.imageDataUrl }}",
+          "simplify": true,
+          "options": {
+            "detail": "high",
+            "maxTokens": 300
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "bab7a8d8-b1af-4a12-bf41-f13fd201b2a0",
+        "name": "Parse OCR Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '' } }];"
+        }
+      }
+    ],
+    "connections": {
+      "Passport OCR API": {
+        "main": [
+          [
+            {
+              "node": "Analyze Passport Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Analyze Passport Image": {
+        "main": [
+          [
+            {
+              "node": "Parse OCR Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial passport OCR endpoint",
+    "description": "New endpoint: POST /webhook/passport-ocr with { imageDataUrl } (a data: URI of the passport photo page). Uses GPT-4o vision to extract fullName and passportNumber, returns { success, fullName, passportNumber }. Used by the website booking form to auto-fill traveler details from an uploaded passport photo.",
+    "autosaved": false,
+    "createdAt": "2026-09-20T19:46:32.266Z",
+    "updatedAt": "2026-09-20T19:46:32.266Z",
+    "workflowPublishHistory": [
+      {
+        "id": 101,
+        "workflowId": "yXtxYuKfcbCCCXLh",
+        "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-20T19:46:36.937Z"
+      }
+    ]
+  }
+}
