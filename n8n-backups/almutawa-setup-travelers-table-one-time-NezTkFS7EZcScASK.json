@@ -1,0 +1,141 @@
+{
+  "id": "NezTkFS7EZcScASK",
+  "name": "Almutawa - Setup Travelers Table (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-20T19:39:19.868Z",
+  "updatedAt": "2026-09-20T19:39:26.361Z",
+  "isArchived": false,
+  "versionId": "3f45f33f-3cf9-4d02-96ad-277f0a6120a6",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "c16c1974-694d-4f5a-8624-6d390f1c95bb",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3c1173bd-3225-4ad6-bad9-af6117a9fdb5",
+      "name": "Create Travelers Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Travelers",
+          "description": "Primary traveler and companions attached to each booking",
+          "fields": [
+            {
+              "name": "Full Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Passport Number",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Role",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "Primary"
+                  },
+                  {
+                    "name": "Companion"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Booking",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblZ6AQCBmEY2KYHr"
+              }
+            },
+            {
+              "name": "Passport Photo",
+              "type": "multipleAttachments"
+            },
+            {
+              "name": "Notes",
+              "type": "multilineText"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Travelers Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "NezTkFS7EZcScASK",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-20T19:39:19.870Z",
+      "updatedAt": "2026-09-20T19:39:19.870Z"
+    }
+  ],
+  "activeVersion": null
+}
