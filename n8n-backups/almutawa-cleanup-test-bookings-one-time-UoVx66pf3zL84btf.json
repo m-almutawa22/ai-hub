@@ -1,0 +1,132 @@
+{
+  "id": "UoVx66pf3zL84btf",
+  "name": "Almutawa - Cleanup Test Bookings (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-20T19:55:24.072Z",
+  "updatedAt": "2026-09-20T19:55:26.944Z",
+  "isArchived": false,
+  "versionId": "f1416c83-0fa9-40a2-9e24-e856fe0f370b",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "de3c34b4-bf44-41e7-9756-844e0c049249",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "7c700029-a646-475a-b47f-b6f38215f4f5",
+      "name": "Test Booking IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const ids = ['rec96IBfeKZHA7W3M','reco3bvlzQyDO1IJ4','recQI9Kaw8JH0LUwZ','rec4qWN4KXtNnFx9e','recfTmezKHb8k59SC'];\nreturn ids.map(function(id){ return { json: { id: id } }; });"
+      }
+    },
+    {
+      "id": "53639853-41bf-4ef3-9969-88401e85e8bb",
+      "name": "Delete Test Bookings",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "deleteRecord",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblZ6AQCBmEY2KYHr",
+          "cachedResultName": "Bookings"
+        },
+        "id": "={{ $json.id }}"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Test Booking IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Booking IDs": {
+      "main": [
+        [
+          {
+            "node": "Delete Test Bookings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "UoVx66pf3zL84btf",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-20T19:55:24.075Z",
+      "updatedAt": "2026-09-20T19:55:24.075Z"
+    }
+  ],
+  "activeVersion": null
+}
