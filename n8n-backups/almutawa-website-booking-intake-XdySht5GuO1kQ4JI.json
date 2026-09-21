@@ -3,12 +3,12 @@
   "name": "Almutawa - Website Booking Intake",
   "description": "Website booking intake: receives a booking request from the public marketing site (package id, name, phone, travelers, notes), decrements the package's remaining seats, upserts the customer, creates a Pending booking, notifies the office Telegram group wi",
   "active": true,
-  "activeVersionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+  "activeVersionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
   "createdAt": "2026-09-17T10:30:09.580Z",
-  "updatedAt": "2026-09-17T10:30:13.303Z",
+  "updatedAt": "2026-09-20T19:47:58.287Z",
   "isArchived": false,
-  "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
-  "versionCounter": 2,
+  "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
+  "versionCounter": 3,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -259,6 +259,122 @@
         "language": "javaScript",
         "jsCode": "const r = $(\"Compute Remaining Seats\").first().json;\nreturn [{ json: { success: true, remaining: r.remaining, packageTitle: r.packageTitle } }];"
       }
+    },
+    {
+      "id": "779b63f2-d27a-44c1-b34f-aa4ace982851",
+      "name": "Prepare Traveler Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        220
+      ],
+      "parameters": {
+        "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  return { json: {\n    fullName: t.name || t.fullName || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "a3db7a55-8920-4acb-9b7b-00cdb9958689",
+      "name": "Create Traveler Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        220
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "schema": [],
+          "value": {
+            "Booking": "={{ [$json.bookingId] }}",
+            "Full Name": "={{ $json.fullName }}",
+            "Passport Number": "={{ $json.passportNumber }}",
+            "Role": "={{ $json.role }}"
+          }
+        },
+        "operation": "create",
+        "options": {
+          "typecast": true
+        },
+        "resource": "record",
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Travelers",
+          "mode": "id",
+          "value": "tblMaJFE8yIqxFj1N"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "6abffd36-abd5-4bf7-910f-5a8351e708ea",
+      "name": "Has Passport Photo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        220
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $('Prepare Traveler Items').item.json.passportPhotoDataUrl }}",
+              "operator": {
+                "operation": "notEmpty",
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "450de717-2365-4cd6-82ac-63dfec5f6b9b",
+      "name": "Upload Passport Photo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1792,
+        160
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "contentType": "json",
+        "jsonBody": "={{ { contentType: $('Prepare Traveler Items').item.json.passportPhotoDataUrl.split(';')[0].split(':')[1], filename: 'passport.jpg', file: $('Prepare Traveler Items').item.json.passportPhotoDataUrl.split(',')[1] } }}",
+        "method": "POST",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "=https://content.airtable.com/v0/appPB4D3VkkSJKjRK/{{ $json.id }}/fld4wU81gJeQS59YT"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
     }
   ],
   "connections": {
@@ -324,6 +440,11 @@
             "node": "Notify Team - Website Booking",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Prepare Traveler Items",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -333,6 +454,39 @@
         [
           {
             "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Traveler Items": {
+      "main": [
+        [
+          {
+            "node": "Create Traveler Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Traveler Records": {
+      "main": [
+        [
+          {
+            "node": "Has Passport Photo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Passport Photo?": {
+      "main": [
+        [
+          {
+            "node": "Upload Passport Photo",
             "type": "main",
             "index": 0
           }
@@ -374,7 +528,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+    "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
     "workflowId": "XdySht5GuO1kQ4JI",
     "nodes": [
       {
@@ -624,6 +778,122 @@
           "language": "javaScript",
           "jsCode": "const r = $(\"Compute Remaining Seats\").first().json;\nreturn [{ json: { success: true, remaining: r.remaining, packageTitle: r.packageTitle } }];"
         }
+      },
+      {
+        "id": "779b63f2-d27a-44c1-b34f-aa4ace982851",
+        "name": "Prepare Traveler Items",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          220
+        ],
+        "parameters": {
+          "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  return { json: {\n    fullName: t.name || t.fullName || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "a3db7a55-8920-4acb-9b7b-00cdb9958689",
+        "name": "Create Traveler Records",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1344,
+          220
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "schema": [],
+            "value": {
+              "Booking": "={{ [$json.bookingId] }}",
+              "Full Name": "={{ $json.fullName }}",
+              "Passport Number": "={{ $json.passportNumber }}",
+              "Role": "={{ $json.role }}"
+            }
+          },
+          "operation": "create",
+          "options": {
+            "typecast": true
+          },
+          "resource": "record",
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Travelers",
+            "mode": "id",
+            "value": "tblMaJFE8yIqxFj1N"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "6abffd36-abd5-4bf7-910f-5a8351e708ea",
+        "name": "Has Passport Photo?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1568,
+          220
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $('Prepare Traveler Items').item.json.passportPhotoDataUrl }}",
+                "operator": {
+                  "operation": "notEmpty",
+                  "type": "string"
+                },
+                "rightValue": ""
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "450de717-2365-4cd6-82ac-63dfec5f6b9b",
+        "name": "Upload Passport Photo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1792,
+          160
+        ],
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "contentType": "json",
+          "jsonBody": "={{ { contentType: $('Prepare Traveler Items').item.json.passportPhotoDataUrl.split(';')[0].split(':')[1], filename: 'passport.jpg', file: $('Prepare Traveler Items').item.json.passportPhotoDataUrl.split(',')[1] } }}",
+          "method": "POST",
+          "nodeCredentialType": "airtableTokenApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "url": "=https://content.airtable.com/v0/appPB4D3VkkSJKjRK/{{ $json.id }}/fld4wU81gJeQS59YT"
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
       }
     ],
     "connections": {
@@ -689,6 +959,11 @@
               "node": "Notify Team - Website Booking",
               "type": "main",
               "index": 0
+            },
+            {
+              "node": "Prepare Traveler Items",
+              "type": "main",
+              "index": 0
             }
           ]
         ]
@@ -703,23 +978,56 @@
             }
           ]
         ]
+      },
+      "Prepare Traveler Items": {
+        "main": [
+          [
+            {
+              "node": "Create Traveler Records",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Traveler Records": {
+        "main": [
+          [
+            {
+              "node": "Has Passport Photo?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Passport Photo?": {
+        "main": [
+          [
+            {
+              "node": "Upload Passport Photo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Initial - website booking intake",
-    "description": "Initial version: public CORS-enabled webhook for the marketing site's booking modal. Looks up the package, computes and updates remaining seats, upserts the customer by phone, creates a Pending/Unpaid booking, sends a Telegram notification including remaining seats, and responds with JSON for the site to show a confirmation.",
+    "name": "Add traveler records + passport photo upload",
+    "description": "Adds a parallel branch after booking creation: reads body.travelerDetails (array of {name, passportNumber, passportPhotoDataUrl}) if the frontend sends it, creates one linked Traveler record per person (first = Primary, rest = Companion), and uploads any attached passport photo directly into Airtable's own attachment storage for that field (not a third-party host). Backward compatible: old requests with no travelerDetails still just create the booking as before, Notify Team and Build Response are untouched.",
     "autosaved": false,
-    "createdAt": "2026-09-17T10:30:09.582Z",
-    "updatedAt": "2026-09-17T10:30:09.582Z",
+    "createdAt": "2026-09-20T19:47:54.324Z",
+    "updatedAt": "2026-09-20T19:47:54.324Z",
     "workflowPublishHistory": [
       {
-        "id": 34,
+        "id": 105,
         "workflowId": "XdySht5GuO1kQ4JI",
-        "versionId": "b1bbc8d3-6ade-4673-8cb4-b3f6ec8cf6d2",
+        "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-17T10:30:15.750Z"
+        "createdAt": "2026-09-20T20:06:00.979Z"
       }
     ]
   }
