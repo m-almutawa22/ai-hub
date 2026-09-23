@@ -3,12 +3,12 @@
   "name": "Almutawa - WhatsApp Core (Reply + Package Lookup)",
   "description": "Core WhatsApp customer-service workflow via Twilio. Receives inbound WhatsApp messages, recognizes returning customers by phone number (upsert into Airtable Customers), saves the message, pulls recent conversation history for context, replies via an AI ag",
   "active": true,
-  "activeVersionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+  "activeVersionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
   "createdAt": "2026-09-16T17:45:21.815Z",
-  "updatedAt": "2026-09-18T13:03:56.325Z",
+  "updatedAt": "2026-09-22T16:18:44.068Z",
   "isArchived": false,
-  "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
-  "versionCounter": 24,
+  "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
+  "versionCounter": 27,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -213,7 +213,7 @@
         "promptType": "define",
         "text": "={{ $json.promptText }}",
         "options": {
-          "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريبياً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقة الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, or has a payment question, in addition to giving them a warm reassuring reply (not instead of it)."
+          "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريباً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nNOT EVERY CONVERSATION IS A TRAVEL CUSTOMER: sometimes the person messaging is a hotel/vendor sending a business offer or factsheet, someone applying for a job at the office, or someone with a complaint unrelated to booking a trip. Recognize these cases from context (e.g. an attached PDF/document described as a factsheet or proposal, mentions of job/employment/CV, a complaint) and call Escalate to Team for them (see below) — don't try to treat a job applicant or vendor as if they were booking a trip. Still reply to them politely and naturally (e.g. thank a vendor for the offer and say the team will review it; tell a job applicant the team will get back to them).\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقه الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, has a payment question, is a job applicant, is a vendor/business sending an offer, or has any other complaint (see full trigger list in this tool's own description) — in addition to giving them a warm reassuring reply (not instead of it)."
         }
       }
     },
@@ -509,8 +509,8 @@
         "chatId": "-1004357436155",
         "operation": "sendMessage",
         "resource": "message",
-        "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short summary in Arabic of why this customer needs human attention and what they are asking for', 'string') }}",
-        "toolDescription": "Notify the office team that a customer needs personal human follow-up — call this whenever the customer sounds frustrated, upset, explicitly asks for a human/staff member, or has a complaint. Call this in addition to giving the customer a reassuring reply, not instead of it. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
+        "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالنوع: {{ $fromAI('issue_type', 'One of: complaint (شكوى), job_application (طلب توظيف), business_offer (عرض تجاري من فندق/مورد), human_request (طلب موظف), other', 'string') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short one-line summary in Arabic of why this customer needs human attention', 'string') }}\nملخص المحادثة: {{ $fromAI('conversation_summary', 'A fuller summary in Arabic (2-5 lines) of the full relevant conversation so far — what they said, what was offered/requested, any details they gave', 'string') }}",
+        "toolDescription": "Notify the office team that this conversation needs human attention. Call this whenever: (1) the customer sounds frustrated, upset, or explicitly asks for a human/staff member; (2) the customer is submitting a JOB APPLICATION or asking about employment/working at the office (طلب توظيف); (3) someone (e.g. a hotel, vendor, or other business) is sending a BUSINESS OFFER or proposal (عرض تجاري) rather than being a travel customer; (4) any other complaint. Call this in addition to giving the customer a normal reassuring reply, not instead of it. Always include a fuller conversation_summary, not just a one-line issue. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
       },
       "credentials": {
         "telegramApi": {
@@ -883,6 +883,79 @@
         "language": "javaScript",
         "mode": "runOnceForAllItems"
       }
+    },
+    {
+      "id": "3a2d2508-f4c8-4f58-a3ff-d5203d046329",
+      "name": "Is Image?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        60
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.MediaContentType0 }}",
+              "operator": {
+                "operation": "startsWith",
+                "type": "string"
+              },
+              "rightValue": "image"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "f756d881-0f6c-4c45-a827-cbec7ce3b5eb",
+      "name": "Handle Non-Image Document",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -60
+      ],
+      "parameters": {
+        "jsCode": "const originalBody = $('WhatsApp Inbound').item.json.body;\nconst fileName = originalBody.Body || 'ملف';\nconst mime = originalBody.MediaContentType0 || 'unknown';\nconst newBody = Object.assign({}, originalBody, { Body: '[أرسل العميل ملف مرفق (' + mime + '): ' + fileName + ' \\u2014 لسه ما نقدر نحلل هذا النوع من الملفات تلقائياً، رد عليه عادي واطلب منه صورة إذا يحتاج]' });\nreturn [{ json: { body: newBody } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "d244e9fb-a769-441c-9a20-91b424185bb5",
+      "name": "Forward File to Team",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        -140
+      ],
+      "parameters": {
+        "additionalFields": {
+          "appendAttribution": false,
+          "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}"
+        },
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "chatId": "-1004357436155",
+        "operation": "sendDocument",
+        "resource": "message"
+      },
+      "webhookId": "e96715ff-06af-4ccb-a77c-6fc21757cde1",
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      }
     }
   ],
   "connections": {
@@ -1131,7 +1204,7 @@
         ],
         [
           {
-            "node": "Analyze Image",
+            "node": "Is Image?",
             "type": "main",
             "index": 0
           }
@@ -1219,6 +1292,40 @@
           }
         ]
       ]
+    },
+    "Is Image?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Non-Image Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Non-Image Document": {
+      "main": [
+        [
+          {
+            "node": "Normalize Incoming Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Forward File to Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1255,7 +1362,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+    "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
     "workflowId": "GqEsyy2DepmntADN",
     "nodes": [
       {
@@ -1459,7 +1566,7 @@
           "promptType": "define",
           "text": "={{ $json.promptText }}",
           "options": {
-            "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريبياً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقة الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, or has a payment question, in addition to giving them a warm reassuring reply (not instead of it)."
+            "systemMessage": "You are the WhatsApp customer-service assistant for \"مكتب المطوع للسياحة\" (Al-Mutawa Tourism), a travel agency in Bahrain serving Bahraini and Gulf (especially Saudi Eastern Province) customers. Reply in Gulf Arabic by default, matching the customer's language and tone (switch to English only if they write in English).\n\nCRITICAL TONE RULES — you must sound like a real, busy, professional Bahraini travel agent typing quickly on WhatsApp, NEVER like a scripted bot:\n- Keep almost every reply to 1-3 short sentences. Real agents don't write paragraphs.\n- NEVER repeat instructions, disclaimers, or context you already said earlier in this conversation. If you already explained something, don't re-explain it — just answer the new point.\n- Ask ONE focused question at a time, not a checklist of several questions stacked together.\n- Only greet/welcome the customer on their very first message in the conversation history. If the conversation history already contains previous messages, do NOT re-greet or re-introduce yourself.\n- Vary your phrasing naturally — don't reuse the same sentence structure or stock phrases every message.\n- The ONLY exception to the short-reply rule is the official booking confirmation form (below), which must be sent in full exactly as written when it applies.\n\nCRITICAL — PAYMENT: There is currently NO online payment link, payment gateway, or automated Benefit/card payment system in this system. NEVER tell a customer you will send them a payment link, an online payment link, or that you can process Benefit/card payment yourself — this is not true and will embarrass the office. If a customer asks about paying (Benefit, card, cash, bank transfer), tell them payment is arranged directly with the office team (mention they'll coordinate the payment method with them), and consider calling Escalate to Team so staff follows up on payment directly. Never invent or promise capabilities this system does not have.\n\nDATES — HIJRI: all package dates in the system are Gregorian. If a customer asks about or mentions a Hijri (هجري) date, use your own knowledge to convert between Hijri and Gregorian and answer naturally in whichever calendar they asked about; when giving a Hijri date derived from a Gregorian one (or vice versa), mention it's an approximate conversion (تقريباً) since exact Hijri dates depend on moon sighting.\n\nCURRENCY CONVERSION: all prices in the system are in Bahraini Dinar (BHD). The office uses these FIXED rates — use them directly, do not guess: 1 BHD = 10 SAR (Saudi Riyal), and 1 USD = 0.387 BHD (so 1 BHD ≈ 2.584 USD). For SAR and USD, calculate yourself using these exact fixed rates, labeled as the office's rate. For ANY OTHER currency (EUR, GBP, KWD, AED, EGP, etc.), call the Get Live Exchange Rate tool to get today's live BHD rate, then convert — tell the customer this is today's approximate live rate (rates change daily). In all cases always also state the original BHD price alongside the converted amount.\n\nYou may be given a 'Known customer profile' block with notes from earlier conversations (possibly days ago) — use it naturally to continue where things left off, without needing the customer to repeat themselves.\n\nNOT EVERY CONVERSATION IS A TRAVEL CUSTOMER: sometimes the person messaging is a hotel/vendor sending a business offer or factsheet, someone applying for a job at the office, or someone with a complaint unrelated to booking a trip. Recognize these cases from context (e.g. an attached PDF/document described as a factsheet or proposal, mentions of job/employment/CV, a complaint) and call Escalate to Team for them (see below) — don't try to treat a job applicant or vendor as if they were booking a trip. Still reply to them politely and naturally (e.g. thank a vendor for the offer and say the team will review it; tell a job applicant the team will get back to them).\n\nIMPORTANT: Regardless of what language you use when replying to the customer, ALL content you write for internal team tools (Update Customer Profile notes, Notify Team - Booking Confirmed, Escalate to Team) MUST always be written in Arabic (Gulf dialect), since the office staff reads Arabic. Never write these internal notes in English even if the customer wrote in English.\n\nTOOLS AND WHEN TO USE THEM:\n- Search Live Packages: to answer questions about destinations, prices, dates, or availability. USE YOUR OWN GENERAL KNOWLEDGE to figure out what place the customer actually means before searching — customers often name a landmark, shrine, island, or nickname rather than the exact city/country stored in the system. For example: \"زيارة الإمام الحسين\" → that shrine is in Karbala, Iraq, so also search for Iraq/Karbala; \"السيدة زينب\" → Damascus, Syria; \"جزيرة ياس\" → Abu Dhabi, UAE. A package's Title (its common/marketing name) may differ from its Destination field (the official city/country) — always search both. If your first search returns nothing, do a SECOND search with broader or alternate terms derived from your own knowledge (the landmark name, the city, the country, spelling variants) before telling the customer nothing is available. NEVER invent package details, prices, or dates; only state what the tool actually returns, and never mention expired or past packages.\n- Get Live Exchange Rate: use for currency conversions other than SAR/USD, as described above.\n- Update Customer Profile: call this whenever you learn a new durable fact worth remembering for future conversations (a stated preference, booking intent, documents mentioned/sent, a pending request). Always pass the FULL updated summary since it overwrites the previous notes.\n- Register Booking + Notify Team - Booking Confirmed: when the customer clearly confirms a specific package, dates, and number of travelers and wants to proceed, call Register Booking first, then IMMEDIATELY call Notify Team - Booking Confirmed with the full details, using exact real figures (never write vague placeholders like \"same as chat\" — always state the actual date, number, and price you have). THEN send the customer EXACTLY this official confirmation form as your reply (fill in what you already know, leave the rest as blank lines for them to complete) — do NOT ask them to type passport numbers, nationalities, or birth dates as plain text; passport/ID details come ONLY from photos they send, never typed. Send this form ONCE per booking, not repeatedly:\n\nشكراً لاختياركم *المطوع للسياحة*،..\n\n🧾في حالة رغبتكم بتاكيد الحجز يرجى ملئ الاستمارة .. \nالاسم :\nرقم الهاتف :\nعدد الأشخاص :\nعدد المقاعد الإضافية:\nتاريخ الرحلة:\nطيران او بر :\nالمقدم :\nالباقي :\nملاحظات :  \n*يرجى إرسال صور الجوازات او البطاقة الذكية (بشرط وجود مدة وصلاحيه فيها)*\nيمكن السفر بأي من البطاقه الذكيه او الجواز\n\nنسأل الله ان يوفقنا لان نكون عند حسن ظنكم، كما نتطلع لاقتراحاتكم البناءة.\nوشكرا لكم على تعاونكم ، ونتمنى لكم رحلة سعيدة وممتعة مع  المطوع للسياحة ☺️\n\n- Escalate to Team: call this whenever the customer sounds frustrated, upset, or explicitly asks for a human/staff member, has a payment question, is a job applicant, is a vendor/business sending an offer, or has any other complaint (see full trigger list in this tool's own description) — in addition to giving them a warm reassuring reply (not instead of it)."
           }
         }
       },
@@ -1755,8 +1862,8 @@
           "chatId": "-1004357436155",
           "operation": "sendMessage",
           "resource": "message",
-          "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short summary in Arabic of why this customer needs human attention and what they are asking for', 'string') }}",
-          "toolDescription": "Notify the office team that a customer needs personal human follow-up — call this whenever the customer sounds frustrated, upset, explicitly asks for a human/staff member, or has a complaint. Call this in addition to giving the customer a reassuring reply, not instead of it. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
+          "text": "=🚨 *يحتاج متابعة بشرية*\nالعميل: {{ $('Normalize Incoming Message').item.json.profileName }}\nرقم الهاتف: {{ $('Normalize Incoming Message').item.json.rawFrom.replace('whatsapp:', '') }}\nالنوع: {{ $fromAI('issue_type', 'One of: complaint (شكوى), job_application (طلب توظيف), business_offer (عرض تجاري من فندق/مورد), human_request (طلب موظف), other', 'string') }}\nالموضوع: {{ $fromAI('issue_summary', 'A short one-line summary in Arabic of why this customer needs human attention', 'string') }}\nملخص المحادثة: {{ $fromAI('conversation_summary', 'A fuller summary in Arabic (2-5 lines) of the full relevant conversation so far — what they said, what was offered/requested, any details they gave', 'string') }}",
+          "toolDescription": "Notify the office team that this conversation needs human attention. Call this whenever: (1) the customer sounds frustrated, upset, or explicitly asks for a human/staff member; (2) the customer is submitting a JOB APPLICATION or asking about employment/working at the office (طلب توظيف); (3) someone (e.g. a hotel, vendor, or other business) is sending a BUSINESS OFFER or proposal (عرض تجاري) rather than being a travel customer; (4) any other complaint. Call this in addition to giving the customer a normal reassuring reply, not instead of it. Always include a fuller conversation_summary, not just a one-line issue. All text you provide for this tool's parameters MUST be written in Arabic (Gulf dialect)."
         },
         "credentials": {
           "telegramApi": {
@@ -2129,6 +2236,79 @@
           "language": "javaScript",
           "mode": "runOnceForAllItems"
         }
+      },
+      {
+        "id": "3a2d2508-f4c8-4f58-a3ff-d5203d046329",
+        "name": "Is Image?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          480,
+          60
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body.MediaContentType0 }}",
+                "operator": {
+                  "operation": "startsWith",
+                  "type": "string"
+                },
+                "rightValue": "image"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "f756d881-0f6c-4c45-a827-cbec7ce3b5eb",
+        "name": "Handle Non-Image Document",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          -60
+        ],
+        "parameters": {
+          "jsCode": "const originalBody = $('WhatsApp Inbound').item.json.body;\nconst fileName = originalBody.Body || 'ملف';\nconst mime = originalBody.MediaContentType0 || 'unknown';\nconst newBody = Object.assign({}, originalBody, { Body: '[أرسل العميل ملف مرفق (' + mime + '): ' + fileName + ' \\u2014 لسه ما نقدر نحلل هذا النوع من الملفات تلقائياً، رد عليه عادي واطلب منه صورة إذا يحتاج]' });\nreturn [{ json: { body: newBody } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "d244e9fb-a769-441c-9a20-91b424185bb5",
+        "name": "Forward File to Team",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          700,
+          -140
+        ],
+        "parameters": {
+          "additionalFields": {
+            "appendAttribution": false,
+            "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}"
+          },
+          "binaryData": true,
+          "binaryPropertyName": "data",
+          "chatId": "-1004357436155",
+          "operation": "sendDocument",
+          "resource": "message"
+        },
+        "webhookId": "e96715ff-06af-4ccb-a77c-6fc21757cde1",
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        }
       }
     ],
     "connections": {
@@ -2377,7 +2557,7 @@
           ],
           [
             {
-              "node": "Analyze Image",
+              "node": "Is Image?",
               "type": "main",
               "index": 0
             }
@@ -2465,23 +2645,57 @@
             }
           ]
         ]
+      },
+      "Is Image?": {
+        "main": [
+          [
+            {
+              "node": "Analyze Image",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Handle Non-Image Document",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Handle Non-Image Document": {
+        "main": [
+          [
+            {
+              "node": "Normalize Incoming Message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Forward File to Team",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Retry media download 3x before falling back to asking customer",
-    "description": "Updated nodes: Download Media",
+    "name": "Widen escalation to job apps + business offers, add summary",
+    "description": "Broadened the Escalate to Team tool and the agent's instructions to also cover job/employment applications and business offers/proposals from vendors (hotels etc.), not just complaints - each now sends a fuller conversation summary plus the customer's phone number to the Telegram group.",
     "autosaved": false,
-    "createdAt": "2026-09-18T13:03:56.326Z",
-    "updatedAt": "2026-09-18T13:03:56.326Z",
+    "createdAt": "2026-09-22T16:18:44.070Z",
+    "updatedAt": "2026-09-22T16:18:44.070Z",
     "workflowPublishHistory": [
       {
-        "id": 86,
+        "id": 119,
         "workflowId": "GqEsyy2DepmntADN",
-        "versionId": "80fc94c7-ad8f-4572-8f30-e9098a3e1126",
+        "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-18T13:04:00.114Z"
+        "createdAt": "2026-09-22T16:18:45.990Z"
       }
     ]
   }
