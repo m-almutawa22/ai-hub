@@ -1,0 +1,331 @@
+{
+  "id": "YpsIELrRqgoGJRdY",
+  "name": "Almutawa - Forward Remaining Hotel PDFs",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-22T18:00:39.799Z",
+  "updatedAt": "2026-09-22T18:00:44.672Z",
+  "isArchived": false,
+  "versionId": "8877d9ec-3324-4ce6-b6cf-a319dd340ef5",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "e86a4e21-b9da-4ffa-84fc-527ff33accba",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9a16d3f6-be5a-46a4-967d-5fea8527383a",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { caption: 'ملفات إضافية من نفس محادثة الفندق (رقم 966561202256) كانت وصلت بنفس الوقت وتعذر تحويلها بسبب نفس الخطأ الفني، يرسلون الآن يدويًا.' } }];"
+      }
+    },
+    {
+      "id": "7e4f9547-2cac-4777-aaff-c1a387c2e60e",
+      "name": "Download Jeddah EN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages/MM547923e8ed77acc0408ebaccd7e409f1/Media/ME6bf62cc0720a890d78a65718e88d0ef4",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "b14c90b5-d47d-4812-9218-3c1d1d7e3116",
+      "name": "Send Jeddah EN",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendDocument",
+        "chatId": "-1004357436155",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Build Summary').item.json.caption }}",
+          "appendAttribution": false,
+          "fileName": "Hotel-Factsheet-Sedra-Jeddah-EN.pdf"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "c9aa7d2e-ad74-4a92-8c39-256faaaf2fc5"
+    },
+    {
+      "id": "ce6af6be-40aa-466d-824a-0d6b7387cd31",
+      "name": "Download Jeddah AR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages/MMf99521a8c9420ea6bb20de6292efa300/Media/ME1aa8b362a87a1aabe1e872acc22db5ab",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "56e1a57b-d01d-442f-98c0-503184a1ad22",
+      "name": "Send Jeddah AR",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendDocument",
+        "chatId": "-1004357436155",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Build Summary').item.json.caption }}",
+          "appendAttribution": false,
+          "fileName": "Hotel-Factsheet-Sedra-Jeddah-AR.pdf"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "366922c5-1118-456c-b122-21b8e295e55a"
+    },
+    {
+      "id": "7aff4080-bf66-4a8d-8afb-6e0f8ba17887",
+      "name": "Download Madinah AR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages/MM65a7e84b01b02f0300008b20bceff417/Media/ME04528a93a709be0122a378db7b9ce51f",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "05198115-a44e-42a1-8ed3-d56eb6eb1fc1",
+      "name": "Send Madinah AR",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendDocument",
+        "chatId": "-1004357436155",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Build Summary').item.json.caption }}",
+          "appendAttribution": false,
+          "fileName": "Factsheet-Sedra-Al-Alami-Hotel-Madinah-AR.pdf"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "c5075d71-a785-4ab6-aafe-77602526cbc8"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Download Jeddah EN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Jeddah EN": {
+      "main": [
+        [
+          {
+            "node": "Send Jeddah EN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Jeddah EN": {
+      "main": [
+        [
+          {
+            "node": "Download Jeddah AR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Jeddah AR": {
+      "main": [
+        [
+          {
+            "node": "Send Jeddah AR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Jeddah AR": {
+      "main": [
+        [
+          {
+            "node": "Download Madinah AR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Madinah AR": {
+      "main": [
+        [
+          {
+            "node": "Send Madinah AR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "YpsIELrRqgoGJRdY",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-22T18:00:39.803Z",
+      "updatedAt": "2026-09-22T18:00:39.803Z"
+    }
+  ],
+  "activeVersion": null
+}
