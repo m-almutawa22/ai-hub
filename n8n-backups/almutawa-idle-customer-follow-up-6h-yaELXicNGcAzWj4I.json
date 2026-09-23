@@ -3,12 +3,12 @@
   "name": "Almutawa - Idle Customer Follow-up (6h)",
   "description": "Hourly job that scans inbound WhatsApp messages, finds customers whose most recent message was sent 6-7 hours ago with no reply from them since, and posts a summary to the office Telegram group as a nudge for personal follow-up.",
   "active": true,
-  "activeVersionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+  "activeVersionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
   "createdAt": "2026-09-16T19:35:26.294Z",
-  "updatedAt": "2026-09-17T05:15:52.385Z",
+  "updatedAt": "2026-09-22T16:44:42.227Z",
   "isArchived": false,
-  "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
-  "versionCounter": 3,
+  "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
+  "versionCounter": 4,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -102,7 +102,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "-1004357436155",
-        "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Find Customers Idle 6h+').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Find Customers Idle 6h+').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
+        "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Parse Classification').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Parse Classification').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -147,6 +147,89 @@
           "name": "Airtable Personal Access Token account"
         }
       }
+    },
+    {
+      "id": "f1eba9c5-29cd-4e52-b6fe-f4a062609aa7",
+      "name": "Classify Message Intent",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -120
+      ],
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "operation": "response",
+        "options": {
+          "maxTokens": 60
+        },
+        "resource": "text",
+        "responses": {
+          "values": [
+            {
+              "content": "=رسالة العميل الأخيرة: \"{{ $json.message }}\"\n\nحلل هذي الرسالة وجاوب بصيغة JSON فقط بدون أي نص إضافي: {\"needs_followup\": true او false}.\nneeds_followup تكون true فقط إذا كانت الرسالة تمثل استفسار جدي عن رحلة، باقة، فندق، طيران، أو حجز يحتاج متابعة بشرية.\nتكون false إذا كانت مجرد تحية صباحية/مسائية، دعاء، تهنئة، شكر، او رسالة يومية عامة بدون طلب فعلي (عادة بحرينية شائعة يرسلها البعض يوميًا للأرقام التجارية والشخصية بدون تمييز).",
+              "role": "user",
+              "type": "text"
+            }
+          ]
+        },
+        "simplify": true
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "99c3b743-e619-46ee-8cee-b017efa13c83",
+      "name": "Parse Classification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "const raw = $input.item.json;\nconst text = raw.content || raw.output_text || raw.text || JSON.stringify(raw);\nlet parsed = { needs_followup: true };\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nconst orig = $('Find Customers Idle 6h+').item.json;\nreturn { json: { phone: orig.phone, message: orig.message, timestamp: orig.timestamp, customerId: orig.customerId, needsFollowup: !!parsed.needs_followup } };",
+        "language": "javaScript",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "889c66cf-bcfc-4ec1-9937-f2785ca28eb2",
+      "name": "Needs Follow-up?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        -120
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needsFollowup }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
     }
   ],
   "connections": {
@@ -172,22 +255,55 @@
         ]
       ]
     },
-    "Find Customers Idle 6h+": {
+    "Get Customer Profile": {
       "main": [
         [
           {
-            "node": "Get Customer Profile",
+            "node": "Send Idle Customer Summary",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Customer Profile": {
+    "Find Customers Idle 6h+": {
       "main": [
         [
           {
-            "node": "Send Idle Customer Summary",
+            "node": "Classify Message Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Message Intent": {
+      "main": [
+        [
+          {
+            "node": "Parse Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Classification": {
+      "main": [
+        [
+          {
+            "node": "Needs Follow-up?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Follow-up?": {
+      "main": [
+        [
+          {
+            "node": "Get Customer Profile",
             "type": "main",
             "index": 0
           }
@@ -238,7 +354,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+    "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
     "workflowId": "yaELXicNGcAzWj4I",
     "nodes": [
       {
@@ -331,7 +447,7 @@
           "resource": "message",
           "operation": "sendMessage",
           "chatId": "-1004357436155",
-          "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Find Customers Idle 6h+').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Find Customers Idle 6h+').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
+          "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Parse Classification').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Parse Classification').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
           "additionalFields": {
             "appendAttribution": false
           }
@@ -376,6 +492,89 @@
             "name": "Airtable Personal Access Token account"
           }
         }
+      },
+      {
+        "id": "f1eba9c5-29cd-4e52-b6fe-f4a062609aa7",
+        "name": "Classify Message Intent",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2.3,
+        "position": [
+          448,
+          -120
+        ],
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4o-mini"
+          },
+          "operation": "response",
+          "options": {
+            "maxTokens": 60
+          },
+          "resource": "text",
+          "responses": {
+            "values": [
+              {
+                "content": "=رسالة العميل الأخيرة: \"{{ $json.message }}\"\n\nحلل هذي الرسالة وجاوب بصيغة JSON فقط بدون أي نص إضافي: {\"needs_followup\": true او false}.\nneeds_followup تكون true فقط إذا كانت الرسالة تمثل استفسار جدي عن رحلة، باقة، فندق، طيران، أو حجز يحتاج متابعة بشرية.\nتكون false إذا كانت مجرد تحية صباحية/مسائية، دعاء، تهنئة، شكر، او رسالة يومية عامة بدون طلب فعلي (عادة بحرينية شائعة يرسلها البعض يوميًا للأرقام التجارية والشخصية بدون تمييز).",
+                "role": "user",
+                "type": "text"
+              }
+            ]
+          },
+          "simplify": true
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "99c3b743-e619-46ee-8cee-b017efa13c83",
+        "name": "Parse Classification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          -120
+        ],
+        "parameters": {
+          "jsCode": "const raw = $input.item.json;\nconst text = raw.content || raw.output_text || raw.text || JSON.stringify(raw);\nlet parsed = { needs_followup: true };\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nconst orig = $('Find Customers Idle 6h+').item.json;\nreturn { json: { phone: orig.phone, message: orig.message, timestamp: orig.timestamp, customerId: orig.customerId, needsFollowup: !!parsed.needs_followup } };",
+          "language": "javaScript",
+          "mode": "runOnceForEachItem"
+        }
+      },
+      {
+        "id": "889c66cf-bcfc-4ec1-9937-f2785ca28eb2",
+        "name": "Needs Follow-up?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          896,
+          -120
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.needsFollowup }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
       }
     ],
     "connections": {
@@ -401,17 +600,6 @@
           ]
         ]
       },
-      "Find Customers Idle 6h+": {
-        "main": [
-          [
-            {
-              "node": "Get Customer Profile",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Get Customer Profile": {
         "main": [
           [
@@ -422,23 +610,67 @@
             }
           ]
         ]
+      },
+      "Find Customers Idle 6h+": {
+        "main": [
+          [
+            {
+              "node": "Classify Message Intent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Classify Message Intent": {
+        "main": [
+          [
+            {
+              "node": "Parse Classification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Classification": {
+        "main": [
+          [
+            {
+              "node": "Needs Follow-up?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Needs Follow-up?": {
+        "main": [
+          [
+            {
+              "node": "Get Customer Profile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Use real profile summary in idle follow-up, translate to Arabic",
-    "description": "Added nodes: Get Customer Profile\nUpdated nodes: Find Customers Idle 6h+, Send Idle Customer Summary\nConnections: 2 added, 1 removed",
+    "name": "Skip 6h follow-up for greeting-only chats",
+    "description": "Adds a classification step before the 6-hour idle nudge: the customer's last message is checked by AI to see if it's a genuine trip/package/booking inquiry, or just a common Bahraini daily greeting/dua/congratulation sent indiscriminately to business and personal numbers. The Telegram follow-up alert now only fires for genuine inquiries.",
     "autosaved": false,
-    "createdAt": "2026-09-17T05:15:52.386Z",
-    "updatedAt": "2026-09-17T05:15:52.386Z",
+    "createdAt": "2026-09-22T16:44:42.228Z",
+    "updatedAt": "2026-09-22T16:44:42.228Z",
     "workflowPublishHistory": [
       {
-        "id": 29,
+        "id": 121,
         "workflowId": "yaELXicNGcAzWj4I",
-        "versionId": "1bdab95c-0f69-4ebd-9f84-02d0914862ae",
+        "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-17T05:15:54.323Z"
+        "createdAt": "2026-09-22T16:44:43.958Z"
       }
     ]
   }
