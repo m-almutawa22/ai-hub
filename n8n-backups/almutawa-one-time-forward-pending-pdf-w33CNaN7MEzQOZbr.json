@@ -1,0 +1,222 @@
+{
+  "id": "w33CNaN7MEzQOZbr",
+  "name": "Almutawa - One-time Forward Pending PDF",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-22T16:16:55.390Z",
+  "updatedAt": "2026-09-22T16:16:58.301Z",
+  "isArchived": false,
+  "versionId": "b2ff9e67-ff5b-4844-986b-592277e46cb3",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "ddd32bb0-e898-42a1-ba87-82b788378bdc",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ecad94c6-5c27-4a52-a0f1-bcb98783d81b",
+      "name": "Get Customer Messages",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblMrAwnefYntNtUH",
+          "cachedResultName": "Messages"
+        },
+        "filterByFormula": "{Phone}=\"966561202256\"",
+        "returnAll": true,
+        "sort": {
+          "property": [
+            {
+              "field": "Timestamp",
+              "direction": "asc"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "f1504809-5496-451b-8a77-d819f11bbd6d",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nconst lines = items.map(function(i){ var f = i.json.fields || {}; return (f['Role']==='Assistant'?'الرد':'العميل') + ': ' + (f['Message Content']||''); });\nconst summary = lines.join('\\n');\nreturn [{ json: { caption: '📎 ملف مرسل من عميل واتساب\\nرقم الهاتف: 966561202256\\nاسم البروفايل: 🍃\\n\\nملخص المحادثة:\\n' + summary + '\\n\\n(هذا ملف كان تعذر تحويله وقت وصوله بسبب خطأ فني تم إصلاحه، يرسل الآن يدويًا)' } }];"
+      }
+    },
+    {
+      "id": "b8c00a43-98bd-41d1-8832-9d5ee5c5a747",
+      "name": "Download PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages/MM9ed2a458fbc3c1f08729a3dc421333e0/Media/MEc9e9fa47a7c4b5d9091b73d603035079",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "c8dcedc3-e267-45d4-9281-e9635c2f5bdc",
+      "name": "Send To Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendDocument",
+        "chatId": "-1004357436155",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $('Build Summary').item.json.caption }}",
+          "appendAttribution": false,
+          "fileName": "Factsheet-Sedra-Al-Alami-Hotel-Madinah.pdf"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "f5a6c8f9-d662-426a-a2a7-10d704cb7114"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Customer Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Customer Messages": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF": {
+      "main": [
+        [
+          {
+            "node": "Send To Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "w33CNaN7MEzQOZbr",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-22T16:16:55.392Z",
+      "updatedAt": "2026-09-22T16:16:55.392Z"
+    }
+  ],
+  "activeVersion": null
+}
