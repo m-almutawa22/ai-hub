@@ -3,12 +3,12 @@
   "name": "Almutawa - Idle Customer Follow-up (6h)",
   "description": "Hourly job that scans inbound WhatsApp messages, finds customers whose most recent message was sent 6-7 hours ago with no reply from them since, and posts a summary to the office Telegram group as a nudge for personal follow-up.",
   "active": true,
-  "activeVersionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
+  "activeVersionId": "176e6f22-267e-41f9-bc10-ab66a5d564ee",
   "createdAt": "2026-09-16T19:35:26.294Z",
-  "updatedAt": "2026-09-22T16:44:42.227Z",
+  "updatedAt": "2026-09-23T11:23:42.959Z",
   "isArchived": false,
-  "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
-  "versionCounter": 4,
+  "versionId": "176e6f22-267e-41f9-bc10-ab66a5d564ee",
+  "versionCounter": 5,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -104,7 +104,8 @@
         "chatId": "-1004357436155",
         "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Parse Classification').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Parse Classification').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "credentials": {
@@ -354,7 +355,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
+    "versionId": "176e6f22-267e-41f9-bc10-ab66a5d564ee",
     "workflowId": "yaELXicNGcAzWj4I",
     "nodes": [
       {
@@ -449,7 +450,8 @@
           "chatId": "-1004357436155",
           "text": "=⏰ *عميل ساكت منذ 6 ساعات*\nرقم الهاتف: {{ $('Parse Classification').item.json.phone }}\nاسم العميل: {{ $json.fields['Full Name'] || 'غير معروف' }}\n\n📝 ملخص المحادثة:\n{{ $json.fields['Notes'] || ('آخر رسالة: ' + $('Parse Classification').item.json.message) }}\n\nقد يستاهل متابعة شخصية معه.",
           "additionalFields": {
-            "appendAttribution": false
+            "appendAttribution": false,
+            "parse_mode": "HTML"
           }
         },
         "credentials": {
@@ -658,19 +660,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Skip 6h follow-up for greeting-only chats",
-    "description": "Adds a classification step before the 6-hour idle nudge: the customer's last message is checked by AI to see if it's a genuine trip/package/booking inquiry, or just a common Bahraini daily greeting/dua/congratulation sent indiscriminately to business and personal numbers. The Telegram follow-up alert now only fires for genuine inquiries.",
+    "name": "Fix Telegram entity-parsing crash risk",
+    "description": "Same fix as the WhatsApp Core workflow: force parse_mode to HTML on the Telegram send node to prevent it silently crashing on Arabic customer names/messages (n8n defaults to a buggy legacy Markdown parser when parse_mode is left unset).",
     "autosaved": false,
-    "createdAt": "2026-09-22T16:44:42.228Z",
-    "updatedAt": "2026-09-22T16:44:42.228Z",
+    "createdAt": "2026-09-23T11:23:42.960Z",
+    "updatedAt": "2026-09-23T11:23:42.960Z",
     "workflowPublishHistory": [
       {
-        "id": 121,
+        "id": 125,
         "workflowId": "yaELXicNGcAzWj4I",
-        "versionId": "5fb7b8a6-1ee5-41be-9216-85c5d232f538",
+        "versionId": "176e6f22-267e-41f9-bc10-ab66a5d564ee",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-22T16:44:43.958Z"
+        "createdAt": "2026-09-23T11:23:44.929Z"
       }
     ]
   }
