@@ -3,12 +3,12 @@
   "name": "Almutawa - WhatsApp Core (Reply + Package Lookup)",
   "description": "Core WhatsApp customer-service workflow via Twilio. Receives inbound WhatsApp messages, recognizes returning customers by phone number (upsert into Airtable Customers), saves the message, pulls recent conversation history for context, replies via an AI ag",
   "active": true,
-  "activeVersionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
+  "activeVersionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
   "createdAt": "2026-09-16T17:45:21.815Z",
-  "updatedAt": "2026-09-22T16:18:44.068Z",
+  "updatedAt": "2026-09-23T11:23:35.853Z",
   "isArchived": false,
-  "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
-  "versionCounter": 27,
+  "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
+  "versionCounter": 28,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -477,7 +477,8 @@
       ],
       "parameters": {
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         },
         "chatId": "-1004357436155",
         "operation": "sendMessage",
@@ -504,7 +505,8 @@
       ],
       "parameters": {
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         },
         "chatId": "-1004357436155",
         "operation": "sendMessage",
@@ -838,7 +840,8 @@
       ],
       "parameters": {
         "additionalFields": {
-          "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}"
+          "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}",
+          "parse_mode": "HTML"
         },
         "binaryData": true,
         "binaryPropertyName": "data",
@@ -941,7 +944,8 @@
       "parameters": {
         "additionalFields": {
           "appendAttribution": false,
-          "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}"
+          "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}",
+          "parse_mode": "HTML"
         },
         "binaryData": true,
         "binaryPropertyName": "data",
@@ -1362,7 +1366,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
+    "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
     "workflowId": "GqEsyy2DepmntADN",
     "nodes": [
       {
@@ -1830,7 +1834,8 @@
         ],
         "parameters": {
           "additionalFields": {
-            "appendAttribution": false
+            "appendAttribution": false,
+            "parse_mode": "HTML"
           },
           "chatId": "-1004357436155",
           "operation": "sendMessage",
@@ -1857,7 +1862,8 @@
         ],
         "parameters": {
           "additionalFields": {
-            "appendAttribution": false
+            "appendAttribution": false,
+            "parse_mode": "HTML"
           },
           "chatId": "-1004357436155",
           "operation": "sendMessage",
@@ -2191,7 +2197,8 @@
         ],
         "parameters": {
           "additionalFields": {
-            "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}"
+            "caption": "=📄 مستند سفر من العميل\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}",
+            "parse_mode": "HTML"
           },
           "binaryData": true,
           "binaryPropertyName": "data",
@@ -2294,7 +2301,8 @@
         "parameters": {
           "additionalFields": {
             "appendAttribution": false,
-            "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}"
+            "caption": "=📎 ملف مرفق من عميل واتساب\nالاسم: {{ $('WhatsApp Inbound').item.json.body.ProfileName }}\nرقم الهاتف: {{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}\nنوع الملف: {{ $('WhatsApp Inbound').item.json.body.MediaContentType0 }}\nاسم الملف: {{ $('WhatsApp Inbound').item.json.body.Body }}",
+            "parse_mode": "HTML"
           },
           "binaryData": true,
           "binaryPropertyName": "data",
@@ -2683,19 +2691,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Widen escalation to job apps + business offers, add summary",
-    "description": "Broadened the Escalate to Team tool and the agent's instructions to also cover job/employment applications and business offers/proposals from vendors (hotels etc.), not just complaints - each now sends a fuller conversation summary plus the customer's phone number to the Telegram group.",
+    "name": "Fix Telegram entity-parsing crash (force HTML parse mode)",
+    "description": "Root cause of the Escalate to Team failures (and a latent bug in every other Telegram-sending node): when parse_mode isn't explicitly set, n8n silently defaults to Telegram's legacy Markdown parser, which throws 'can't find end of the entity' on certain Arabic text/RTL combinations even with zero markdown syntax present - it crashed on a customer's WhatsApp profile name. Explicitly forcing parse_mode to HTML on all our team-notification Telegram nodes fixes this permanently (confirmed via isolated test) since HTML mode doesn't misfire on plain text.",
     "autosaved": false,
-    "createdAt": "2026-09-22T16:18:44.070Z",
-    "updatedAt": "2026-09-22T16:18:44.070Z",
+    "createdAt": "2026-09-23T11:23:35.854Z",
+    "updatedAt": "2026-09-23T11:23:35.854Z",
     "workflowPublishHistory": [
       {
-        "id": 119,
+        "id": 123,
         "workflowId": "GqEsyy2DepmntADN",
-        "versionId": "804bef5e-d51b-4c17-93cf-7a030bb09da0",
+        "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-22T16:18:45.990Z"
+        "createdAt": "2026-09-23T11:23:37.676Z"
       }
     ]
   }
