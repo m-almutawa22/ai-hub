@@ -1,0 +1,100 @@
+{
+  "id": "eIX1QK9uCdZJ2ZOa",
+  "name": "Almutawa - Test Telegram Send",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-23T11:21:53.057Z",
+  "updatedAt": "2026-09-23T11:24:14.342Z",
+  "isArchived": false,
+  "versionId": "94ae6321-bd64-42a0-96e3-2f51e1888ae7",
+  "versionCounter": 4,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "bbd4f35e-65dd-497d-8c8b-b5f4b92163e6",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "db1dcb36-fc1f-4404-934d-723ba5dcc0c4",
+      "name": "Test Send",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004357436155",
+        "text": "🚨 يحتاج متابعة بشرية (متأخر إرساله بسبب خلل فني تم إصلاحه الآن)\nالعميل: البارونــــ ه‍\nرقم الهاتف: 9647850832970\nالنوع: business_offer (مورد عراقي)\nالموضوع: مورد يبيع خطوط إنترنت ومشروبات وكيك بمطارات بغداد والنجف، طلب متابعة الفريق مراراً\nملخص المحادثة: المورد (واتساب 07850832970) أرسل صور وقائمة أسعار ووعد بإرسال ملف Excel/PDF. طلب إبلاغ فريق المبيعات والآن يكرر التواصل. ملاحظة فنية: هذا الإشعار كان يفشل بالإرسال من قبل (تم إصلاحه)، لذلك العميل ما استلم رد على رسالته الأخيرة \"حبيبي\" على واتساب.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "webhookId": "bb44c80e-9d2f-4954-898a-b284b3d15fe3"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Test Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "eIX1QK9uCdZJ2ZOa",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-23T11:21:53.060Z",
+      "updatedAt": "2026-09-23T11:21:53.060Z"
+    }
+  ],
+  "activeVersion": null
+}
