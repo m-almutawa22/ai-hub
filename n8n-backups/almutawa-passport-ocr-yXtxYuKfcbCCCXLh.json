@@ -3,12 +3,12 @@
   "name": "Almutawa - Passport OCR",
   "description": null,
   "active": true,
-  "activeVersionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+  "activeVersionId": "4912c42e-36f4-451c-a8e0-92e9c477db67",
   "createdAt": "2026-09-20T19:46:32.262Z",
-  "updatedAt": "2026-09-20T19:46:35.096Z",
+  "updatedAt": "2026-09-24T21:18:26.589Z",
   "isArchived": false,
-  "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
-  "versionCounter": 1,
+  "versionId": "4912c42e-36f4-451c-a8e0-92e9c477db67",
+  "versionCounter": 2,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -50,7 +50,7 @@
           "value": "gpt-4o",
           "cachedResultName": "gpt-4o"
         },
-        "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
+        "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number, 3) the date of birth in YYYY-MM-DD format if legible, 4) the nationality (as a country name, e.g. \"Bahraini\", \"Saudi\", \"Egyptian\") if legible. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\", \"dob\": \"...\", \"nationality\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
         "inputType": "url",
         "imageUrls": "={{ $json.body.imageDataUrl }}",
         "simplify": true,
@@ -78,7 +78,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '' } }];"
+        "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '', dob: parsed.dob || '', nationality: parsed.nationality || '' } }];"
       }
     }
   ],
@@ -139,7 +139,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+    "versionId": "4912c42e-36f4-451c-a8e0-92e9c477db67",
     "workflowId": "yXtxYuKfcbCCCXLh",
     "nodes": [
       {
@@ -180,7 +180,7 @@
             "value": "gpt-4o",
             "cachedResultName": "gpt-4o"
           },
-          "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
+          "text": "This is a photo of a passport photo page. Read the printed personal details carefully and extract: 1) the holder full name exactly as printed in the Latin/English alphabet (if the passport shows a name in Arabic or another script alongside a Latin transliteration, use the Latin transliteration), 2) the passport number, 3) the date of birth in YYYY-MM-DD format if legible, 4) the nationality (as a country name, e.g. \"Bahraini\", \"Saudi\", \"Egyptian\") if legible. Respond with ONLY a raw JSON object, no markdown, no explanation, in the exact shape {\"fullName\": \"...\", \"passportNumber\": \"...\", \"dob\": \"...\", \"nationality\": \"...\"}. If a field is not clearly readable, use an empty string for that field.",
           "inputType": "url",
           "imageUrls": "={{ $json.body.imageDataUrl }}",
           "simplify": true,
@@ -208,7 +208,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '' } }];"
+          "jsCode": "const raw = $input.first().json;\nconst text = raw.content || raw.output || raw.text || JSON.stringify(raw);\nlet parsed = null;\ntry {\n  const match = String(text).match(/\\{[\\s\\S]*\\}/);\n  if (match) parsed = JSON.parse(match[0]);\n} catch (e) {}\nif (!parsed) return [{ json: { success: false, error: 'parse_failed' } }];\nreturn [{ json: { success: true, fullName: parsed.fullName || '', passportNumber: parsed.passportNumber || '', dob: parsed.dob || '', nationality: parsed.nationality || '' } }];"
         }
       }
     ],
@@ -238,19 +238,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Initial passport OCR endpoint",
-    "description": "New endpoint: POST /webhook/passport-ocr with { imageDataUrl } (a data: URI of the passport photo page). Uses GPT-4o vision to extract fullName and passportNumber, returns { success, fullName, passportNumber }. Used by the website booking form to auto-fill traveler details from an uploaded passport photo.",
+    "name": "Extract DOB and nationality from passport",
+    "description": "Extract date of birth and nationality from the passport photo too, alongside name and passport number, so the website booking form can auto-fill those new fields as well.",
     "autosaved": false,
-    "createdAt": "2026-09-20T19:46:32.266Z",
-    "updatedAt": "2026-09-20T19:46:32.266Z",
+    "createdAt": "2026-09-24T21:18:26.589Z",
+    "updatedAt": "2026-09-24T21:18:26.589Z",
     "workflowPublishHistory": [
       {
-        "id": 101,
+        "id": 129,
         "workflowId": "yXtxYuKfcbCCCXLh",
-        "versionId": "2d50c802-bd17-48cc-ada6-0c632ba494fe",
+        "versionId": "4912c42e-36f4-451c-a8e0-92e9c477db67",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-20T19:46:36.937Z"
+        "createdAt": "2026-09-24T21:18:28.476Z"
       }
     ]
   }
