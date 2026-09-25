@@ -3,12 +3,12 @@
   "name": "Almutawa - Website Booking Intake",
   "description": "Website booking intake: receives a booking request from the public marketing site (package id, name, phone, travelers, notes), decrements the package's remaining seats, upserts the customer, creates a Pending booking, notifies the office Telegram group wi",
   "active": true,
-  "activeVersionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
+  "activeVersionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
   "createdAt": "2026-09-17T10:30:09.580Z",
-  "updatedAt": "2026-09-20T19:47:58.287Z",
+  "updatedAt": "2026-09-24T21:18:02.468Z",
   "isArchived": false,
-  "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
-  "versionCounter": 3,
+  "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
+  "versionCounter": 8,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -204,7 +204,8 @@
             "Number of Travelers": "={{ $('Website Booking Intake').item.json.body.travelers }}",
             "Booking Status": "Pending",
             "Payment Status": "Unpaid",
-            "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}"
+            "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}",
+            "Email": "={{ $('Website Booking Intake').item.json.body.email || '' }}"
           },
           "schema": []
         },
@@ -270,7 +271,7 @@
         220
       ],
       "parameters": {
-        "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  return { json: {\n    fullName: t.name || t.fullName || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
+        "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  var first = t.firstName || '';\n  var last = t.lastName || '';\n  var full = (first || last) ? (first + ' ' + last).trim() : (t.name || t.fullName || '');\n  return { json: {\n    fullName: full,\n    title: t.title || '',\n    dob: t.dob || '',\n    nationality: t.nationality || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
         "language": "javaScript",
         "mode": "runOnceForAllItems"
       }
@@ -298,7 +299,10 @@
             "Booking": "={{ [$json.bookingId] }}",
             "Full Name": "={{ $json.fullName }}",
             "Passport Number": "={{ $json.passportNumber }}",
-            "Role": "={{ $json.role }}"
+            "Role": "={{ $json.role }}",
+            "Title": "={{ $json.title }}",
+            "Nationality": "={{ $json.nationality }}",
+            "Date of Birth": "={{ $json.dob }}"
           }
         },
         "operation": "create",
@@ -528,7 +532,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
+    "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
     "workflowId": "XdySht5GuO1kQ4JI",
     "nodes": [
       {
@@ -723,7 +727,8 @@
               "Number of Travelers": "={{ $('Website Booking Intake').item.json.body.travelers }}",
               "Booking Status": "Pending",
               "Payment Status": "Unpaid",
-              "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}"
+              "Special Requests": "={{ $('Website Booking Intake').item.json.body.notes || '' }}",
+              "Email": "={{ $('Website Booking Intake').item.json.body.email || '' }}"
             },
             "schema": []
           },
@@ -789,7 +794,7 @@
           220
         ],
         "parameters": {
-          "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  return { json: {\n    fullName: t.name || t.fullName || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
+          "jsCode": "const body = $('Website Booking Intake').first().json.body || {};\nconst bookingId = $('Create Website Booking').first().json.id;\nconst travelers = Array.isArray(body.travelerDetails) ? body.travelerDetails : [];\nif (!bookingId || !travelers.length) return [];\nreturn travelers.map(function(t, idx){\n  var first = t.firstName || '';\n  var last = t.lastName || '';\n  var full = (first || last) ? (first + ' ' + last).trim() : (t.name || t.fullName || '');\n  return { json: {\n    fullName: full,\n    title: t.title || '',\n    dob: t.dob || '',\n    nationality: t.nationality || '',\n    passportNumber: t.passportNumber || '',\n    role: idx === 0 ? 'Primary' : 'Companion',\n    bookingId: bookingId,\n    passportPhotoDataUrl: t.passportPhotoDataUrl || ''\n  } };\n});",
           "language": "javaScript",
           "mode": "runOnceForAllItems"
         }
@@ -817,7 +822,10 @@
               "Booking": "={{ [$json.bookingId] }}",
               "Full Name": "={{ $json.fullName }}",
               "Passport Number": "={{ $json.passportNumber }}",
-              "Role": "={{ $json.role }}"
+              "Role": "={{ $json.role }}",
+              "Title": "={{ $json.title }}",
+              "Nationality": "={{ $json.nationality }}",
+              "Date of Birth": "={{ $json.dob }}"
             }
           },
           "operation": "create",
@@ -1015,19 +1023,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Add traveler records + passport photo upload",
-    "description": "Adds a parallel branch after booking creation: reads body.travelerDetails (array of {name, passportNumber, passportPhotoDataUrl}) if the frontend sends it, creates one linked Traveler record per person (first = Primary, rest = Companion), and uploads any attached passport photo directly into Airtable's own attachment storage for that field (not a third-party host). Backward compatible: old requests with no travelerDetails still just create the booking as before, Notify Team and Build Response are untouched.",
+    "name": "add email",
+    "description": "add email mapping to booking creation",
     "autosaved": false,
-    "createdAt": "2026-09-20T19:47:54.324Z",
-    "updatedAt": "2026-09-20T19:47:54.324Z",
+    "createdAt": "2026-09-24T21:18:02.470Z",
+    "updatedAt": "2026-09-24T21:18:02.470Z",
     "workflowPublishHistory": [
       {
-        "id": 105,
+        "id": 127,
         "workflowId": "XdySht5GuO1kQ4JI",
-        "versionId": "19b60d7a-3a9a-45a6-9165-d21dce33fe01",
+        "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-20T20:06:00.979Z"
+        "createdAt": "2026-09-24T21:18:07.123Z"
       }
     ]
   }
