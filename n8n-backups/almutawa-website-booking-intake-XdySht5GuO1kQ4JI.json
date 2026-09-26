@@ -3,12 +3,12 @@
   "name": "Almutawa - Website Booking Intake",
   "description": "Website booking intake: receives a booking request from the public marketing site (package id, name, phone, travelers, notes), decrements the package's remaining seats, upserts the customer, creates a Pending booking, notifies the office Telegram group wi",
   "active": true,
-  "activeVersionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
+  "activeVersionId": "9f356495-e697-4738-8fd5-0e3846591883",
   "createdAt": "2026-09-17T10:30:09.580Z",
-  "updatedAt": "2026-09-24T21:18:02.468Z",
+  "updatedAt": "2026-09-25T14:50:34.661Z",
   "isArchived": false,
-  "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
-  "versionCounter": 8,
+  "versionId": "9f356495-e697-4738-8fd5-0e3846591883",
+  "versionCounter": 11,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -25,7 +25,7 @@
         "httpMethod": "POST",
         "path": "website-booking",
         "authentication": "none",
-        "responseMode": "lastNode",
+        "responseMode": "responseNode",
         "options": {
           "allowedOrigins": "*"
         }
@@ -379,6 +379,36 @@
           "name": "Airtable Personal Access Token account"
         }
       }
+    },
+    {
+      "id": "787c9653-5c7a-4cc4-b002-3a87db8d7c15",
+      "name": "Respond To Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "json",
+        "responseBody": "={{ $('Build Response').item.json }}"
+      }
+    },
+    {
+      "id": "d3bd7ce6-ffa6-43e8-9e84-57a9c702cc76",
+      "name": "No Photo - Skip Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { skipped: true } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
     }
   ],
   "connections": {
@@ -494,6 +524,24 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "No Photo - Skip Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response": {
+      "main": [
+        [
+          {
+            "node": "Respond To Webhook",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
@@ -532,7 +580,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
+    "versionId": "9f356495-e697-4738-8fd5-0e3846591883",
     "workflowId": "XdySht5GuO1kQ4JI",
     "nodes": [
       {
@@ -548,7 +596,7 @@
           "httpMethod": "POST",
           "path": "website-booking",
           "authentication": "none",
-          "responseMode": "lastNode",
+          "responseMode": "responseNode",
           "options": {
             "allowedOrigins": "*"
           }
@@ -902,6 +950,36 @@
             "name": "Airtable Personal Access Token account"
           }
         }
+      },
+      {
+        "id": "787c9653-5c7a-4cc4-b002-3a87db8d7c15",
+        "name": "Respond To Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1568,
+          200
+        ],
+        "parameters": {
+          "options": {},
+          "respondWith": "json",
+          "responseBody": "={{ $('Build Response').item.json }}"
+        }
+      },
+      {
+        "id": "d3bd7ce6-ffa6-43e8-9e84-57a9c702cc76",
+        "name": "No Photo - Skip Upload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1792,
+          300
+        ],
+        "parameters": {
+          "jsCode": "return [{ json: { skipped: true } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
       }
     ],
     "connections": {
@@ -1017,25 +1095,43 @@
               "type": "main",
               "index": 0
             }
+          ],
+          [
+            {
+              "node": "No Photo - Skip Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Response": {
+        "main": [
+          [
+            {
+              "node": "Respond To Webhook",
+              "type": "main",
+              "index": 0
+            }
           ]
         ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "add email",
-    "description": "add email mapping to booking creation",
+    "name": "Connect no-photo branch",
+    "description": "Wire the no-photo branch so it terminates cleanly instead of dead-ending.",
     "autosaved": false,
-    "createdAt": "2026-09-24T21:18:02.470Z",
-    "updatedAt": "2026-09-24T21:18:02.470Z",
+    "createdAt": "2026-09-25T14:50:34.662Z",
+    "updatedAt": "2026-09-25T14:50:34.662Z",
     "workflowPublishHistory": [
       {
-        "id": 127,
+        "id": 136,
         "workflowId": "XdySht5GuO1kQ4JI",
-        "versionId": "3777699c-6a8b-4cf8-9ca0-75bc56dbbd37",
+        "versionId": "9f356495-e697-4738-8fd5-0e3846591883",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-24T21:18:07.123Z"
+        "createdAt": "2026-09-25T14:50:37.286Z"
       }
     ]
   }
