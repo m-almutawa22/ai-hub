@@ -1,0 +1,3095 @@
+{
+  "id": "lqjYB7EP7xHmThVg",
+  "name": "Almutawa - Customer & Staff Auth API",
+  "description": null,
+  "active": true,
+  "activeVersionId": "2ce594d0-3971-4441-866f-636b5345d03c",
+  "createdAt": "2026-09-25T13:45:06.952Z",
+  "updatedAt": "2026-09-25T13:50:54.518Z",
+  "isArchived": false,
+  "versionId": "2ce594d0-3971-4441-866f-636b5345d03c",
+  "versionCounter": 9,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "8bcb814d-01df-4c29-8383-173253978acd",
+      "name": "Auth API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        768
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth-api",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "c480ab3e-8447-43e7-bb39-cb13298365bc"
+    },
+    {
+      "id": "2b744e63-3d48-4214-83d9-84e70f5ac242",
+      "name": "Route by Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        656
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "staff-login",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "staff-login"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "staff-create",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "staff-create"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "customer-signup",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "customer-signup"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "customer-login",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "customer-login"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "send-otp",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "send-otp"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "verify-otp",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "verify-otp"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "reset-password",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "reset-password"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "my-bookings",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "my-bookings"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown-action"
+        }
+      }
+    },
+    {
+      "id": "1b9c6550-7fdc-4bbd-b5dc-3d05442e439d",
+      "name": "Find Staff",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbllUWjf0QyoC8Wmw",
+          "cachedResultName": "Staff"
+        },
+        "filterByFormula": "={{ 'OR({Username}=\"' + $json.body.identifier + '\", {Phone}=\"' + $json.body.identifier + '\")' }}",
+        "returnAll": false,
+        "limit": 1
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "6311e1e4-26ea-4fb9-bdc8-b04dbc2eddbd",
+      "name": "Verify Staff Login",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (!f['Active']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst hash = sha256Hex(body.password + ':' + (f['Password Salt']||''));\nif (hash !== f['Password Hash']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst payload = { id: rec.id, type: 'staff', permissions: f['Permissions']||[], exp: Date.now() + 7*24*60*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, token: tb + '.' + sig, name: f['Full Name'], permissions: f['Permissions']||[] } }];"
+      }
+    },
+    {
+      "id": "6e38edb9-3129-48f7-97a0-e3f3dc604ee2",
+      "name": "Prepare Staff Create",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst body = $('Auth API').item.json.body;\nconst authorized = body.passcode === 'Mutawa2026';\nconst salt = randHex(32);\nconst hash = authorized ? sha256Hex((body.password||'') + ':' + salt) : '';\nreturn [{ json: { authorized: authorized, fullName: body.fullName||'', phone: body.phone||'', username: body.username||'', hash: hash, salt: salt, permissions: Array.isArray(body.permissions) ? body.permissions : [] } }];"
+      }
+    },
+    {
+      "id": "cdfe87a7-0e20-47f4-9ab5-552ccf35ffe6",
+      "name": "Is Authorized Create?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        192
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.authorized }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "9d0c11f4-bc95-4279-b9e6-1976bcde6419",
+      "name": "Create Staff Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbllUWjf0QyoC8Wmw",
+          "cachedResultName": "Staff"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $json.fullName }}",
+            "Phone": "={{ $json.phone }}",
+            "Username": "={{ $json.username }}",
+            "Password Hash": "={{ $json.hash }}",
+            "Password Salt": "={{ $json.salt }}",
+            "Permissions": "={{ $json.permissions }}",
+            "Active": true
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "a7a324f6-d6fe-4524-97cb-fe0cf9bf03ff",
+      "name": "Staff Create Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        96
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: true } }];"
+      }
+    },
+    {
+      "id": "5ea026f7-6b3e-4e47-bb63-b37dc8daa8b5",
+      "name": "Staff Create Denied",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        288
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+      }
+    },
+    {
+      "id": "95a2be5c-01c3-4097-b99b-f1f70d5575d7",
+      "name": "Prepare Signup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        432
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst body = $('Auth API').item.json.body;\nconst salt = randHex(32);\nconst hash = sha256Hex((body.password||'') + ':' + salt);\nreturn [{ json: { phone: body.phone||'', name: body.name||'', hash: hash, salt: salt } }];"
+      }
+    },
+    {
+      "id": "c44c73f5-b9a3-414f-85a1-27112431b744",
+      "name": "Upsert Signup Customer",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        432
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Phone"
+          ],
+          "value": {
+            "Phone": "={{ $json.phone }}",
+            "Full Name": "={{ $json.name }}",
+            "Password Hash": "={{ $json.hash }}",
+            "Password Salt": "={{ $json.salt }}",
+            "Is Registered": false
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "4db07bd1-8ed7-491c-9a7d-4cdc6ed04f12",
+      "name": "Signup Prepared",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        528
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: true, message: 'verify_phone_next' } }];"
+      }
+    },
+    {
+      "id": "c2f2257d-31c3-427f-b163-4a5fb0c9232b",
+      "name": "Find Customer Login",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        576
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "filterByFormula": "={{ '{Phone}=\"' + $json.body.phone + '\"' }}",
+        "returnAll": false,
+        "limit": 1
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "954f9af6-8b1b-49ab-8c08-d08c24379e5e",
+      "name": "Verify Customer Login",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        576
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (!f['Is Registered']) return [{ json: { success: false, error: 'not_registered' } }];\nconst hash = sha256Hex((body.password||'') + ':' + (f['Password Salt']||''));\nif (hash !== f['Password Hash']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst payload = { id: rec.id, type: 'customer', exp: Date.now() + 30*24*60*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, token: tb + '.' + sig, name: f['Full Name'] } }];"
+      }
+    },
+    {
+      "id": "ddf4df10-f422-46a6-aab4-daa8b033253e",
+      "name": "Prepare OTP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        768
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const body = $('Auth API').item.json.body;\nconst code = String(Math.floor(100000 + Math.random()*900000));\nconst expires = new Date(Date.now() + 10*60*1000).toISOString();\nreturn [{ json: { phone: body.phone||'', code: code, purpose: body.purpose||'reset', expires: expires } }];"
+      }
+    },
+    {
+      "id": "4ee320dd-5b9c-4572-99c2-527db476afbe",
+      "name": "Save OTP",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        768
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5JGU2QD0jBTOVK",
+          "cachedResultName": "OTP Codes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone": "={{ $json.phone }}",
+            "Code": "={{ $json.code }}",
+            "Purpose": "={{ $json.purpose }}",
+            "Expires At": "={{ $json.expires }}",
+            "Used": false
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "da552106-c9a1-4540-924d-1bf59eed178c",
+      "name": "Send OTP WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        768
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "To",
+              "value": "={{ 'whatsapp:' + $('Prepare OTP').item.json.phone }}"
+            },
+            {
+              "name": "MessagingServiceSid",
+              "value": "MG4cf17c1ce3add815f97ff92153a3033d"
+            },
+            {
+              "name": "Body",
+              "value": "={{ 'رمز التحقق الخاص بك: ' + $('Prepare OTP').item.json.code + ' (صالح 10 دقائق)' }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "8fcf3f25-8914-4d3e-9778-7c867959a733",
+      "name": "OTP Sent Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        768
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: true } }];"
+      }
+    },
+    {
+      "id": "a202c34c-1cd6-41b8-a624-c41ee4a0175f",
+      "name": "Find OTP",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        1040
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5JGU2QD0jBTOVK",
+          "cachedResultName": "OTP Codes"
+        },
+        "filterByFormula": "={{ 'AND({Phone}=\"' + $json.body.phone + '\", {Code}=\"' + $json.body.code + '\", {Purpose}=\"' + $json.body.purpose + '\", {Used}=FALSE())' }}",
+        "returnAll": false,
+        "limit": 1
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "997f3f25-cc89-4202-ad49-314e304201a9",
+      "name": "Verify OTP Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1040
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nconst body = $('Auth API').item.json.body;\nif (!items.length) return [{ json: { success: false, error: 'invalid_code', otpId: null } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (new Date(f['Expires At']).getTime() < Date.now()) return [{ json: { success: false, error: 'expired', otpId: null } }];\nreturn [{ json: { success: true, otpId: rec.id, phone: body.phone, purpose: body.purpose } }];"
+      }
+    },
+    {
+      "id": "15186e36-f944-4568-bb03-84c62e53500e",
+      "name": "OTP Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        1040
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.success }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "4cc93842-ad14-4a83-a066-244a4254bd5d",
+      "name": "Mark OTP Used",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        960
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tbl5JGU2QD0jBTOVK",
+          "cachedResultName": "OTP Codes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $json.otpId }}",
+            "Used": true
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "07b860e9-7698-448a-8517-4316b779d25e",
+      "name": "Find Account For OTP",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        960
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "filterByFormula": "={{ '{Phone}=\"' + $('Verify OTP Code').item.json.phone + '\"' }}",
+        "returnAll": false,
+        "limit": 1
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "50c4a76f-55d3-46de-a379-e71d7062d0ef",
+      "name": "Finalize OTP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        960
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst purpose = $('Verify OTP Code').item.json.purpose;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'account_not_found' } }];\nconst rec = items[0].json;\nif (purpose === 'signup') {\n  return [{ json: { success: true, needsUpdate: 'registered', customerId: rec.id } }];\n}\nconst payload = { id: rec.id, type: 'customer', purpose: 'reset', exp: Date.now() + 10*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, resetToken: tb + '.' + sig } }];"
+      }
+    },
+    {
+      "id": "d1ee02ff-458e-4e43-a3bb-909e4d6a9076",
+      "name": "Is Signup Purpose?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        960
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needsUpdate }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "registered"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "22443a58-64a9-4a83-99f6-2973912f40f6",
+      "name": "Mark Customer Registered",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        800
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $json.customerId }}",
+            "Is Registered": true
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "e44c4509-20df-4e23-bb46-f0d9de259939",
+      "name": "OTP Invalid Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        1136
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: $input.first().json }];"
+      }
+    },
+    {
+      "id": "b217aa85-2ead-431e-851b-759b961f6fd7",
+      "name": "Verify Reset Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1440
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst parts = String(body.resetToken||'').split('.');\nif (parts.length !== 2) return [{ json: { valid: false } }];\nconst expected = hmac256Hex(SECRET, parts[0]);\nif (parts[1] !== expected) return [{ json: { valid: false } }];\nlet payload;\ntry { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch(e) { return [{ json: { valid: false } }]; }\nif (!payload.exp || Date.now() > payload.exp || payload.purpose !== 'reset') return [{ json: { valid: false } }];\nconst salt = randHex(32);\nconst hash = sha256Hex((body.newPassword||'') + ':' + salt);\nreturn [{ json: { valid: true, id: payload.id, type: payload.type, salt: salt, hash: hash } }];"
+      }
+    },
+    {
+      "id": "5e9667f2-7928-4f7f-804e-5e1997fe2e59",
+      "name": "Reset Token Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        1440
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "2ee96dbc-219c-4629-b7f6-5bfcda421079",
+      "name": "Update Customer Password",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        1344
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz",
+          "cachedResultName": "Customers"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $json.id }}",
+            "Password Hash": "={{ $json.hash }}",
+            "Password Salt": "={{ $json.salt }}"
+          }
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "c6eefe05-574e-4675-8b2b-840447f04af7",
+      "name": "Reset Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1344
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: true } }];"
+      }
+    },
+    {
+      "id": "f277ff2c-4426-412b-bcad-01cc8ca1c40b",
+      "name": "Reset Invalid Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1536
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: false, error: 'invalid_or_expired_token' } }];"
+      }
+    },
+    {
+      "id": "2b8a3d16-dc76-4a8d-8e29-eb2a55cf70c1",
+      "name": "Verify Bookings Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1824
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst parts = String(body.token||'').split('.');\nif (parts.length !== 2) return [{ json: { valid: false } }];\nconst expected = hmac256Hex(SECRET, parts[0]);\nif (parts[1] !== expected) return [{ json: { valid: false } }];\nlet payload;\ntry { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch(e) { return [{ json: { valid: false } }]; }\nif (!payload.exp || Date.now() > payload.exp) return [{ json: { valid: false } }];\nreturn [{ json: { valid: true, customerId: payload.id } }];"
+      }
+    },
+    {
+      "id": "b8937dd5-ea97-4180-9571-998124c6d426",
+      "name": "Bookings Token Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        1824
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "8b2a76f2-6f38-42ba-8e45-0146c3cda113",
+      "name": "Fetch My Bookings",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        1728
+      ],
+      "parameters": {
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK",
+          "cachedResultName": "ALMUTAWA Tourism CRM"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblZ6AQCBmEY2KYHr",
+          "cachedResultName": "Bookings"
+        },
+        "filterByFormula": "={{ 'SEARCH(\"' + $json.customerId + '\", ARRAYJOIN({Customer}))>0' }}",
+        "returnAll": true
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "4ac71ca2-fa5b-4a6e-a9a5-2299d9eb44bd",
+      "name": "Build Bookings Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1728
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const items = $input.all();\nconst list = items.map(function(i){ var f = i.json.fields||{}; return { id: i.json.id, status: f['Booking Status'], paymentStatus: f['Payment Status'], travelers: f['Number of Travelers'], notes: f['Special Requests'] }; });\nreturn [{ json: { success: true, bookings: list } }];"
+      }
+    },
+    {
+      "id": "62c25ec0-f695-4b7f-b337-df1683828434",
+      "name": "Bookings Auth Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1920
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+      }
+    },
+    {
+      "id": "2c9e77ba-c47f-4fbf-b394-c2556df6b160",
+      "name": "Unknown Action Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        2016
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: false, error: 'unknown_action' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Auth API": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action": {
+      "main": [
+        [
+          {
+            "node": "Find Staff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Staff Create",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Signup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Customer Login",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare OTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find OTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verify Reset Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Verify Bookings Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Action Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Staff": {
+      "main": [
+        [
+          {
+            "node": "Verify Staff Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Staff Create": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Create?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized Create?": {
+      "main": [
+        [
+          {
+            "node": "Create Staff Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Staff Create Denied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Staff Record": {
+      "main": [
+        [
+          {
+            "node": "Staff Create Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Signup": {
+      "main": [
+        [
+          {
+            "node": "Upsert Signup Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Signup Customer": {
+      "main": [
+        [
+          {
+            "node": "Signup Prepared",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Customer Login": {
+      "main": [
+        [
+          {
+            "node": "Verify Customer Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare OTP": {
+      "main": [
+        [
+          {
+            "node": "Save OTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save OTP": {
+      "main": [
+        [
+          {
+            "node": "Send OTP WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send OTP WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "OTP Sent Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find OTP": {
+      "main": [
+        [
+          {
+            "node": "Verify OTP Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify OTP Code": {
+      "main": [
+        [
+          {
+            "node": "OTP Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OTP Valid?": {
+      "main": [
+        [
+          {
+            "node": "Mark OTP Used",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OTP Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark OTP Used": {
+      "main": [
+        [
+          {
+            "node": "Find Account For OTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Account For OTP": {
+      "main": [
+        [
+          {
+            "node": "Finalize OTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize OTP": {
+      "main": [
+        [
+          {
+            "node": "Is Signup Purpose?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Signup Purpose?": {
+      "main": [
+        [
+          {
+            "node": "Mark Customer Registered",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OTP Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Customer Registered": {
+      "main": [
+        [
+          {
+            "node": "Signup Prepared",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Reset Token": {
+      "main": [
+        [
+          {
+            "node": "Reset Token Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset Token Valid?": {
+      "main": [
+        [
+          {
+            "node": "Update Customer Password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reset Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Customer Password": {
+      "main": [
+        [
+          {
+            "node": "Reset Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Bookings Token": {
+      "main": [
+        [
+          {
+            "node": "Bookings Token Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bookings Token Valid?": {
+      "main": [
+        [
+          {
+            "node": "Fetch My Bookings",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bookings Auth Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch My Bookings": {
+      "main": [
+        [
+          {
+            "node": "Build Bookings Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "lqjYB7EP7xHmThVg",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-25T13:45:06.954Z",
+      "updatedAt": "2026-09-25T13:45:06.954Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "2ce594d0-3971-4441-866f-636b5345d03c",
+    "workflowId": "lqjYB7EP7xHmThVg",
+    "nodes": [
+      {
+        "id": "8bcb814d-01df-4c29-8383-173253978acd",
+        "name": "Auth API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          768
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "auth-api",
+          "authentication": "none",
+          "responseMode": "lastNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "c480ab3e-8447-43e7-bb39-cb13298365bc"
+      },
+      {
+        "id": "2b744e63-3d48-4214-83d9-84e70f5ac242",
+        "name": "Route by Action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          224,
+          656
+        ],
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "outputKey": "staff-login",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "staff-login"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "staff-create",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "staff-create"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "customer-signup",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "customer-signup"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "customer-login",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "customer-login"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "send-otp",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "send-otp"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "verify-otp",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "verify-otp"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "reset-password",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "reset-password"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              },
+              {
+                "outputKey": "my-bookings",
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "my-bookings"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "unknown-action"
+          }
+        }
+      },
+      {
+        "id": "1b9c6550-7fdc-4bbd-b5dc-3d05442e439d",
+        "name": "Find Staff",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tbllUWjf0QyoC8Wmw",
+            "cachedResultName": "Staff"
+          },
+          "filterByFormula": "={{ 'OR({Username}=\"' + $json.body.identifier + '\", {Phone}=\"' + $json.body.identifier + '\")' }}",
+          "returnAll": false,
+          "limit": 1
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "6311e1e4-26ea-4fb9-bdc8-b04dbc2eddbd",
+        "name": "Verify Staff Login",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (!f['Active']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst hash = sha256Hex(body.password + ':' + (f['Password Salt']||''));\nif (hash !== f['Password Hash']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst payload = { id: rec.id, type: 'staff', permissions: f['Permissions']||[], exp: Date.now() + 7*24*60*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, token: tb + '.' + sig, name: f['Full Name'], permissions: f['Permissions']||[] } }];"
+        }
+      },
+      {
+        "id": "6e38edb9-3129-48f7-97a0-e3f3dc604ee2",
+        "name": "Prepare Staff Create",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          192
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst body = $('Auth API').item.json.body;\nconst authorized = body.passcode === 'Mutawa2026';\nconst salt = randHex(32);\nconst hash = authorized ? sha256Hex((body.password||'') + ':' + salt) : '';\nreturn [{ json: { authorized: authorized, fullName: body.fullName||'', phone: body.phone||'', username: body.username||'', hash: hash, salt: salt, permissions: Array.isArray(body.permissions) ? body.permissions : [] } }];"
+        }
+      },
+      {
+        "id": "cdfe87a7-0e20-47f4-9ab5-552ccf35ffe6",
+        "name": "Is Authorized Create?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          672,
+          192
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.authorized }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "9d0c11f4-bc95-4279-b9e6-1976bcde6419",
+        "name": "Create Staff Record",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          96
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tbllUWjf0QyoC8Wmw",
+            "cachedResultName": "Staff"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Full Name": "={{ $json.fullName }}",
+              "Phone": "={{ $json.phone }}",
+              "Username": "={{ $json.username }}",
+              "Password Hash": "={{ $json.hash }}",
+              "Password Salt": "={{ $json.salt }}",
+              "Permissions": "={{ $json.permissions }}",
+              "Active": true
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "a7a324f6-d6fe-4524-97cb-fe0cf9bf03ff",
+        "name": "Staff Create Success",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          96
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: true } }];"
+        }
+      },
+      {
+        "id": "5ea026f7-6b3e-4e47-bb63-b37dc8daa8b5",
+        "name": "Staff Create Denied",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          288
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+        }
+      },
+      {
+        "id": "95a2be5c-01c3-4097-b99b-f1f70d5575d7",
+        "name": "Prepare Signup",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1792,
+          432
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst body = $('Auth API').item.json.body;\nconst salt = randHex(32);\nconst hash = sha256Hex((body.password||'') + ':' + salt);\nreturn [{ json: { phone: body.phone||'', name: body.name||'', hash: hash, salt: salt } }];"
+        }
+      },
+      {
+        "id": "c44c73f5-b9a3-414f-85a1-27112431b744",
+        "name": "Upsert Signup Customer",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          2016,
+          432
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "Phone"
+            ],
+            "value": {
+              "Phone": "={{ $json.phone }}",
+              "Full Name": "={{ $json.name }}",
+              "Password Hash": "={{ $json.hash }}",
+              "Password Salt": "={{ $json.salt }}",
+              "Is Registered": false
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "4db07bd1-8ed7-491c-9a7d-4cdc6ed04f12",
+        "name": "Signup Prepared",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2240,
+          528
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: true, message: 'verify_phone_next' } }];"
+        }
+      },
+      {
+        "id": "c2f2257d-31c3-427f-b163-4a5fb0c9232b",
+        "name": "Find Customer Login",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          576
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "filterByFormula": "={{ '{Phone}=\"' + $json.body.phone + '\"' }}",
+          "returnAll": false,
+          "limit": 1
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "954f9af6-8b1b-49ab-8c08-d08c24379e5e",
+        "name": "Verify Customer Login",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          576
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (!f['Is Registered']) return [{ json: { success: false, error: 'not_registered' } }];\nconst hash = sha256Hex((body.password||'') + ':' + (f['Password Salt']||''));\nif (hash !== f['Password Hash']) return [{ json: { success: false, error: 'invalid_credentials' } }];\nconst payload = { id: rec.id, type: 'customer', exp: Date.now() + 30*24*60*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, token: tb + '.' + sig, name: f['Full Name'] } }];"
+        }
+      },
+      {
+        "id": "ddf4df10-f422-46a6-aab4-daa8b033253e",
+        "name": "Prepare OTP",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          768
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const body = $('Auth API').item.json.body;\nconst code = String(Math.floor(100000 + Math.random()*900000));\nconst expires = new Date(Date.now() + 10*60*1000).toISOString();\nreturn [{ json: { phone: body.phone||'', code: code, purpose: body.purpose||'reset', expires: expires } }];"
+        }
+      },
+      {
+        "id": "4ee320dd-5b9c-4572-99c2-527db476afbe",
+        "name": "Save OTP",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          672,
+          768
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "create",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tbl5JGU2QD0jBTOVK",
+            "cachedResultName": "OTP Codes"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $json.phone }}",
+              "Code": "={{ $json.code }}",
+              "Purpose": "={{ $json.purpose }}",
+              "Expires At": "={{ $json.expires }}",
+              "Used": false
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "da552106-c9a1-4540-924d-1bf59eed178c",
+        "name": "Send OTP WhatsApp",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          896,
+          768
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "twilioApi",
+          "sendBody": true,
+          "contentType": "form-urlencoded",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "To",
+                "value": "={{ 'whatsapp:' + $('Prepare OTP').item.json.phone }}"
+              },
+              {
+                "name": "MessagingServiceSid",
+                "value": "MG4cf17c1ce3add815f97ff92153a3033d"
+              },
+              {
+                "name": "Body",
+                "value": "={{ 'رمز التحقق الخاص بك: ' + $('Prepare OTP').item.json.code + ' (صالح 10 دقائق)' }}"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "twilioApi": {
+            "id": "NIIn1eNIQz6Zu5UB",
+            "name": "Twilio account"
+          }
+        }
+      },
+      {
+        "id": "8fcf3f25-8914-4d3e-9778-7c867959a733",
+        "name": "OTP Sent Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          768
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: true } }];"
+        }
+      },
+      {
+        "id": "a202c34c-1cd6-41b8-a624-c41ee4a0175f",
+        "name": "Find OTP",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          1040
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tbl5JGU2QD0jBTOVK",
+            "cachedResultName": "OTP Codes"
+          },
+          "filterByFormula": "={{ 'AND({Phone}=\"' + $json.body.phone + '\", {Code}=\"' + $json.body.code + '\", {Purpose}=\"' + $json.body.purpose + '\", {Used}=FALSE())' }}",
+          "returnAll": false,
+          "limit": 1
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "997f3f25-cc89-4202-ad49-314e304201a9",
+        "name": "Verify OTP Code",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1040
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const items = $input.all();\nconst body = $('Auth API').item.json.body;\nif (!items.length) return [{ json: { success: false, error: 'invalid_code', otpId: null } }];\nconst rec = items[0].json;\nconst f = rec.fields || {};\nif (new Date(f['Expires At']).getTime() < Date.now()) return [{ json: { success: false, error: 'expired', otpId: null } }];\nreturn [{ json: { success: true, otpId: rec.id, phone: body.phone, purpose: body.purpose } }];"
+        }
+      },
+      {
+        "id": "15186e36-f944-4568-bb03-84c62e53500e",
+        "name": "OTP Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          896,
+          1040
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.success }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "4cc93842-ad14-4a83-a066-244a4254bd5d",
+        "name": "Mark OTP Used",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1120,
+          960
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "update",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tbl5JGU2QD0jBTOVK",
+            "cachedResultName": "OTP Codes"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id"
+            ],
+            "value": {
+              "id": "={{ $json.otpId }}",
+              "Used": true
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "07b860e9-7698-448a-8517-4316b779d25e",
+        "name": "Find Account For OTP",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1344,
+          960
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "filterByFormula": "={{ '{Phone}=\"' + $('Verify OTP Code').item.json.phone + '\"' }}",
+          "returnAll": false,
+          "limit": 1
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "50c4a76f-55d3-46de-a379-e71d7062d0ef",
+        "name": "Finalize OTP",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          960
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst purpose = $('Verify OTP Code').item.json.purpose;\nconst items = $input.all();\nif (!items.length) return [{ json: { success: false, error: 'account_not_found' } }];\nconst rec = items[0].json;\nif (purpose === 'signup') {\n  return [{ json: { success: true, needsUpdate: 'registered', customerId: rec.id } }];\n}\nconst payload = { id: rec.id, type: 'customer', purpose: 'reset', exp: Date.now() + 10*60*1000 };\nconst tb = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst sig = hmac256Hex(SECRET, tb);\nreturn [{ json: { success: true, resetToken: tb + '.' + sig } }];"
+        }
+      },
+      {
+        "id": "d1ee02ff-458e-4e43-a3bb-909e4d6a9076",
+        "name": "Is Signup Purpose?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1792,
+          960
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.needsUpdate }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "registered"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "22443a58-64a9-4a83-99f6-2973912f40f6",
+        "name": "Mark Customer Registered",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          2016,
+          800
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "update",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id"
+            ],
+            "value": {
+              "id": "={{ $json.customerId }}",
+              "Is Registered": true
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "e44c4509-20df-4e23-bb46-f0d9de259939",
+        "name": "OTP Invalid Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2016,
+          1136
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: $input.first().json }];"
+        }
+      },
+      {
+        "id": "b217aa85-2ead-431e-851b-759b961f6fd7",
+        "name": "Verify Reset Token",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          1440
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst parts = String(body.resetToken||'').split('.');\nif (parts.length !== 2) return [{ json: { valid: false } }];\nconst expected = hmac256Hex(SECRET, parts[0]);\nif (parts[1] !== expected) return [{ json: { valid: false } }];\nlet payload;\ntry { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch(e) { return [{ json: { valid: false } }]; }\nif (!payload.exp || Date.now() > payload.exp || payload.purpose !== 'reset') return [{ json: { valid: false } }];\nconst salt = randHex(32);\nconst hash = sha256Hex((body.newPassword||'') + ':' + salt);\nreturn [{ json: { valid: true, id: payload.id, type: payload.type, salt: salt, hash: hash } }];"
+        }
+      },
+      {
+        "id": "5e9667f2-7928-4f7f-804e-5e1997fe2e59",
+        "name": "Reset Token Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          672,
+          1440
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.valid }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "2ee96dbc-219c-4629-b7f6-5bfcda421079",
+        "name": "Update Customer Password",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          1344
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "update",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz",
+            "cachedResultName": "Customers"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id"
+            ],
+            "value": {
+              "id": "={{ $json.id }}",
+              "Password Hash": "={{ $json.hash }}",
+              "Password Salt": "={{ $json.salt }}"
+            }
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "c6eefe05-574e-4675-8b2b-840447f04af7",
+        "name": "Reset Success Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1344
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: true } }];"
+        }
+      },
+      {
+        "id": "f277ff2c-4426-412b-bcad-01cc8ca1c40b",
+        "name": "Reset Invalid Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          1536
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: false, error: 'invalid_or_expired_token' } }];"
+        }
+      },
+      {
+        "id": "2b8a3d16-dc76-4a8d-8e29-eb2a55cf70c1",
+        "name": "Verify Bookings Token",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          1824
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var innerBytes=wordsToBytes(sha256Core(ipad.concat(mb)));var outerH=sha256Core(opad.concat(innerBytes));return bytesToHex(wordsToBytes(outerH));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst body = $('Auth API').item.json.body;\nconst parts = String(body.token||'').split('.');\nif (parts.length !== 2) return [{ json: { valid: false } }];\nconst expected = hmac256Hex(SECRET, parts[0]);\nif (parts[1] !== expected) return [{ json: { valid: false } }];\nlet payload;\ntry { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch(e) { return [{ json: { valid: false } }]; }\nif (!payload.exp || Date.now() > payload.exp) return [{ json: { valid: false } }];\nreturn [{ json: { valid: true, customerId: payload.id } }];"
+        }
+      },
+      {
+        "id": "b8937dd5-ea97-4180-9571-998124c6d426",
+        "name": "Bookings Token Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          672,
+          1824
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.valid }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "8b2a76f2-6f38-42ba-8e45-0146c3cda113",
+        "name": "Fetch My Bookings",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          1728
+        ],
+        "parameters": {
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK",
+            "cachedResultName": "ALMUTAWA Tourism CRM"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tblZ6AQCBmEY2KYHr",
+            "cachedResultName": "Bookings"
+          },
+          "filterByFormula": "={{ 'SEARCH(\"' + $json.customerId + '\", ARRAYJOIN({Customer}))>0' }}",
+          "returnAll": true
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "id": "4ac71ca2-fa5b-4a6e-a9a5-2299d9eb44bd",
+        "name": "Build Bookings Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1728
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const items = $input.all();\nconst list = items.map(function(i){ var f = i.json.fields||{}; return { id: i.json.id, status: f['Booking Status'], paymentStatus: f['Payment Status'], travelers: f['Number of Travelers'], notes: f['Special Requests'] }; });\nreturn [{ json: { success: true, bookings: list } }];"
+        }
+      },
+      {
+        "id": "62c25ec0-f695-4b7f-b337-df1683828434",
+        "name": "Bookings Auth Failed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          1920
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+        }
+      },
+      {
+        "id": "2c9e77ba-c47f-4fbf-b394-c2556df6b160",
+        "name": "Unknown Action Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          2016
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: false, error: 'unknown_action' } }];"
+        }
+      }
+    ],
+    "connections": {
+      "Auth API": {
+        "main": [
+          [
+            {
+              "node": "Route by Action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route by Action": {
+        "main": [
+          [
+            {
+              "node": "Find Staff",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Staff Create",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Signup",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Find Customer Login",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare OTP",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Find OTP",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Verify Reset Token",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Verify Bookings Token",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unknown Action Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Staff": {
+        "main": [
+          [
+            {
+              "node": "Verify Staff Login",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Staff Create": {
+        "main": [
+          [
+            {
+              "node": "Is Authorized Create?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Authorized Create?": {
+        "main": [
+          [
+            {
+              "node": "Create Staff Record",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Staff Create Denied",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Staff Record": {
+        "main": [
+          [
+            {
+              "node": "Staff Create Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Signup": {
+        "main": [
+          [
+            {
+              "node": "Upsert Signup Customer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Signup Customer": {
+        "main": [
+          [
+            {
+              "node": "Signup Prepared",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Customer Login": {
+        "main": [
+          [
+            {
+              "node": "Verify Customer Login",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare OTP": {
+        "main": [
+          [
+            {
+              "node": "Save OTP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save OTP": {
+        "main": [
+          [
+            {
+              "node": "Send OTP WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send OTP WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "OTP Sent Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find OTP": {
+        "main": [
+          [
+            {
+              "node": "Verify OTP Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify OTP Code": {
+        "main": [
+          [
+            {
+              "node": "OTP Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OTP Valid?": {
+        "main": [
+          [
+            {
+              "node": "Mark OTP Used",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "OTP Invalid Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark OTP Used": {
+        "main": [
+          [
+            {
+              "node": "Find Account For OTP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Account For OTP": {
+        "main": [
+          [
+            {
+              "node": "Finalize OTP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Finalize OTP": {
+        "main": [
+          [
+            {
+              "node": "Is Signup Purpose?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Signup Purpose?": {
+        "main": [
+          [
+            {
+              "node": "Mark Customer Registered",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "OTP Invalid Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark Customer Registered": {
+        "main": [
+          [
+            {
+              "node": "Signup Prepared",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Reset Token": {
+        "main": [
+          [
+            {
+              "node": "Reset Token Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reset Token Valid?": {
+        "main": [
+          [
+            {
+              "node": "Update Customer Password",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reset Invalid Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Customer Password": {
+        "main": [
+          [
+            {
+              "node": "Reset Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Bookings Token": {
+        "main": [
+          [
+            {
+              "node": "Bookings Token Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Bookings Token Valid?": {
+        "main": [
+          [
+            {
+              "node": "Fetch My Bookings",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Bookings Auth Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch My Bookings": {
+        "main": [
+          [
+            {
+              "node": "Build Bookings Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Fix crypto (Verify Bookings Token)",
+    "description": "Fix with validated pure-JS HMAC implementation.",
+    "autosaved": false,
+    "createdAt": "2026-09-25T13:50:54.519Z",
+    "updatedAt": "2026-09-25T13:50:54.519Z",
+    "workflowPublishHistory": [
+      {
+        "id": 134,
+        "workflowId": "lqjYB7EP7xHmThVg",
+        "versionId": "2ce594d0-3971-4441-866f-636b5345d03c",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-25T13:50:57.304Z"
+      }
+    ]
+  }
+}
