@@ -1,0 +1,790 @@
+{
+  "id": "UW0N4WO8l0UnZfpm",
+  "name": "Almutawa - Setup Package Cost Fields (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-25T22:15:32.784Z",
+  "updatedAt": "2026-09-25T22:15:46.566Z",
+  "isArchived": false,
+  "versionId": "93fdb031-7a83-4880-b47f-4ff263781324",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "6dacfc6b-c3c6-47c1-b105-50ebb270eb51",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c8c71d13-ca13-4e2d-a3ac-009e5ed8e652",
+      "name": "F1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Price Flight",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "2925d720-9b6b-4a2c-b036-5e911bfa2480",
+      "name": "F2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Price Land",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "2fe3ddae-517b-426c-9326-d224f5923957",
+      "name": "F3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Price With Visa",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "df7a689a-5b3d-439e-94e3-f60c5e978096",
+      "name": "F4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Price Without Visa",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "73de75f3-bef0-4003-9162-c420f5fae633",
+      "name": "F5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Child Price With Bed",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "80ff649d-53e5-41ca-aa09-6d2b8700f99b",
+      "name": "F6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Child Price Without Bed",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "87cea88c-07ff-41ee-8272-c68e94306695",
+      "name": "F7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Private Room Price",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "0ef281f4-ccf7-44e6-ae51-f115fb25cea0",
+      "name": "F8",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Extra Seat Price",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "2f3c50bb-8295-476b-9289-cdb86dbdbf9a",
+      "name": "F9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2016,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Price Without Meals",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "ef0399c9-cc93-4e47-901d-414aa37ed072",
+      "name": "F10",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2240,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Accommodation Only Price",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "f900211b-1a0d-43cd-830c-65d91735c77b",
+      "name": "F11",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2464,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Transport Cost Per Person",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "5758b3d3-3a0a-4f14-870e-f55695810277",
+      "name": "F12",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2688,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Hotel Cost Per Person",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "7c0969e6-d68c-4019-904f-ebbfed0f206d",
+      "name": "F13",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2912,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Service Cost Per Person",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "b0579679-dae4-4b67-ac8a-e0de48a53983",
+      "name": "F14",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3136,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Crew Cost Per Person",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "b5f32a2a-e0e7-4417-86a1-954e0cd6217d",
+      "name": "F15",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3360,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Office Cost Per Person",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "b62dd4a1-d4ae-4771-97a2-9f704cf29746",
+      "name": "F16",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3584,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Visa Addon Cost",
+          "type": "number",
+          "options": {
+            "precision": 3
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "34345434-ecec-4335-8f09-54864658b11b",
+      "name": "F17",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3808,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblbCLAD8HLLwA9R7/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Cost Notes",
+          "type": "multilineText"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "F1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F1": {
+      "main": [
+        [
+          {
+            "node": "F2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F2": {
+      "main": [
+        [
+          {
+            "node": "F3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F3": {
+      "main": [
+        [
+          {
+            "node": "F4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F4": {
+      "main": [
+        [
+          {
+            "node": "F5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F5": {
+      "main": [
+        [
+          {
+            "node": "F6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F6": {
+      "main": [
+        [
+          {
+            "node": "F7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F7": {
+      "main": [
+        [
+          {
+            "node": "F8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F8": {
+      "main": [
+        [
+          {
+            "node": "F9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F9": {
+      "main": [
+        [
+          {
+            "node": "F10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F10": {
+      "main": [
+        [
+          {
+            "node": "F11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F11": {
+      "main": [
+        [
+          {
+            "node": "F12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F12": {
+      "main": [
+        [
+          {
+            "node": "F13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F13": {
+      "main": [
+        [
+          {
+            "node": "F14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F14": {
+      "main": [
+        [
+          {
+            "node": "F15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F15": {
+      "main": [
+        [
+          {
+            "node": "F16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F16": {
+      "main": [
+        [
+          {
+            "node": "F17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "UW0N4WO8l0UnZfpm",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-25T22:15:32.786Z",
+      "updatedAt": "2026-09-25T22:15:32.786Z"
+    }
+  ],
+  "activeVersion": null
+}
