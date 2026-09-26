@@ -1,0 +1,371 @@
+{
+  "id": "fkkRpg1Q0f7jLkZi",
+  "name": "Almutawa - Setup Auth Schema (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-25T13:41:32.934Z",
+  "updatedAt": "2026-09-25T13:41:37.812Z",
+  "isArchived": false,
+  "versionId": "a5fa934c-71da-4379-adcb-1bdf38cfb729",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "9b15f047-b386-4b94-aea9-b0a6bd109c4f",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "3bcbf107-e938-466c-980e-d9124124b22e",
+      "name": "Create Staff Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Staff",
+          "description": "Employee login accounts with roles/permissions for the admin panel",
+          "fields": [
+            {
+              "name": "Full Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Phone",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Username",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Password Hash",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Password Salt",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Permissions",
+              "type": "multipleSelects",
+              "options": {
+                "choices": [
+                  {
+                    "name": "View Bookings"
+                  },
+                  {
+                    "name": "Edit Bookings"
+                  },
+                  {
+                    "name": "Manage Packages"
+                  },
+                  {
+                    "name": "Manage Staff"
+                  },
+                  {
+                    "name": "View Reports"
+                  },
+                  {
+                    "name": "Full Admin"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Active",
+              "type": "checkbox",
+              "options": {
+                "icon": "check",
+                "color": "greenBright"
+              }
+            },
+            {
+              "name": "Notes",
+              "type": "multilineText"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "bac972a1-23b9-47ce-9e77-29b86a808d28",
+      "name": "Create OTP Codes Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "OTP Codes",
+          "description": "One-time WhatsApp verification codes for login reset and signup",
+          "fields": [
+            {
+              "name": "Phone",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Code",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Purpose",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "reset"
+                  },
+                  {
+                    "name": "signup"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Expires At",
+              "type": "dateTime",
+              "options": {
+                "dateFormat": {
+                  "name": "iso"
+                },
+                "timeFormat": {
+                  "name": "24hour"
+                },
+                "timeZone": "client"
+              }
+            },
+            {
+              "name": "Used",
+              "type": "checkbox",
+              "options": {
+                "icon": "check",
+                "color": "greenBright"
+              }
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "ac5e1d2e-9755-40c6-941e-8d67a6762f6e",
+      "name": "Add Customer Auth Fields",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblm8JWYMAoamikUz/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Password Hash",
+          "type": "singleLineText"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "deb2ec6c-3ddb-4cc6-ac3f-ea82aca9354f",
+      "name": "Add Customer Salt Field",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblm8JWYMAoamikUz/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Password Salt",
+          "type": "singleLineText"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "d96e3dda-f9fc-4d86-b055-5758627e3699",
+      "name": "Add Customer Registered Field",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables/tblm8JWYMAoamikUz/fields",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Is Registered",
+          "type": "checkbox",
+          "options": {
+            "icon": "check",
+            "color": "greenBright"
+          }
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Staff Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Staff Table": {
+      "main": [
+        [
+          {
+            "node": "Create OTP Codes Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create OTP Codes Table": {
+      "main": [
+        [
+          {
+            "node": "Add Customer Auth Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Customer Auth Fields": {
+      "main": [
+        [
+          {
+            "node": "Add Customer Salt Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Customer Salt Field": {
+      "main": [
+        [
+          {
+            "node": "Add Customer Registered Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "fkkRpg1Q0f7jLkZi",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-25T13:41:32.936Z",
+      "updatedAt": "2026-09-25T13:41:32.936Z"
+    }
+  ],
+  "activeVersion": null
+}
