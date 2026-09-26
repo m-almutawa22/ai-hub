@@ -1,0 +1,110 @@
+{
+  "id": "ZoO2lY9Dt88UFqbI",
+  "name": "Test Booking Endpoint Small",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-25T14:49:36.787Z",
+  "updatedAt": "2026-09-25T14:49:36.787Z",
+  "isArchived": false,
+  "versionId": "9d8a7a6d-9b40-4ac4-bcb1-08a32c423585",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "70afd1ab-c977-4b00-90a0-25032e2fe392",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a5a2005d-c4b6-4e52-a5fa-b1770ad13042",
+      "name": "Test Small Booking",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-production-47b1.up.railway.app/webhook/website-booking",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "packageId": "rec8ftXvfYdTlQf15",
+          "name": "اختبار حجم صغير",
+          "phone": "97399999997",
+          "email": "test@test.com",
+          "travelers": 1,
+          "notes": "",
+          "travelerDetails": [
+            {
+              "title": "Mr",
+              "firstName": "Test",
+              "lastName": "Small",
+              "dob": "1990-01-01",
+              "nationality": "Bahraini",
+              "passportNumber": "X1",
+              "passportPhotoDataUrl": ""
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Test Small Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ZoO2lY9Dt88UFqbI",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-25T14:49:36.788Z",
+      "updatedAt": "2026-09-25T14:49:36.788Z"
+    }
+  ],
+  "activeVersion": null
+}
