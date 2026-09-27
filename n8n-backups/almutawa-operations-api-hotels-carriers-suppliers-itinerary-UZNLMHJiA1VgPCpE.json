@@ -1,0 +1,2811 @@
+{
+  "id": "UZNLMHJiA1VgPCpE",
+  "name": "Almutawa - Operations API (Hotels, Carriers, Suppliers, Itinerary)",
+  "description": null,
+  "active": true,
+  "activeVersionId": "544ea8d2-4ffc-432f-8cf6-39adb351ae3e",
+  "createdAt": "2026-09-26T16:21:07.081Z",
+  "updatedAt": "2026-09-27T06:51:31.794Z",
+  "isArchived": false,
+  "versionId": "544ea8d2-4ffc-432f-8cf6-39adb351ae3e",
+  "versionCounter": 9,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "11aef72d-6f26-404d-8aa0-4dfea7c0cf2c",
+      "name": "Ops API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1136
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ops-api",
+        "authentication": "none",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "b1e29d63-f0a6-4a9d-bd7a-8b3ac233661a"
+    },
+    {
+      "id": "4b81ad41-1f8e-4032-b5d8-d07346be2c1f",
+      "name": "Check Passcode",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        1136
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.passcode }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "Mutawa2026"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "81606b5a-0ff6-428a-b46f-fe2b72588096",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        816
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listHotels"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "listHotels"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "createHotel"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "createHotel"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "createRoomType"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "createRoomType"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listCarriers"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "listCarriers"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "createCarrier"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "createCarrier"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listSuppliers"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "listSuppliers"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "createSupplier"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "createSupplier"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listItinerary"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "listItinerary"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "addItineraryDay"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "addItineraryDay"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "deleteItineraryDay"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "deleteItineraryDay"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "listStaff"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "listStaff"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "createStaff"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "createStaff"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "updateStaff"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "updateStaff"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown"
+        }
+      }
+    },
+    {
+      "id": "f3061f5a-0e74-4923-8799-50d3c3bb1fd1",
+      "name": "Build Hotels Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const hotels = $('List Hotels').all().map(function(i){ var f=i.json; return { id: f.id, name: f.name||'', city: f.city||'', country: f.country||'', stars: f.star_rating||'', contact: f.contact||'', description: f.description||'' }; });\nconst roomTypes = $('List Room Types').all().map(function(i){ var f=i.json; return { id: f.id, typeName: f.type_name||'', capacity: f.capacity||0, hotelId: f.hotel_id }; });\nhotels.forEach(function(h){ h.roomTypes = roomTypes.filter(function(r){ return r.hotelId===h.id; }); });\nreturn [{ json: { success:true, hotels: hotels } }];"
+      }
+    },
+    {
+      "id": "863658fd-e734-4796-83bf-e70531c767c3",
+      "name": "Prep Create Hotel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        192
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', city:b.city||'', country:b.country||'', stars:b.stars||null, contact:b.contact||'', description:b.description||'' } }];"
+      }
+    },
+    {
+      "id": "f39cfe1a-a631-49e3-bfb7-9fa77355e29f",
+      "name": "Hotel Created",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        192
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+      }
+    },
+    {
+      "id": "ef3ffb7b-8519-41b3-b70a-64d25067145b",
+      "name": "Prep Create RoomType",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        384
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { typeName:b.typeName||'', capacity:b.capacity||0, hotelId:b.hotelId } }];"
+      }
+    },
+    {
+      "id": "7111f837-81eb-418b-9285-a005c10a0792",
+      "name": "RoomType Created",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        384
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+      }
+    },
+    {
+      "id": "e52cc079-d08f-49d9-9865-ad0a0fa8d625",
+      "name": "Build Carriers Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        576
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, name:f.name||'', type:f.type||'', contact:f.contact||'', notes:f.notes||'' }; }); return [{ json: { success:true, carriers: rows } }];"
+      }
+    },
+    {
+      "id": "b39c4cc0-0ced-4882-b189-6a7e93682fa2",
+      "name": "Prep Create Carrier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        768
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', type:b.type||'Other', contact:b.contact||'', notes:b.notes||'' } }];"
+      }
+    },
+    {
+      "id": "65e7abf0-65f5-4e58-aafd-b7b163aae6ef",
+      "name": "Carrier Created",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        768
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+      }
+    },
+    {
+      "id": "ba366c88-105d-42b7-9f49-108b5ce9e493",
+      "name": "Build Suppliers Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        960
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, name:f.name||'', type:f.type||'', city:f.city||'', contact:f.contact||'', description:f.service_description||'', price:f.default_price||'', status:f.status||'Active' }; }); return [{ json: { success:true, suppliers: rows } }];"
+      }
+    },
+    {
+      "id": "ecf3b879-ffc1-4db2-9465-e91b1a5c4b55",
+      "name": "Prep Create Supplier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1152
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', type:b.type||'Other', city:b.city||'', contact:b.contact||'', description:b.description||'', price:b.price||null } }];"
+      }
+    },
+    {
+      "id": "67fcb431-d465-4cad-8663-5a835a8f664d",
+      "name": "Supplier Created",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1152
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+      }
+    },
+    {
+      "id": "9517d3e4-2596-4879-9da3-d8956a50d41c",
+      "name": "Build Itinerary Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1344
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, dayNumber:f.day_number||0, title:f.title||'', description:f.description||'', hotelId:f.hotel_id, carrierId:f.carrier_id }; }); rows.sort(function(a,b){ return a.dayNumber-b.dayNumber; }); return [{ json: { success:true, days: rows } }];"
+      }
+    },
+    {
+      "id": "397220a3-7bfe-4418-a7fa-4ac778b16604",
+      "name": "Prep Add Day",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1536
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { packageId:b.packageId, dayNumber:b.dayNumber||1, title:b.title||'', description:b.description||'', hotelId:b.hotelId||null, carrierId:b.carrierId||null } }];"
+      }
+    },
+    {
+      "id": "76b36dfb-bd17-40e5-b4f0-04ef00eb77f2",
+      "name": "Day Added",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1536
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+      }
+    },
+    {
+      "id": "1b685928-89c6-4a3d-89e5-57d310e9efad",
+      "name": "Prep Delete Day",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1728
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { id: b.dayId } }];"
+      }
+    },
+    {
+      "id": "757341f1-7318-4829-8cc4-f01c49592733",
+      "name": "Day Deleted",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1728
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:true } }];"
+      }
+    },
+    {
+      "id": "176f0964-5b95-41d9-b638-fd3324af66eb",
+      "name": "Unknown Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1920
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success:false, error:'unknown_action' } }];"
+      }
+    },
+    {
+      "id": "b9b9277d-a42a-463e-9415-a753b5d9c977",
+      "name": "Unauthorized",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1296
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+      }
+    },
+    {
+      "id": "f26d4fcb-91f7-4965-b059-67e8187506ad",
+      "name": "Build Staff Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1124,
+        900
+      ],
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(function(i){ var f = i.json; return { id: f.id, name: f.full_name||'', username: f.username||'', phone: f.phone||'', permissions: f.permissions||[], active: !!f.active }; }); return [{ json: { success: true, staff: rows } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "d46eef8d-67a5-4ba9-b51b-434217c4ebbe",
+      "name": "Prep Create Staff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1050
+      ],
+      "parameters": {
+        "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst b = $('Ops API').item.json.body;\nconst salt = randHex(32);\nconst hash = sha256Hex((b.password||'') + ':' + salt);\nreturn [{ json: { fullName: b.fullName||'', username: (b.username||'').toLowerCase(), phone: b.phone||'', hash: hash, salt: salt, permissions: Array.isArray(b.permissions) ? b.permissions : [] } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "5b14099a-f5cd-488f-87aa-b78f96681954",
+      "name": "Staff Created Resp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1348,
+        1050
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { success: true, id: $json.id } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "fb97a9b4-bc39-4371-8dc9-7185ad908366",
+      "name": "Prep Update Staff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const b = $('Ops API').item.json.body; return [{ json: { id: b.staffId, active: b.active, permissions: Array.isArray(b.permissions) ? b.permissions : undefined } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "6e1dcdeb-d602-445d-874d-29ec4e85332c",
+      "name": "Staff Updated Resp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1348,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { success: true } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "415b1b20-1e43-4ad1-93b9-5f3de5235e22",
+      "name": "List Hotels",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        -96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM hotels ORDER BY name;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "4f391090-8fa9-4ea1-9bbe-a60c541471dd",
+      "name": "List Room Types",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1120,
+        -96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM room_types;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "ed3a7041-ea97-4869-b3fe-c665bc881fa6",
+      "name": "Create Hotel",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.name, $json.city, $json.country, $json.stars, $json.contact, $json.description] }}"
+        },
+        "query": "INSERT INTO hotels (name, city, country, star_rating, contact, description) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "d4cd9227-d6eb-4677-8b6e-3253fbe15d6d",
+      "name": "Create RoomType",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        192
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.hotelId, $json.typeName, $json.capacity] }}"
+        },
+        "query": "INSERT INTO room_types (hotel_id, type_name, capacity) VALUES ($1,$2,$3) RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "af18387d-8137-4b0f-af48-0b155f791308",
+      "name": "List Carriers",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        288
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM carriers ORDER BY name;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "3abad36a-2ae1-4ee1-aec7-eab25ae829ee",
+      "name": "Create Carrier",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        384
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.name, $json.type, $json.contact, $json.notes] }}"
+        },
+        "query": "INSERT INTO carriers (name, type, contact, notes) VALUES ($1,$2,$3,$4) RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "822b27f4-c7c9-4306-bdaf-8acf681a8b90",
+      "name": "List Suppliers",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        480
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM suppliers ORDER BY name;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "1207ea28-e6ce-45ec-a767-a85f63859bf6",
+      "name": "Create Supplier",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        576
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.name, $json.type, $json.city, $json.contact, $json.description, $json.price] }}"
+        },
+        "query": "INSERT INTO suppliers (name, type, city, contact, service_description, default_price, status) VALUES ($1,$2,$3,$4,$5,$6,'Active') RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "7d9b50b2-3b92-438e-80dc-91173a725e71",
+      "name": "List Itinerary",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        672
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.body.packageId] }}"
+        },
+        "query": "SELECT * FROM itinerary_days WHERE package_id = $1 ORDER BY day_number;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "e81acc3c-ad6f-424f-b8f5-3d4bd380088a",
+      "name": "Add Day",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        768
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.packageId, $json.dayNumber, $json.title, $json.description, $json.hotelId, $json.carrierId] }}"
+        },
+        "query": "INSERT INTO itinerary_days (package_id, day_number, title, description, hotel_id, carrier_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "35a357c9-d372-43fa-8c42-251817ad2052",
+      "name": "Delete Day",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        864
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.id] }}"
+        },
+        "query": "DELETE FROM itinerary_days WHERE id = $1;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "6ee1961a-7519-4ed3-9ef2-6c7942c744b9",
+      "name": "List Staff",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        960
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM staff ORDER BY full_name;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "19710806-a6ad-487e-b924-ee5d03a18269",
+      "name": "Create Staff Rec",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1124,
+        1050
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.fullName, $json.username, $json.phone, $json.hash, $json.salt, $json.permissions] }}"
+        },
+        "query": "INSERT INTO staff (full_name, username, phone, password_hash, password_salt, permissions, active) VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "ed72dd88-abf5-46dc-8b6b-bc7846017bf3",
+      "name": "Update Staff Rec",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1124,
+        1200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.active, $json.permissions || null, $json.id] }}"
+        },
+        "query": "UPDATE staff SET active = $1, permissions = COALESCE($2::text[], permissions) WHERE id = $3;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Ops API": {
+      "main": [
+        [
+          {
+            "node": "Check Passcode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Passcode": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "List Hotels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Create Hotel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Create RoomType",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Carriers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Create Carrier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Suppliers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Create Supplier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Itinerary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Add Day",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Delete Day",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Staff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Create Staff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prep Update Staff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Hotels": {
+      "main": [
+        [
+          {
+            "node": "List Room Types",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Room Types": {
+      "main": [
+        [
+          {
+            "node": "Build Hotels Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Hotel": {
+      "main": [
+        [
+          {
+            "node": "Hotel Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create RoomType": {
+      "main": [
+        [
+          {
+            "node": "RoomType Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Carriers": {
+      "main": [
+        [
+          {
+            "node": "Build Carriers Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Carrier": {
+      "main": [
+        [
+          {
+            "node": "Carrier Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Suppliers": {
+      "main": [
+        [
+          {
+            "node": "Build Suppliers Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Supplier": {
+      "main": [
+        [
+          {
+            "node": "Supplier Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Itinerary": {
+      "main": [
+        [
+          {
+            "node": "Build Itinerary Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Day": {
+      "main": [
+        [
+          {
+            "node": "Day Added",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Day": {
+      "main": [
+        [
+          {
+            "node": "Day Deleted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Staff": {
+      "main": [
+        [
+          {
+            "node": "Build Staff Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Staff Rec": {
+      "main": [
+        [
+          {
+            "node": "Staff Created Resp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Staff Rec": {
+      "main": [
+        [
+          {
+            "node": "Staff Updated Resp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Create Hotel": {
+      "main": [
+        [
+          {
+            "node": "Create Hotel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Create RoomType": {
+      "main": [
+        [
+          {
+            "node": "Create RoomType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Create Carrier": {
+      "main": [
+        [
+          {
+            "node": "Create Carrier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Create Supplier": {
+      "main": [
+        [
+          {
+            "node": "Create Supplier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Add Day": {
+      "main": [
+        [
+          {
+            "node": "Add Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Delete Day": {
+      "main": [
+        [
+          {
+            "node": "Delete Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Create Staff": {
+      "main": [
+        [
+          {
+            "node": "Create Staff Rec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Update Staff": {
+      "main": [
+        [
+          {
+            "node": "Update Staff Rec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "UZNLMHJiA1VgPCpE",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-26T16:21:07.084Z",
+      "updatedAt": "2026-09-26T16:21:07.084Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "544ea8d2-4ffc-432f-8cf6-39adb351ae3e",
+    "workflowId": "UZNLMHJiA1VgPCpE",
+    "nodes": [
+      {
+        "id": "11aef72d-6f26-404d-8aa0-4dfea7c0cf2c",
+        "name": "Ops API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          1136
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ops-api",
+          "authentication": "none",
+          "responseMode": "lastNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "b1e29d63-f0a6-4a9d-bd7a-8b3ac233661a"
+      },
+      {
+        "id": "4b81ad41-1f8e-4032-b5d8-d07346be2c1f",
+        "name": "Check Passcode",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          224,
+          1136
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body.passcode }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "rightValue": "Mutawa2026"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        }
+      },
+      {
+        "id": "81606b5a-0ff6-428a-b46f-fe2b72588096",
+        "name": "Route",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          816
+        ],
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listHotels"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "listHotels"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "createHotel"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "createHotel"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "createRoomType"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "createRoomType"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listCarriers"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "listCarriers"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "createCarrier"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "createCarrier"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listSuppliers"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "listSuppliers"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "createSupplier"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "createSupplier"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listItinerary"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "listItinerary"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "addItineraryDay"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "addItineraryDay"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "deleteItineraryDay"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "deleteItineraryDay"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "listStaff"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "listStaff"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "createStaff"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "createStaff"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "updateStaff"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "updateStaff"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "unknown"
+          }
+        }
+      },
+      {
+        "id": "f3061f5a-0e74-4923-8799-50d3c3bb1fd1",
+        "name": "Build Hotels Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const hotels = $('List Hotels').all().map(function(i){ var f=i.json; return { id: f.id, name: f.name||'', city: f.city||'', country: f.country||'', stars: f.star_rating||'', contact: f.contact||'', description: f.description||'' }; });\nconst roomTypes = $('List Room Types').all().map(function(i){ var f=i.json; return { id: f.id, typeName: f.type_name||'', capacity: f.capacity||0, hotelId: f.hotel_id }; });\nhotels.forEach(function(h){ h.roomTypes = roomTypes.filter(function(r){ return r.hotelId===h.id; }); });\nreturn [{ json: { success:true, hotels: hotels } }];"
+        }
+      },
+      {
+        "id": "863658fd-e734-4796-83bf-e70531c767c3",
+        "name": "Prep Create Hotel",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          192
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', city:b.city||'', country:b.country||'', stars:b.stars||null, contact:b.contact||'', description:b.description||'' } }];"
+        }
+      },
+      {
+        "id": "f39cfe1a-a631-49e3-bfb7-9fa77355e29f",
+        "name": "Hotel Created",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          192
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+        }
+      },
+      {
+        "id": "ef3ffb7b-8519-41b3-b70a-64d25067145b",
+        "name": "Prep Create RoomType",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          384
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { typeName:b.typeName||'', capacity:b.capacity||0, hotelId:b.hotelId } }];"
+        }
+      },
+      {
+        "id": "7111f837-81eb-418b-9285-a005c10a0792",
+        "name": "RoomType Created",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          384
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+        }
+      },
+      {
+        "id": "e52cc079-d08f-49d9-9865-ad0a0fa8d625",
+        "name": "Build Carriers Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          576
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, name:f.name||'', type:f.type||'', contact:f.contact||'', notes:f.notes||'' }; }); return [{ json: { success:true, carriers: rows } }];"
+        }
+      },
+      {
+        "id": "b39c4cc0-0ced-4882-b189-6a7e93682fa2",
+        "name": "Prep Create Carrier",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          768
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', type:b.type||'Other', contact:b.contact||'', notes:b.notes||'' } }];"
+        }
+      },
+      {
+        "id": "65e7abf0-65f5-4e58-aafd-b7b163aae6ef",
+        "name": "Carrier Created",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          768
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+        }
+      },
+      {
+        "id": "ba366c88-105d-42b7-9f49-108b5ce9e493",
+        "name": "Build Suppliers Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          960
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, name:f.name||'', type:f.type||'', city:f.city||'', contact:f.contact||'', description:f.service_description||'', price:f.default_price||'', status:f.status||'Active' }; }); return [{ json: { success:true, suppliers: rows } }];"
+        }
+      },
+      {
+        "id": "ecf3b879-ffc1-4db2-9465-e91b1a5c4b55",
+        "name": "Prep Create Supplier",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1152
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { name:b.name||'', type:b.type||'Other', city:b.city||'', contact:b.contact||'', description:b.description||'', price:b.price||null } }];"
+        }
+      },
+      {
+        "id": "67fcb431-d465-4cad-8663-5a835a8f664d",
+        "name": "Supplier Created",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1152
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+        }
+      },
+      {
+        "id": "9517d3e4-2596-4879-9da3-d8956a50d41c",
+        "name": "Build Itinerary Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          1344
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const rows=$input.all().map(function(i){ var f=i.json; return { id:f.id, dayNumber:f.day_number||0, title:f.title||'', description:f.description||'', hotelId:f.hotel_id, carrierId:f.carrier_id }; }); rows.sort(function(a,b){ return a.dayNumber-b.dayNumber; }); return [{ json: { success:true, days: rows } }];"
+        }
+      },
+      {
+        "id": "397220a3-7bfe-4418-a7fa-4ac778b16604",
+        "name": "Prep Add Day",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1536
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { packageId:b.packageId, dayNumber:b.dayNumber||1, title:b.title||'', description:b.description||'', hotelId:b.hotelId||null, carrierId:b.carrierId||null } }];"
+        }
+      },
+      {
+        "id": "76b36dfb-bd17-40e5-b4f0-04ef00eb77f2",
+        "name": "Day Added",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1536
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true, id: $json.id } }];"
+        }
+      },
+      {
+        "id": "1b685928-89c6-4a3d-89e5-57d310e9efad",
+        "name": "Prep Delete Day",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1728
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b=$('Ops API').item.json.body; return [{ json: { id: b.dayId } }];"
+        }
+      },
+      {
+        "id": "757341f1-7318-4829-8cc4-f01c49592733",
+        "name": "Day Deleted",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          1728
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:true } }];"
+        }
+      },
+      {
+        "id": "176f0964-5b95-41d9-b638-fd3324af66eb",
+        "name": "Unknown Action",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          1920
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success:false, error:'unknown_action' } }];"
+        }
+      },
+      {
+        "id": "b9b9277d-a42a-463e-9415-a753b5d9c977",
+        "name": "Unauthorized",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          1296
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return [{ json: { success: false, error: 'unauthorized' } }];"
+        }
+      },
+      {
+        "id": "f26d4fcb-91f7-4965-b059-67e8187506ad",
+        "name": "Build Staff Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1124,
+          900
+        ],
+        "parameters": {
+          "jsCode": "const rows = $input.all().map(function(i){ var f = i.json; return { id: f.id, name: f.full_name||'', username: f.username||'', phone: f.phone||'', permissions: f.permissions||[], active: !!f.active }; }); return [{ json: { success: true, staff: rows } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "d46eef8d-67a5-4ba9-b51b-434217c4ebbe",
+        "name": "Prep Create Staff",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          900,
+          1050
+        ],
+        "parameters": {
+          "jsCode": "function rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(bytesArr){var out='';for(var i=0;i<bytesArr.length;i++)out+=('0'+bytesArr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction sha256Hex(str){return bytesToHex(wordsToBytes(sha256Core(utf8Bytes(str))));}\nfunction randHex(n){var s='';for(var i=0;i<n;i++)s+=Math.floor(Math.random()*16).toString(16);return s;}\nconst b = $('Ops API').item.json.body;\nconst salt = randHex(32);\nconst hash = sha256Hex((b.password||'') + ':' + salt);\nreturn [{ json: { fullName: b.fullName||'', username: (b.username||'').toLowerCase(), phone: b.phone||'', hash: hash, salt: salt, permissions: Array.isArray(b.permissions) ? b.permissions : [] } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "5b14099a-f5cd-488f-87aa-b78f96681954",
+        "name": "Staff Created Resp",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1348,
+          1050
+        ],
+        "parameters": {
+          "jsCode": "return [{ json: { success: true, id: $json.id } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "fb97a9b4-bc39-4371-8dc9-7185ad908366",
+        "name": "Prep Update Staff",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          900,
+          1200
+        ],
+        "parameters": {
+          "jsCode": "const b = $('Ops API').item.json.body; return [{ json: { id: b.staffId, active: b.active, permissions: Array.isArray(b.permissions) ? b.permissions : undefined } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "6e1dcdeb-d602-445d-874d-29ec4e85332c",
+        "name": "Staff Updated Resp",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1348,
+          1200
+        ],
+        "parameters": {
+          "jsCode": "return [{ json: { success: true } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "415b1b20-1e43-4ad1-93b9-5f3de5235e22",
+        "name": "List Hotels",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          -96
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM hotels ORDER BY name;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "4f391090-8fa9-4ea1-9bbe-a60c541471dd",
+        "name": "List Room Types",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1120,
+          -96
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM room_types;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "ed3a7041-ea97-4869-b3fe-c665bc881fa6",
+        "name": "Create Hotel",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          96
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.name, $json.city, $json.country, $json.stars, $json.contact, $json.description] }}"
+          },
+          "query": "INSERT INTO hotels (name, city, country, star_rating, contact, description) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "d4cd9227-d6eb-4677-8b6e-3253fbe15d6d",
+        "name": "Create RoomType",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          192
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.hotelId, $json.typeName, $json.capacity] }}"
+          },
+          "query": "INSERT INTO room_types (hotel_id, type_name, capacity) VALUES ($1,$2,$3) RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "af18387d-8137-4b0f-af48-0b155f791308",
+        "name": "List Carriers",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          288
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM carriers ORDER BY name;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "3abad36a-2ae1-4ee1-aec7-eab25ae829ee",
+        "name": "Create Carrier",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          384
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.name, $json.type, $json.contact, $json.notes] }}"
+          },
+          "query": "INSERT INTO carriers (name, type, contact, notes) VALUES ($1,$2,$3,$4) RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "822b27f4-c7c9-4306-bdaf-8acf681a8b90",
+        "name": "List Suppliers",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          480
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM suppliers ORDER BY name;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "1207ea28-e6ce-45ec-a767-a85f63859bf6",
+        "name": "Create Supplier",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          576
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.name, $json.type, $json.city, $json.contact, $json.description, $json.price] }}"
+          },
+          "query": "INSERT INTO suppliers (name, type, city, contact, service_description, default_price, status) VALUES ($1,$2,$3,$4,$5,$6,'Active') RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "7d9b50b2-3b92-438e-80dc-91173a725e71",
+        "name": "List Itinerary",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          672
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.body.packageId] }}"
+          },
+          "query": "SELECT * FROM itinerary_days WHERE package_id = $1 ORDER BY day_number;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "e81acc3c-ad6f-424f-b8f5-3d4bd380088a",
+        "name": "Add Day",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          768
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.packageId, $json.dayNumber, $json.title, $json.description, $json.hotelId, $json.carrierId] }}"
+          },
+          "query": "INSERT INTO itinerary_days (package_id, day_number, title, description, hotel_id, carrier_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "35a357c9-d372-43fa-8c42-251817ad2052",
+        "name": "Delete Day",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          864
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.id] }}"
+          },
+          "query": "DELETE FROM itinerary_days WHERE id = $1;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "6ee1961a-7519-4ed3-9ef2-6c7942c744b9",
+        "name": "List Staff",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          960
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM staff ORDER BY full_name;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "19710806-a6ad-487e-b924-ee5d03a18269",
+        "name": "Create Staff Rec",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1124,
+          1050
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.fullName, $json.username, $json.phone, $json.hash, $json.salt, $json.permissions] }}"
+          },
+          "query": "INSERT INTO staff (full_name, username, phone, password_hash, password_salt, permissions, active) VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "ed72dd88-abf5-46dc-8b6b-bc7846017bf3",
+        "name": "Update Staff Rec",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1124,
+          1200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.active, $json.permissions || null, $json.id] }}"
+          },
+          "query": "UPDATE staff SET active = $1, permissions = COALESCE($2::text[], permissions) WHERE id = $3;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Ops API": {
+        "main": [
+          [
+            {
+              "node": "Check Passcode",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Passcode": {
+        "main": [
+          [
+            {
+              "node": "Route",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unauthorized",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route": {
+        "main": [
+          [
+            {
+              "node": "List Hotels",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Create Hotel",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Create RoomType",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List Carriers",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Create Carrier",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List Suppliers",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Create Supplier",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List Itinerary",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Add Day",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Delete Day",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "List Staff",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Create Staff",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prep Update Staff",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unknown Action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Hotels": {
+        "main": [
+          [
+            {
+              "node": "List Room Types",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Room Types": {
+        "main": [
+          [
+            {
+              "node": "Build Hotels Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Hotel": {
+        "main": [
+          [
+            {
+              "node": "Hotel Created",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create RoomType": {
+        "main": [
+          [
+            {
+              "node": "RoomType Created",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Carriers": {
+        "main": [
+          [
+            {
+              "node": "Build Carriers Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Carrier": {
+        "main": [
+          [
+            {
+              "node": "Carrier Created",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Suppliers": {
+        "main": [
+          [
+            {
+              "node": "Build Suppliers Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Supplier": {
+        "main": [
+          [
+            {
+              "node": "Supplier Created",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Itinerary": {
+        "main": [
+          [
+            {
+              "node": "Build Itinerary Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Day": {
+        "main": [
+          [
+            {
+              "node": "Day Added",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Day": {
+        "main": [
+          [
+            {
+              "node": "Day Deleted",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Staff": {
+        "main": [
+          [
+            {
+              "node": "Build Staff Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Staff Rec": {
+        "main": [
+          [
+            {
+              "node": "Staff Created Resp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Staff Rec": {
+        "main": [
+          [
+            {
+              "node": "Staff Updated Resp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Create Hotel": {
+        "main": [
+          [
+            {
+              "node": "Create Hotel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Create RoomType": {
+        "main": [
+          [
+            {
+              "node": "Create RoomType",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Create Carrier": {
+        "main": [
+          [
+            {
+              "node": "Create Carrier",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Create Supplier": {
+        "main": [
+          [
+            {
+              "node": "Create Supplier",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Add Day": {
+        "main": [
+          [
+            {
+              "node": "Add Day",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Delete Day": {
+        "main": [
+          [
+            {
+              "node": "Delete Day",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Create Staff": {
+        "main": [
+          [
+            {
+              "node": "Create Staff Rec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Update Staff": {
+        "main": [
+          [
+            {
+              "node": "Update Staff Rec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Fix wiring: series chains + fallback",
+    "description": "Reconnect each Prep step to its Create/Update step in proper series, and wire Unknown Action to the actual fallback output (index 13).",
+    "autosaved": false,
+    "createdAt": "2026-09-27T06:51:31.795Z",
+    "updatedAt": "2026-09-27T06:51:31.795Z",
+    "workflowPublishHistory": [
+      {
+        "id": 159,
+        "workflowId": "UZNLMHJiA1VgPCpE",
+        "versionId": "544ea8d2-4ffc-432f-8cf6-39adb351ae3e",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-27T06:51:41.811Z"
+      }
+    ]
+  }
+}
