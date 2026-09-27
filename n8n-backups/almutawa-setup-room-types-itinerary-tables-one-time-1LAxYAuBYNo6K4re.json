@@ -1,0 +1,200 @@
+{
+  "id": "1LAxYAuBYNo6K4re",
+  "name": "Almutawa - Setup Room Types & Itinerary Tables (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-26T08:16:35.663Z",
+  "updatedAt": "2026-09-26T08:16:38.778Z",
+  "isArchived": false,
+  "versionId": "db5e730a-0f96-431d-9ff2-3e43ca7a7b43",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "2f77b6dd-4353-4bca-b63e-c5b97eef8c52",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ffadf6cd-f6d6-4ff5-8d5b-3cdb93a68f57",
+      "name": "Create Room Types Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Room Types",
+          "description": "Room types and capacity per hotel, used to validate room distribution",
+          "fields": [
+            {
+              "name": "Type Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Capacity",
+              "type": "number",
+              "options": {
+                "precision": 0
+              }
+            },
+            {
+              "name": "Hotel",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblJkKB7Pu3olWue1"
+              }
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "f4d00d39-37cd-4fd9-92c1-caa46e8c5163",
+      "name": "Create Itinerary Days Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Itinerary Days",
+          "description": "Day-by-day itinerary for each package, optionally linked to a hotel and carrier",
+          "fields": [
+            {
+              "name": "Day Number",
+              "type": "number",
+              "options": {
+                "precision": 0
+              }
+            },
+            {
+              "name": "Title",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Description",
+              "type": "multilineText"
+            },
+            {
+              "name": "Package",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblbCLAD8HLLwA9R7"
+              }
+            },
+            {
+              "name": "Hotel",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblJkKB7Pu3olWue1"
+              }
+            },
+            {
+              "name": "Carrier",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblYAV8FUz6T0aJtX"
+              }
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Room Types Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Room Types Table": {
+      "main": [
+        [
+          {
+            "node": "Create Itinerary Days Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "1LAxYAuBYNo6K4re",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-26T08:16:35.664Z",
+      "updatedAt": "2026-09-26T08:16:35.664Z"
+    }
+  ],
+  "activeVersion": null
+}
