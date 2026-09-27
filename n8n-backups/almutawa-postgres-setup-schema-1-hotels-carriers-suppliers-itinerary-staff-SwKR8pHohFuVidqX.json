@@ -1,0 +1,94 @@
+{
+  "id": "SwKR8pHohFuVidqX",
+  "name": "Almutawa - Postgres Setup Schema 1 (Hotels/Carriers/Suppliers/Itinerary/Staff)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-27T06:38:41.223Z",
+  "updatedAt": "2026-09-27T06:38:41.223Z",
+  "isArchived": false,
+  "versionId": "ce0c1d30-cc04-4811-a16d-0366b7d03abc",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "26fd5666-e363-4cfe-9d06-5114460882d5",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "14753225-9059-45e2-bcf9-b2b76d3ac6c5",
+      "name": "Create Schema",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nCREATE TABLE IF NOT EXISTS hotels (\n  id SERIAL PRIMARY KEY,\n  name TEXT NOT NULL,\n  city TEXT,\n  country TEXT,\n  star_rating INT,\n  description TEXT,\n  contact TEXT,\n  photo_url TEXT,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS room_types (\n  id SERIAL PRIMARY KEY,\n  hotel_id INT REFERENCES hotels(id) ON DELETE CASCADE,\n  type_name TEXT NOT NULL,\n  capacity INT NOT NULL,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS carriers (\n  id SERIAL PRIMARY KEY,\n  name TEXT NOT NULL,\n  type TEXT,\n  contact TEXT,\n  notes TEXT,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS suppliers (\n  id SERIAL PRIMARY KEY,\n  name TEXT NOT NULL,\n  type TEXT,\n  city TEXT,\n  contact TEXT,\n  service_description TEXT,\n  default_price NUMERIC(10,3),\n  status TEXT DEFAULT 'Active',\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS itinerary_days (\n  id SERIAL PRIMARY KEY,\n  package_id TEXT NOT NULL,\n  day_number INT NOT NULL,\n  title TEXT,\n  description TEXT,\n  hotel_id INT REFERENCES hotels(id),\n  carrier_id INT REFERENCES carriers(id),\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS staff (\n  id SERIAL PRIMARY KEY,\n  full_name TEXT NOT NULL,\n  username TEXT UNIQUE NOT NULL,\n  phone TEXT,\n  password_hash TEXT NOT NULL,\n  password_salt TEXT NOT NULL,\n  permissions TEXT[] DEFAULT '{}',\n  active BOOLEAN DEFAULT true,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\n",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "SwKR8pHohFuVidqX",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-27T06:38:41.224Z",
+      "updatedAt": "2026-09-27T06:38:41.224Z"
+    }
+  ],
+  "activeVersion": null
+}
