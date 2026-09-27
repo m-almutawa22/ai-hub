@@ -1,0 +1,383 @@
+{
+  "id": "fw8FC2CSHxtlrnXU",
+  "name": "Almutawa - Setup Financial Tables 2 (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-26T12:05:31.179Z",
+  "updatedAt": "2026-09-26T12:05:35.342Z",
+  "isArchived": false,
+  "versionId": "bf8a5479-7956-48b7-b2f4-5bb765737428",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "26ccd3da-249d-49b1-9cb7-8a61070ef2c1",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "7826b3e7-085f-477a-95d2-08972674dee1",
+      "name": "Create Supplier Payments Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Supplier Payments",
+          "description": "Dues and payments tracking for any supplier (hotel, carrier, visa, meals, activity, other)",
+          "fields": [
+            {
+              "name": "Supplier Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Supplier Type",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "Hotel"
+                  },
+                  {
+                    "name": "Carrier"
+                  },
+                  {
+                    "name": "Visa"
+                  },
+                  {
+                    "name": "Restaurant/Meals"
+                  },
+                  {
+                    "name": "Activity Provider"
+                  },
+                  {
+                    "name": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Package",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblbCLAD8HLLwA9R7"
+              }
+            },
+            {
+              "name": "Invoice Number",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Total Due",
+              "type": "number",
+              "options": {
+                "precision": 3
+              }
+            },
+            {
+              "name": "Paid",
+              "type": "number",
+              "options": {
+                "precision": 3
+              }
+            },
+            {
+              "name": "Due Date",
+              "type": "date",
+              "options": {
+                "dateFormat": {
+                  "name": "iso"
+                }
+              }
+            },
+            {
+              "name": "Payment Date",
+              "type": "date",
+              "options": {
+                "dateFormat": {
+                  "name": "iso"
+                }
+              }
+            },
+            {
+              "name": "Payment Amount",
+              "type": "number",
+              "options": {
+                "precision": 3
+              }
+            },
+            {
+              "name": "Payment Method",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "Cash"
+                  },
+                  {
+                    "name": "Bank Transfer"
+                  },
+                  {
+                    "name": "Card"
+                  },
+                  {
+                    "name": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Reference",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Proof",
+              "type": "multipleAttachments"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "243674de-fc28-453c-8185-f2028f3ac97a",
+      "name": "Create Customer Payments Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Customer Payments",
+          "description": "Itemized payments received per booking (amount, method, date, reference, proof)",
+          "fields": [
+            {
+              "name": "Reference",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Booking",
+              "type": "multipleRecordLinks",
+              "options": {
+                "linkedTableId": "tblZ6AQCBmEY2KYHr"
+              }
+            },
+            {
+              "name": "Amount",
+              "type": "number",
+              "options": {
+                "precision": 3
+              }
+            },
+            {
+              "name": "Method",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "Cash"
+                  },
+                  {
+                    "name": "Bank Transfer"
+                  },
+                  {
+                    "name": "Benefit"
+                  },
+                  {
+                    "name": "Card"
+                  },
+                  {
+                    "name": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Date",
+              "type": "date",
+              "options": {
+                "dateFormat": {
+                  "name": "iso"
+                }
+              }
+            },
+            {
+              "name": "Proof",
+              "type": "multipleAttachments"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "5ffda609-a0ef-41f4-8060-efdaea295b53",
+      "name": "Create Audit Log Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Audit Log",
+          "description": "Who did what and when, for sensitive operations",
+          "fields": [
+            {
+              "name": "Action",
+              "type": "singleLineText"
+            },
+            {
+              "name": "User",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Entity Type",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Entity ID",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Details",
+              "type": "multilineText"
+            },
+            {
+              "name": "Timestamp",
+              "type": "dateTime",
+              "options": {
+                "dateFormat": {
+                  "name": "iso"
+                },
+                "timeFormat": {
+                  "name": "24hour"
+                },
+                "timeZone": "client"
+              }
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Supplier Payments Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Supplier Payments Table": {
+      "main": [
+        [
+          {
+            "node": "Create Customer Payments Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Customer Payments Table": {
+      "main": [
+        [
+          {
+            "node": "Create Audit Log Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "fw8FC2CSHxtlrnXU",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-26T12:05:31.180Z",
+      "updatedAt": "2026-09-26T12:05:31.180Z"
+    }
+  ],
+  "activeVersion": null
+}
