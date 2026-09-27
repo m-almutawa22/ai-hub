@@ -1,0 +1,212 @@
+{
+  "id": "rlBE37LG26MVu6sZ",
+  "name": "Almutawa - Setup Hotels & Carriers Tables (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-26T08:16:06.148Z",
+  "updatedAt": "2026-09-26T08:16:09.426Z",
+  "isArchived": false,
+  "versionId": "f780f3aa-2696-402c-873f-7dad568f6e8e",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "3db462a6-caa2-4198-b8a5-3b852b753a57",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a234b446-07e9-436b-b669-1c2101240c54",
+      "name": "Create Hotels Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Hotels",
+          "description": "Registered hotels with room types/capacity, used for itineraries and room distribution",
+          "fields": [
+            {
+              "name": "Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "City",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Country",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Star Rating",
+              "type": "number",
+              "options": {
+                "precision": 0
+              }
+            },
+            {
+              "name": "Description",
+              "type": "multilineText"
+            },
+            {
+              "name": "Contact",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Photo",
+              "type": "multipleAttachments"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "d1077be9-686e-4cbc-9a39-bce93483afb1",
+      "name": "Create Carriers Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/meta/bases/appPB4D3VkkSJKjRK/tables",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": {
+          "name": "Carriers",
+          "description": "Transport carriers (flight, bus, van, GMC) used in package itineraries",
+          "fields": [
+            {
+              "name": "Name",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Type",
+              "type": "singleSelect",
+              "options": {
+                "choices": [
+                  {
+                    "name": "Flight"
+                  },
+                  {
+                    "name": "Bus"
+                  },
+                  {
+                    "name": "Van"
+                  },
+                  {
+                    "name": "GMC"
+                  },
+                  {
+                    "name": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Contact",
+              "type": "singleLineText"
+            },
+            {
+              "name": "Notes",
+              "type": "multilineText"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Hotels Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Hotels Table": {
+      "main": [
+        [
+          {
+            "node": "Create Carriers Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "rlBE37LG26MVu6sZ",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-26T08:16:06.149Z",
+      "updatedAt": "2026-09-26T08:16:06.149Z"
+    }
+  ],
+  "activeVersion": null
+}
