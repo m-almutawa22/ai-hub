@@ -1,0 +1,93 @@
+{
+  "id": "jiS2mDpjhIhdukY2",
+  "name": "Almutawa - Postgres Cleanup Test Data (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-27T10:55:14.447Z",
+  "updatedAt": "2026-09-27T10:55:14.447Z",
+  "isArchived": false,
+  "versionId": "3aa7c52d-e432-44f5-a21d-1586fe0c26c8",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "2906792b-bb84-418d-afbf-420ff5a2acfc",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9c100195-2870-4e59-bff1-00f4e49b4cb0",
+      "name": "Cleanup",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM messages WHERE customer_phone = '+97333999888'; DELETE FROM bookings WHERE customer_phone = '+97333999888'; DELETE FROM customers WHERE phone = '+97333999888'; DELETE FROM packages WHERE title = 'دبي - عرض تجريبي';"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "jiS2mDpjhIhdukY2",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-27T10:55:14.448Z",
+      "updatedAt": "2026-09-27T10:55:14.448Z"
+    }
+  ],
+  "activeVersion": null
+}
