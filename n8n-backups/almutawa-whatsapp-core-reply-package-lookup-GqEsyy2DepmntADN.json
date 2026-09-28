@@ -3,12 +3,12 @@
   "name": "Almutawa - WhatsApp Core (Reply + Package Lookup)",
   "description": "Core WhatsApp customer-service workflow via Twilio. Receives inbound WhatsApp messages, recognizes returning customers by phone number (upsert into Airtable Customers), saves the message, pulls recent conversation history for context, replies via an AI ag",
   "active": true,
-  "activeVersionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
+  "activeVersionId": "8ce5e35d-a3dd-4c53-a560-8961573a9355",
   "createdAt": "2026-09-16T17:45:21.815Z",
-  "updatedAt": "2026-09-23T11:23:35.853Z",
+  "updatedAt": "2026-09-27T10:53:07.123Z",
   "isArchived": false,
-  "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
-  "versionCounter": 28,
+  "versionId": "8ce5e35d-a3dd-4c53-a560-8961573a9355",
+  "versionCounter": 33,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -48,144 +48,6 @@
       }
     },
     {
-      "id": "732cfd30-66b9-4095-93b9-465179b4ab1f",
-      "name": "Upsert Customer",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.2,
-      "position": [
-        448,
-        112
-      ],
-      "parameters": {
-        "resource": "record",
-        "operation": "upsert",
-        "base": {
-          "__rl": true,
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK",
-          "cachedResultName": "ALMUTAWA Tourism CRM"
-        },
-        "table": {
-          "__rl": true,
-          "mode": "id",
-          "value": "tblm8JWYMAoamikUz",
-          "cachedResultName": "Customers"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "matchingColumns": [
-            "Phone"
-          ],
-          "value": {
-            "Phone": "={{ $json.cleanPhone }}",
-            "Full Name": "={{ $json.profileName }}",
-            "WhatsApp Opt-In": true
-          },
-          "schema": []
-        },
-        "options": {
-          "typecast": true
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
-      "id": "0ec69a4c-e534-40f2-841b-9cbf0b2e0cec",
-      "name": "Save Inbound Message",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.2,
-      "position": [
-        672,
-        112
-      ],
-      "parameters": {
-        "resource": "record",
-        "operation": "create",
-        "base": {
-          "__rl": true,
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK",
-          "cachedResultName": "ALMUTAWA Tourism CRM"
-        },
-        "table": {
-          "__rl": true,
-          "mode": "id",
-          "value": "tblMrAwnefYntNtUH",
-          "cachedResultName": "Messages"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
-            "Customer": "={{ [$json.id] }}",
-            "Role": "Customer",
-            "Message Content": "={{ $('Normalize Incoming Message').item.json.messageText }}",
-            "Direction": "Inbound",
-            "WA SID": "={{ $('Normalize Incoming Message').item.json.messageSid }}",
-            "Is Processed": false
-          },
-          "schema": []
-        },
-        "options": {
-          "typecast": true
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
-      "id": "c22ed90e-e10b-45bb-8a30-f56b6c83a728",
-      "name": "Fetch Recent Messages",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.2,
-      "position": [
-        896,
-        112
-      ],
-      "parameters": {
-        "resource": "record",
-        "operation": "search",
-        "base": {
-          "__rl": true,
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK",
-          "cachedResultName": "ALMUTAWA Tourism CRM"
-        },
-        "table": {
-          "__rl": true,
-          "mode": "id",
-          "value": "tblMrAwnefYntNtUH",
-          "cachedResultName": "Messages"
-        },
-        "filterByFormula": "={{ '{Phone} = \"' + $('Normalize Incoming Message').item.json.cleanPhone + '\"' }}",
-        "returnAll": false,
-        "limit": 10,
-        "sort": {
-          "property": [
-            {
-              "field": "Timestamp",
-              "direction": "desc"
-            }
-          ]
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
       "id": "f4185ec5-9fb7-41db-a3be-a7f7dd7a99b6",
       "name": "Build Conversation Context",
       "type": "n8n-nodes-base.code",
@@ -197,7 +59,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json.fields || {};\n  const role = f[\"Role\"] === \"Assistant\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f[\"Message Content\"] || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerFields = $(\"Upsert Customer\").first().json.fields || {};\nconst customerNotes = customerFields[\"Notes\"] || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
+        "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json;\n  const role = f.direction === \"Outbound\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f.body || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerNotes = $(\"Upsert Customer\").first().json.notes || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
       }
     },
     {
@@ -241,89 +103,6 @@
       }
     },
     {
-      "id": "1c9fd80f-a6ec-4309-b528-94d187ef5b06",
-      "name": "Search Live Packages",
-      "type": "n8n-nodes-base.airtableTool",
-      "typeVersion": 2.2,
-      "position": [
-        1488,
-        336
-      ],
-      "parameters": {
-        "resource": "record",
-        "operation": "search",
-        "base": {
-          "__rl": true,
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK",
-          "cachedResultName": "ALMUTAWA Tourism CRM"
-        },
-        "table": {
-          "__rl": true,
-          "mode": "id",
-          "value": "tblbCLAD8HLLwA9R7",
-          "cachedResultName": "Packages"
-        },
-        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find matching packages. MUST always be wrapped as: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), <your extra conditions here>). Always require Is Visible=TRUE, Status=Active, and a future Departure Date. CRITICAL: use your own general world knowledge to resolve what the customer actually means before building the formula. Customers often name a landmark, shrine, island, or nickname instead of the official Title/Destination stored in the system — e.g. \"زيارة الإمام الحسين\" means Karbala, Iraq; \"السيدة زينب\" means Damascus, Syria; \"جزيرة ياس/يأس\" means Abu Dhabi, UAE. Search BOTH the Title and Destination fields with OR, and include every relevant term your reasoning surfaces (the landmark name AND the city/country AND common spelling variants), e.g: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), OR(FIND(\"ياس\",{Title})>0, FIND(\"يأس\",{Title})>0, FIND(\"أبو ظبي\",{Destination})>0)). If your first search returns nothing, try again with broader/alternate terms derived from your own knowledge before telling the customer nothing is available.') }}",
-        "returnAll": false,
-        "limit": 8
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
-      "id": "f584a0f0-26bb-41ee-aaee-1961b39ca104",
-      "name": "Save Outbound Message",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.2,
-      "position": [
-        1920,
-        112
-      ],
-      "parameters": {
-        "resource": "record",
-        "operation": "create",
-        "base": {
-          "__rl": true,
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK",
-          "cachedResultName": "ALMUTAWA Tourism CRM"
-        },
-        "table": {
-          "__rl": true,
-          "mode": "id",
-          "value": "tblMrAwnefYntNtUH",
-          "cachedResultName": "Messages"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
-            "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
-            "Role": "Assistant",
-            "Message Content": "={{ $('WhatsApp Reply Agent').item.json.output }}",
-            "Direction": "Outbound",
-            "WA SID": "={{ $json.sid }}",
-            "Is Processed": true
-          },
-          "schema": []
-        },
-        "options": {
-          "typecast": true
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
       "id": "107c5f44-cc5f-48c9-8143-5a10e1c295a6",
       "name": "Send WhatsApp Reply",
       "type": "n8n-nodes-base.httpRequest",
@@ -361,108 +140,6 @@
         "twilioApi": {
           "id": "NIIn1eNIQz6Zu5UB",
           "name": "Twilio account"
-        }
-      }
-    },
-    {
-      "id": "99d89bd9-56b1-45ec-b603-b01000d59aae",
-      "name": "Update Customer Profile",
-      "type": "n8n-nodes-base.airtableTool",
-      "typeVersion": 2.2,
-      "position": [
-        1488,
-        480
-      ],
-      "parameters": {
-        "base": {
-          "__rl": true,
-          "cachedResultName": "ALMUTAWA Tourism CRM",
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "matchingColumns": [
-            "Phone"
-          ],
-          "schema": [],
-          "value": {
-            "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}",
-            "Phone": "={{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}"
-          }
-        },
-        "operation": "upsert",
-        "options": {
-          "typecast": true
-        },
-        "resource": "record",
-        "table": {
-          "__rl": true,
-          "cachedResultName": "Customers",
-          "mode": "id",
-          "value": "tblm8JWYMAoamikUz"
-        },
-        "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes.",
-        "parameters": {
-          "columns": {
-            "value": {
-              "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}"
-            }
-          }
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
-      "id": "89b0a289-0ea3-4f29-9db5-f410ad04ac65",
-      "name": "Register Booking",
-      "type": "n8n-nodes-base.airtableTool",
-      "typeVersion": 2.2,
-      "position": [
-        1488,
-        640
-      ],
-      "parameters": {
-        "base": {
-          "__rl": true,
-          "cachedResultName": "ALMUTAWA Tourism CRM",
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "schema": [],
-          "value": {
-            "Booking Status": "Pending",
-            "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
-            "Number of Travelers": "={{ $fromAI('num_travelers', 'Number of travelers for this booking', 'number') }}",
-            "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package being booked, starting with rec... , as returned by the Search Live Packages tool', 'string') ] }}",
-            "Payment Status": "Unpaid",
-            "Special Requests": "={{ $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') }}"
-          }
-        },
-        "operation": "create",
-        "options": {
-          "typecast": true
-        },
-        "resource": "record",
-        "table": {
-          "__rl": true,
-          "cachedResultName": "Bookings",
-          "mode": "id",
-          "value": "tblZ6AQCBmEY2KYHr"
-        },
-        "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) — it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
         }
       }
     },
@@ -536,49 +213,6 @@
         "unit": "seconds"
       },
       "webhookId": "23bc24ed-b783-4d52-a9d2-1f65b8dcb1b8"
-    },
-    {
-      "id": "337613b6-c8e9-48d9-94b9-d89c008ba6cb",
-      "name": "Get Latest Message For Phone",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.2,
-      "position": [
-        860,
-        112
-      ],
-      "parameters": {
-        "base": {
-          "__rl": true,
-          "cachedResultName": "ALMUTAWA Tourism CRM",
-          "mode": "id",
-          "value": "appPB4D3VkkSJKjRK"
-        },
-        "filterByFormula": "={{ 'AND({Phone}=\"' + $('Normalize Incoming Message').item.json.cleanPhone + '\", {Direction}=\"Inbound\")' }}",
-        "limit": 1,
-        "operation": "search",
-        "resource": "record",
-        "returnAll": false,
-        "sort": {
-          "property": [
-            {
-              "direction": "desc",
-              "field": "Timestamp"
-            }
-          ]
-        },
-        "table": {
-          "__rl": true,
-          "cachedResultName": "Messages",
-          "mode": "id",
-          "value": "tblMrAwnefYntNtUH"
-        }
-      },
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dJPlPtRxY8Txd9y9",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
     },
     {
       "id": "3d9c2cf7-160f-449f-8188-945c76ab6c7b",
@@ -960,42 +594,196 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "id": "87c09c12-4f0b-4260-96ca-c3b8eae860c6",
+      "name": "Upsert Customer",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        112
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$json.cleanPhone, $json.profileName] }}"
+        },
+        "query": "INSERT INTO customers (phone, full_name, whatsapp_opt_in) VALUES ($1, $2, true) ON CONFLICT (phone) DO UPDATE SET full_name = COALESCE(NULLIF(EXCLUDED.full_name, ''), customers.full_name) RETURNING id, phone, full_name, notes, is_registered;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "beae9656-e61a-49e1-8f6a-dc3827b49ec6",
+      "name": "Save Inbound Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        672,
+        112
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone, $('Normalize Incoming Message').item.json.messageText] }}"
+        },
+        "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1, 'Inbound', $2, 'text') RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "dde44209-a714-4fb5-8bc0-1cf429035bd2",
+      "name": "Get Latest Message For Phone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        860,
+        112
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone] }}"
+        },
+        "query": "SELECT id FROM messages WHERE customer_phone = $1 AND direction = 'Inbound' ORDER BY timestamp DESC LIMIT 1;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "e110ab98-a460-4213-8c71-8f79fc0c2ba8",
+      "name": "Fetch Recent Messages",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        112
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone] }}"
+        },
+        "query": "SELECT * FROM messages WHERE customer_phone = $1 ORDER BY timestamp DESC LIMIT 10;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a79badc2-e583-4985-844b-ccf38b495787",
+      "name": "Save Outbound Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        112
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone, $('WhatsApp Reply Agent').item.json.output] }}"
+        },
+        "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1, 'Outbound', $2, 'text') RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "5e6c3473-ca73-4f3e-9126-5144176886be",
+      "name": "Search Live Packages",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        1488,
+        336
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ ['%' + $fromAI('search_term', 'A single search keyword to match against the package title or destination: a landmark, city, or country name, resolved using your own knowledge from what the customer said.', 'string') + '%'] }}"
+        },
+        "query": "SELECT id, title, destination, price, price_flight, price_land, price_with_visa, price_without_visa, child_price_with_bed, child_price_without_bed, private_room_price, extra_seat_price, price_without_meals, accommodation_only_price, departure_date, return_date, duration_days, seats_available, transport_type, package_type, includes_visa, description FROM packages WHERE is_visible = true AND status = 'Active' AND departure_date > CURRENT_DATE AND (title ILIKE $1 OR destination ILIKE $1) ORDER BY departure_date ASC LIMIT 8;",
+        "toolDescription": "Search currently available travel packages by destination, landmark, or city name. Always resolve what the customer actually means using your own general world knowledge before searching (a landmark, shrine, or nickname rather than the exact stored name) - e.g. زيارة الإمام الحسين means Karbala, Iraq; السيدة زينب means Damascus, Syria; جزيرة ياس means Abu Dhabi, UAE. Only ever-visible, active, future-departure packages are returned automatically. If your first search returns nothing, call this tool again with a different or broader term (the landmark name, the city, the country, or a spelling variant) before telling the customer nothing is available. NEVER invent package details, prices, or dates - only state what this tool actually returns."
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "52f23b06-8223-464e-99ae-6fe03d1a14fa",
+      "name": "Update Customer Profile",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        1488,
+        480
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string'), $('Normalize Incoming Message').item.json.cleanPhone ] }}"
+        },
+        "query": "UPDATE customers SET notes = $1 WHERE phone = $2;",
+        "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes."
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "277f9c22-3040-432f-858e-9394b6df425c",
+      "name": "Register Booking",
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        1488,
+        640
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [ $fromAI('package_id', 'The numeric id of the package being booked, exactly as returned in the id field from the Search Live Packages tool results', 'number'), $('Normalize Incoming Message').item.json.cleanPhone, $('Normalize Incoming Message').item.json.profileName, $fromAI('num_travelers', 'Number of travelers for this booking', 'number'), $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') ] }}"
+        },
+        "query": "INSERT INTO bookings (package_id, customer_phone, lead_name, travelers_count, notes, booking_status, payment_status) VALUES ($1,$2,$3,$4,$5,'Pending','Unpaid') RETURNING id;",
+        "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) - it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
     }
   ],
   "connections": {
-    "Normalize Incoming Message": {
-      "main": [
-        [
-          {
-            "node": "Upsert Customer",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upsert Customer": {
-      "main": [
-        [
-          {
-            "node": "Save Inbound Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Fetch Recent Messages": {
-      "main": [
-        [
-          {
-            "node": "Build Conversation Context",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Build Conversation Context": {
       "main": [
         [
@@ -1018,56 +806,12 @@
         ]
       ]
     },
-    "Search Live Packages": {
-      "ai_tool": [
-        [
-          {
-            "node": "WhatsApp Reply Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "WhatsApp Reply Agent": {
       "main": [
         [
           {
             "node": "Send WhatsApp Reply",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send WhatsApp Reply": {
-      "main": [
-        [
-          {
-            "node": "Save Outbound Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Customer Profile": {
-      "ai_tool": [
-        [
-          {
-            "node": "WhatsApp Reply Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Register Booking": {
-      "ai_tool": [
-        [
-          {
-            "node": "WhatsApp Reply Agent",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -1095,55 +839,11 @@
         ]
       ]
     },
-    "Save Inbound Message": {
-      "main": [
-        [
-          {
-            "node": "Wait Before Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Wait Before Reply": {
-      "main": [
-        [
-          {
-            "node": "Get Latest Message For Phone",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Latest Message For Phone": {
-      "main": [
-        [
-          {
-            "node": "Determine If Still Latest",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Determine If Still Latest": {
       "main": [
         [
           {
             "node": "Is Latest Message?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is Latest Message?": {
-      "main": [
-        [
-          {
-            "node": "Fetch Recent Messages",
             "type": "main",
             "index": 0
           }
@@ -1330,6 +1030,127 @@
           }
         ]
       ]
+    },
+    "Normalize Incoming Message": {
+      "main": [
+        [
+          {
+            "node": "Upsert Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Customer": {
+      "main": [
+        [
+          {
+            "node": "Save Inbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Inbound Message": {
+      "main": [
+        [
+          {
+            "node": "Wait Before Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Reply": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Message For Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Message For Phone": {
+      "main": [
+        [
+          {
+            "node": "Determine If Still Latest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Latest Message?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Recent Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Recent Messages": {
+      "main": [
+        [
+          {
+            "node": "Build Conversation Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Reply": {
+      "main": [
+        [
+          {
+            "node": "Save Outbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Live Packages": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Customer Profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Reply Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1366,7 +1187,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
+    "versionId": "8ce5e35d-a3dd-4c53-a560-8961573a9355",
     "workflowId": "GqEsyy2DepmntADN",
     "nodes": [
       {
@@ -1405,144 +1226,6 @@
         }
       },
       {
-        "id": "732cfd30-66b9-4095-93b9-465179b4ab1f",
-        "name": "Upsert Customer",
-        "type": "n8n-nodes-base.airtable",
-        "typeVersion": 2.2,
-        "position": [
-          448,
-          112
-        ],
-        "parameters": {
-          "resource": "record",
-          "operation": "upsert",
-          "base": {
-            "__rl": true,
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK",
-            "cachedResultName": "ALMUTAWA Tourism CRM"
-          },
-          "table": {
-            "__rl": true,
-            "mode": "id",
-            "value": "tblm8JWYMAoamikUz",
-            "cachedResultName": "Customers"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "matchingColumns": [
-              "Phone"
-            ],
-            "value": {
-              "Phone": "={{ $json.cleanPhone }}",
-              "Full Name": "={{ $json.profileName }}",
-              "WhatsApp Opt-In": true
-            },
-            "schema": []
-          },
-          "options": {
-            "typecast": true
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
-        "id": "0ec69a4c-e534-40f2-841b-9cbf0b2e0cec",
-        "name": "Save Inbound Message",
-        "type": "n8n-nodes-base.airtable",
-        "typeVersion": 2.2,
-        "position": [
-          672,
-          112
-        ],
-        "parameters": {
-          "resource": "record",
-          "operation": "create",
-          "base": {
-            "__rl": true,
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK",
-            "cachedResultName": "ALMUTAWA Tourism CRM"
-          },
-          "table": {
-            "__rl": true,
-            "mode": "id",
-            "value": "tblMrAwnefYntNtUH",
-            "cachedResultName": "Messages"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "value": {
-              "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
-              "Customer": "={{ [$json.id] }}",
-              "Role": "Customer",
-              "Message Content": "={{ $('Normalize Incoming Message').item.json.messageText }}",
-              "Direction": "Inbound",
-              "WA SID": "={{ $('Normalize Incoming Message').item.json.messageSid }}",
-              "Is Processed": false
-            },
-            "schema": []
-          },
-          "options": {
-            "typecast": true
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
-        "id": "c22ed90e-e10b-45bb-8a30-f56b6c83a728",
-        "name": "Fetch Recent Messages",
-        "type": "n8n-nodes-base.airtable",
-        "typeVersion": 2.2,
-        "position": [
-          896,
-          112
-        ],
-        "parameters": {
-          "resource": "record",
-          "operation": "search",
-          "base": {
-            "__rl": true,
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK",
-            "cachedResultName": "ALMUTAWA Tourism CRM"
-          },
-          "table": {
-            "__rl": true,
-            "mode": "id",
-            "value": "tblMrAwnefYntNtUH",
-            "cachedResultName": "Messages"
-          },
-          "filterByFormula": "={{ '{Phone} = \"' + $('Normalize Incoming Message').item.json.cleanPhone + '\"' }}",
-          "returnAll": false,
-          "limit": 10,
-          "sort": {
-            "property": [
-              {
-                "field": "Timestamp",
-                "direction": "desc"
-              }
-            ]
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
         "id": "f4185ec5-9fb7-41db-a3be-a7f7dd7a99b6",
         "name": "Build Conversation Context",
         "type": "n8n-nodes-base.code",
@@ -1554,7 +1237,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json.fields || {};\n  const role = f[\"Role\"] === \"Assistant\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f[\"Message Content\"] || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerFields = $(\"Upsert Customer\").first().json.fields || {};\nconst customerNotes = customerFields[\"Notes\"] || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
+          "jsCode": "const items = $input.all();\nconst ordered = items.slice().reverse();\nconst lines = ordered.map(function(i) {\n  const f = i.json;\n  const role = f.direction === \"Outbound\" ? \"Assistant\" : \"Customer\";\n  return role + \": \" + (f.body || \"\");\n});\nconst history = lines.join(\"\\n\");\nconst currentMessage = $(\"Normalize Incoming Message\").first().json.messageText;\nconst customerName = $(\"Normalize Incoming Message\").first().json.profileName;\nconst customerNotes = $(\"Upsert Customer\").first().json.notes || \"\";\nconst notesBlock = customerNotes ? (\"Known customer profile (from previous conversations): \" + customerNotes + \"\\n\\n\") : \"\";\nconst promptText = notesBlock + \"Conversation history:\\n\" + history + \"\\n\\nCustomer (\" + customerName + \") new message: \" + currentMessage;\nreturn [{ json: { promptText: promptText } }];"
         }
       },
       {
@@ -1598,89 +1281,6 @@
         }
       },
       {
-        "id": "1c9fd80f-a6ec-4309-b528-94d187ef5b06",
-        "name": "Search Live Packages",
-        "type": "n8n-nodes-base.airtableTool",
-        "typeVersion": 2.2,
-        "position": [
-          1488,
-          336
-        ],
-        "parameters": {
-          "resource": "record",
-          "operation": "search",
-          "base": {
-            "__rl": true,
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK",
-            "cachedResultName": "ALMUTAWA Tourism CRM"
-          },
-          "table": {
-            "__rl": true,
-            "mode": "id",
-            "value": "tblbCLAD8HLLwA9R7",
-            "cachedResultName": "Packages"
-          },
-          "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filter_formula', 'Airtable formula to find matching packages. MUST always be wrapped as: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), <your extra conditions here>). Always require Is Visible=TRUE, Status=Active, and a future Departure Date. CRITICAL: use your own general world knowledge to resolve what the customer actually means before building the formula. Customers often name a landmark, shrine, island, or nickname instead of the official Title/Destination stored in the system — e.g. \"زيارة الإمام الحسين\" means Karbala, Iraq; \"السيدة زينب\" means Damascus, Syria; \"جزيرة ياس/يأس\" means Abu Dhabi, UAE. Search BOTH the Title and Destination fields with OR, and include every relevant term your reasoning surfaces (the landmark name AND the city/country AND common spelling variants), e.g: AND({Is Visible}=TRUE(), {Status}=\"Active\", IS_AFTER({Departure Date}, TODAY()), OR(FIND(\"ياس\",{Title})>0, FIND(\"يأس\",{Title})>0, FIND(\"أبو ظبي\",{Destination})>0)). If your first search returns nothing, try again with broader/alternate terms derived from your own knowledge before telling the customer nothing is available.') }}",
-          "returnAll": false,
-          "limit": 8
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
-        "id": "f584a0f0-26bb-41ee-aaee-1961b39ca104",
-        "name": "Save Outbound Message",
-        "type": "n8n-nodes-base.airtable",
-        "typeVersion": 2.2,
-        "position": [
-          1920,
-          112
-        ],
-        "parameters": {
-          "resource": "record",
-          "operation": "create",
-          "base": {
-            "__rl": true,
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK",
-            "cachedResultName": "ALMUTAWA Tourism CRM"
-          },
-          "table": {
-            "__rl": true,
-            "mode": "id",
-            "value": "tblMrAwnefYntNtUH",
-            "cachedResultName": "Messages"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "value": {
-              "Phone": "={{ $('Normalize Incoming Message').item.json.cleanPhone }}",
-              "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
-              "Role": "Assistant",
-              "Message Content": "={{ $('WhatsApp Reply Agent').item.json.output }}",
-              "Direction": "Outbound",
-              "WA SID": "={{ $json.sid }}",
-              "Is Processed": true
-            },
-            "schema": []
-          },
-          "options": {
-            "typecast": true
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
         "id": "107c5f44-cc5f-48c9-8143-5a10e1c295a6",
         "name": "Send WhatsApp Reply",
         "type": "n8n-nodes-base.httpRequest",
@@ -1718,108 +1318,6 @@
           "twilioApi": {
             "id": "NIIn1eNIQz6Zu5UB",
             "name": "Twilio account"
-          }
-        }
-      },
-      {
-        "id": "99d89bd9-56b1-45ec-b603-b01000d59aae",
-        "name": "Update Customer Profile",
-        "type": "n8n-nodes-base.airtableTool",
-        "typeVersion": 2.2,
-        "position": [
-          1488,
-          480
-        ],
-        "parameters": {
-          "base": {
-            "__rl": true,
-            "cachedResultName": "ALMUTAWA Tourism CRM",
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "matchingColumns": [
-              "Phone"
-            ],
-            "schema": [],
-            "value": {
-              "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}",
-              "Phone": "={{ $('WhatsApp Inbound').item.json.body.From.replace('whatsapp:', '') }}"
-            }
-          },
-          "operation": "upsert",
-          "options": {
-            "typecast": true
-          },
-          "resource": "record",
-          "table": {
-            "__rl": true,
-            "cachedResultName": "Customers",
-            "mode": "id",
-            "value": "tblm8JWYMAoamikUz"
-          },
-          "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes.",
-          "parameters": {
-            "columns": {
-              "value": {
-                "Notes": "={{ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string') }}"
-              }
-            }
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
-      },
-      {
-        "id": "89b0a289-0ea3-4f29-9db5-f410ad04ac65",
-        "name": "Register Booking",
-        "type": "n8n-nodes-base.airtableTool",
-        "typeVersion": 2.2,
-        "position": [
-          1488,
-          640
-        ],
-        "parameters": {
-          "base": {
-            "__rl": true,
-            "cachedResultName": "ALMUTAWA Tourism CRM",
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "schema": [],
-            "value": {
-              "Booking Status": "Pending",
-              "Customer": "={{ [$('Upsert Customer').item.json.id] }}",
-              "Number of Travelers": "={{ $fromAI('num_travelers', 'Number of travelers for this booking', 'number') }}",
-              "Package": "={{ [ $fromAI('package_record_id', 'The Airtable record ID of the package being booked, starting with rec... , as returned by the Search Live Packages tool', 'string') ] }}",
-              "Payment Status": "Unpaid",
-              "Special Requests": "={{ $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') }}"
-            }
-          },
-          "operation": "create",
-          "options": {
-            "typecast": true
-          },
-          "resource": "record",
-          "table": {
-            "__rl": true,
-            "cachedResultName": "Bookings",
-            "mode": "id",
-            "value": "tblZ6AQCBmEY2KYHr"
-          },
-          "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) — it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
           }
         }
       },
@@ -1893,49 +1391,6 @@
           "unit": "seconds"
         },
         "webhookId": "23bc24ed-b783-4d52-a9d2-1f65b8dcb1b8"
-      },
-      {
-        "id": "337613b6-c8e9-48d9-94b9-d89c008ba6cb",
-        "name": "Get Latest Message For Phone",
-        "type": "n8n-nodes-base.airtable",
-        "typeVersion": 2.2,
-        "position": [
-          860,
-          112
-        ],
-        "parameters": {
-          "base": {
-            "__rl": true,
-            "cachedResultName": "ALMUTAWA Tourism CRM",
-            "mode": "id",
-            "value": "appPB4D3VkkSJKjRK"
-          },
-          "filterByFormula": "={{ 'AND({Phone}=\"' + $('Normalize Incoming Message').item.json.cleanPhone + '\", {Direction}=\"Inbound\")' }}",
-          "limit": 1,
-          "operation": "search",
-          "resource": "record",
-          "returnAll": false,
-          "sort": {
-            "property": [
-              {
-                "direction": "desc",
-                "field": "Timestamp"
-              }
-            ]
-          },
-          "table": {
-            "__rl": true,
-            "cachedResultName": "Messages",
-            "mode": "id",
-            "value": "tblMrAwnefYntNtUH"
-          }
-        },
-        "credentials": {
-          "airtableTokenApi": {
-            "id": "dJPlPtRxY8Txd9y9",
-            "name": "Airtable Personal Access Token account"
-          }
-        }
       },
       {
         "id": "3d9c2cf7-160f-449f-8188-945c76ab6c7b",
@@ -2317,42 +1772,196 @@
             "name": "Telegram account"
           }
         }
+      },
+      {
+        "id": "87c09c12-4f0b-4260-96ca-c3b8eae860c6",
+        "name": "Upsert Customer",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          448,
+          112
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$json.cleanPhone, $json.profileName] }}"
+          },
+          "query": "INSERT INTO customers (phone, full_name, whatsapp_opt_in) VALUES ($1, $2, true) ON CONFLICT (phone) DO UPDATE SET full_name = COALESCE(NULLIF(EXCLUDED.full_name, ''), customers.full_name) RETURNING id, phone, full_name, notes, is_registered;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "beae9656-e61a-49e1-8f6a-dc3827b49ec6",
+        "name": "Save Inbound Message",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          672,
+          112
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone, $('Normalize Incoming Message').item.json.messageText] }}"
+          },
+          "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1, 'Inbound', $2, 'text') RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "dde44209-a714-4fb5-8bc0-1cf429035bd2",
+        "name": "Get Latest Message For Phone",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          860,
+          112
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone] }}"
+          },
+          "query": "SELECT id FROM messages WHERE customer_phone = $1 AND direction = 'Inbound' ORDER BY timestamp DESC LIMIT 1;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "e110ab98-a460-4213-8c71-8f79fc0c2ba8",
+        "name": "Fetch Recent Messages",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          896,
+          112
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone] }}"
+          },
+          "query": "SELECT * FROM messages WHERE customer_phone = $1 ORDER BY timestamp DESC LIMIT 10;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "a79badc2-e583-4985-844b-ccf38b495787",
+        "name": "Save Outbound Message",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1920,
+          112
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [$('Normalize Incoming Message').item.json.cleanPhone, $('WhatsApp Reply Agent').item.json.output] }}"
+          },
+          "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1, 'Outbound', $2, 'text') RETURNING id;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "5e6c3473-ca73-4f3e-9126-5144176886be",
+        "name": "Search Live Packages",
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.5,
+        "position": [
+          1488,
+          336
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ ['%' + $fromAI('search_term', 'A single search keyword to match against the package title or destination: a landmark, city, or country name, resolved using your own knowledge from what the customer said.', 'string') + '%'] }}"
+          },
+          "query": "SELECT id, title, destination, price, price_flight, price_land, price_with_visa, price_without_visa, child_price_with_bed, child_price_without_bed, private_room_price, extra_seat_price, price_without_meals, accommodation_only_price, departure_date, return_date, duration_days, seats_available, transport_type, package_type, includes_visa, description FROM packages WHERE is_visible = true AND status = 'Active' AND departure_date > CURRENT_DATE AND (title ILIKE $1 OR destination ILIKE $1) ORDER BY departure_date ASC LIMIT 8;",
+          "toolDescription": "Search currently available travel packages by destination, landmark, or city name. Always resolve what the customer actually means using your own general world knowledge before searching (a landmark, shrine, or nickname rather than the exact stored name) - e.g. زيارة الإمام الحسين means Karbala, Iraq; السيدة زينب means Damascus, Syria; جزيرة ياس means Abu Dhabi, UAE. Only ever-visible, active, future-departure packages are returned automatically. If your first search returns nothing, call this tool again with a different or broader term (the landmark name, the city, the country, or a spelling variant) before telling the customer nothing is available. NEVER invent package details, prices, or dates - only state what this tool actually returns."
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "52f23b06-8223-464e-99ae-6fe03d1a14fa",
+        "name": "Update Customer Profile",
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.5,
+        "position": [
+          1488,
+          480
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [ $fromAI('profile_summary', 'The FULL updated running summary of what we know about this customer, WRITTEN IN ARABIC: preferences, ongoing booking status, documents received, special requests. This REPLACES the previous notes entirely, so include everything still relevant, not just the new fact. Keep it under 5 short lines.', 'string'), $('Normalize Incoming Message').item.json.cleanPhone ] }}"
+          },
+          "query": "UPDATE customers SET notes = $1 WHERE phone = $2;",
+          "toolDescription": "Save or update this customer's long-term profile notes. Call this whenever you learn a new durable fact worth remembering across future conversations: a stated preference, confirmed booking intent, documents received (e.g. passport photos), or a pending request. Always pass the FULL updated summary, not just the new fact, since it overwrites the previous notes."
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "277f9c22-3040-432f-858e-9394b6df425c",
+        "name": "Register Booking",
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.5,
+        "position": [
+          1488,
+          640
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [ $fromAI('package_id', 'The numeric id of the package being booked, exactly as returned in the id field from the Search Live Packages tool results', 'number'), $('Normalize Incoming Message').item.json.cleanPhone, $('Normalize Incoming Message').item.json.profileName, $fromAI('num_travelers', 'Number of travelers for this booking', 'number'), $fromAI('special_requests', 'Any special requests or notes from the customer about this booking. Leave empty string if none.', 'string') ] }}"
+          },
+          "query": "INSERT INTO bookings (package_id, customer_phone, lead_name, travelers_count, notes, booking_status, payment_status) VALUES ($1,$2,$3,$4,$5,'Pending','Unpaid') RETURNING id;",
+          "toolDescription": "Register a new booking request once the customer has clearly confirmed which package, how many travelers, and agreed to proceed. This creates a PENDING booking for staff to finalize (payment, documents, final confirmation) - it does not itself confirm the booking to the customer. Always call the Notify Team - Booking Confirmed tool right after this one so staff sees it immediately."
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
       }
     ],
     "connections": {
-      "Normalize Incoming Message": {
-        "main": [
-          [
-            {
-              "node": "Upsert Customer",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Upsert Customer": {
-        "main": [
-          [
-            {
-              "node": "Save Inbound Message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Fetch Recent Messages": {
-        "main": [
-          [
-            {
-              "node": "Build Conversation Context",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Build Conversation Context": {
         "main": [
           [
@@ -2375,56 +1984,12 @@
           ]
         ]
       },
-      "Search Live Packages": {
-        "ai_tool": [
-          [
-            {
-              "node": "WhatsApp Reply Agent",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "WhatsApp Reply Agent": {
         "main": [
           [
             {
               "node": "Send WhatsApp Reply",
               "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Send WhatsApp Reply": {
-        "main": [
-          [
-            {
-              "node": "Save Outbound Message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Update Customer Profile": {
-        "ai_tool": [
-          [
-            {
-              "node": "WhatsApp Reply Agent",
-              "type": "ai_tool",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Register Booking": {
-        "ai_tool": [
-          [
-            {
-              "node": "WhatsApp Reply Agent",
-              "type": "ai_tool",
               "index": 0
             }
           ]
@@ -2452,55 +2017,11 @@
           ]
         ]
       },
-      "Save Inbound Message": {
-        "main": [
-          [
-            {
-              "node": "Wait Before Reply",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Wait Before Reply": {
-        "main": [
-          [
-            {
-              "node": "Get Latest Message For Phone",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Get Latest Message For Phone": {
-        "main": [
-          [
-            {
-              "node": "Determine If Still Latest",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Determine If Still Latest": {
         "main": [
           [
             {
               "node": "Is Latest Message?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Is Latest Message?": {
-        "main": [
-          [
-            {
-              "node": "Fetch Recent Messages",
               "type": "main",
               "index": 0
             }
@@ -2687,23 +2208,144 @@
             }
           ]
         ]
+      },
+      "Normalize Incoming Message": {
+        "main": [
+          [
+            {
+              "node": "Upsert Customer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert Customer": {
+        "main": [
+          [
+            {
+              "node": "Save Inbound Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Inbound Message": {
+        "main": [
+          [
+            {
+              "node": "Wait Before Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait Before Reply": {
+        "main": [
+          [
+            {
+              "node": "Get Latest Message For Phone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Latest Message For Phone": {
+        "main": [
+          [
+            {
+              "node": "Determine If Still Latest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Latest Message?": {
+        "main": [
+          [
+            {
+              "node": "Fetch Recent Messages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Recent Messages": {
+        "main": [
+          [
+            {
+              "node": "Build Conversation Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send WhatsApp Reply": {
+        "main": [
+          [
+            {
+              "node": "Save Outbound Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Live Packages": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Customer Profile": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Register Booking": {
+        "ai_tool": [
+          [
+            {
+              "node": "WhatsApp Reply Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Fix Telegram entity-parsing crash (force HTML parse mode)",
-    "description": "Root cause of the Escalate to Team failures (and a latent bug in every other Telegram-sending node): when parse_mode isn't explicitly set, n8n silently defaults to Telegram's legacy Markdown parser, which throws 'can't find end of the entity' on certain Arabic text/RTL combinations even with zero markdown syntax present - it crashed on a customer's WhatsApp profile name. Explicitly forcing parse_mode to HTML on all our team-notification Telegram nodes fixes this permanently (confirmed via isolated test) since HTML mode doesn't misfire on plain text.",
+    "name": "Fix AI tool connection type",
+    "description": "Fix the AI tool connections to use connectionType ai_tool instead of the default main.",
     "autosaved": false,
-    "createdAt": "2026-09-23T11:23:35.854Z",
-    "updatedAt": "2026-09-23T11:23:35.854Z",
+    "createdAt": "2026-09-27T10:53:07.125Z",
+    "updatedAt": "2026-09-27T10:53:07.125Z",
     "workflowPublishHistory": [
       {
-        "id": 123,
+        "id": 162,
         "workflowId": "GqEsyy2DepmntADN",
-        "versionId": "9c5f777f-f138-4799-be31-b9e79126b7b8",
+        "versionId": "8ce5e35d-a3dd-4c53-a560-8961573a9355",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-23T11:23:37.676Z"
+        "createdAt": "2026-09-27T10:55:19.833Z"
       }
     ]
   }
