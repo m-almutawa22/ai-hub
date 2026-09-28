@@ -1,0 +1,94 @@
+{
+  "id": "ScW0SsXm5gQ2PL12",
+  "name": "Almutawa - Postgres Setup Schema 2 (Customers/Conversations/Messages/Packages/Bookings/Travelers/OTP)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-27T10:42:56.539Z",
+  "updatedAt": "2026-09-27T10:42:56.539Z",
+  "isArchived": false,
+  "versionId": "fc00ff9c-138a-4eb9-8512-51e57f728236",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "4723b3a7-19d8-4d1c-9421-9b0b9905ef24",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9201eaa9-4c53-4d6b-bc5a-1b034e225089",
+      "name": "Create Schema",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nCREATE TABLE IF NOT EXISTS customers (\n  id SERIAL PRIMARY KEY,\n  phone TEXT UNIQUE NOT NULL,\n  full_name TEXT,\n  password_hash TEXT,\n  password_salt TEXT,\n  is_registered BOOLEAN DEFAULT false,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS conversations (\n  id SERIAL PRIMARY KEY,\n  customer_phone TEXT NOT NULL,\n  status TEXT DEFAULT 'open',\n  last_activity_at TIMESTAMPTZ DEFAULT now(),\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE TABLE IF NOT EXISTS messages (\n  id SERIAL PRIMARY KEY,\n  conversation_id INT REFERENCES conversations(id) ON DELETE CASCADE,\n  customer_phone TEXT NOT NULL,\n  direction TEXT NOT NULL,\n  body TEXT,\n  media_url TEXT,\n  message_type TEXT DEFAULT 'text',\n  timestamp TIMESTAMPTZ DEFAULT now()\n);\nCREATE INDEX IF NOT EXISTS idx_messages_phone_time ON messages (customer_phone, timestamp DESC);\nCREATE INDEX IF NOT EXISTS idx_messages_direction_time ON messages (direction, timestamp DESC);\n\nCREATE TABLE IF NOT EXISTS packages (\n  id SERIAL PRIMARY KEY,\n  title TEXT NOT NULL,\n  destination TEXT,\n  price NUMERIC(10,3),\n  seats_available INT,\n  status TEXT DEFAULT 'Draft',\n  is_visible BOOLEAN DEFAULT true,\n  departure_date DATE,\n  return_date DATE,\n  duration_days INT,\n  transport_type TEXT DEFAULT 'Flight',\n  package_type TEXT DEFAULT 'Standard',\n  includes_visa BOOLEAN DEFAULT false,\n  description TEXT,\n  price_flight NUMERIC(10,3),\n  price_land NUMERIC(10,3),\n  price_with_visa NUMERIC(10,3),\n  price_without_visa NUMERIC(10,3),\n  child_price_with_bed NUMERIC(10,3),\n  child_price_without_bed NUMERIC(10,3),\n  private_room_price NUMERIC(10,3),\n  extra_seat_price NUMERIC(10,3),\n  price_without_meals NUMERIC(10,3),\n  accommodation_only_price NUMERIC(10,3),\n  transport_cost NUMERIC(10,3),\n  hotel_cost NUMERIC(10,3),\n  service_cost NUMERIC(10,3),\n  crew_cost NUMERIC(10,3),\n  office_cost NUMERIC(10,3),\n  visa_addon_cost NUMERIC(10,3),\n  cost_notes TEXT,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\n\nCREATE TABLE IF NOT EXISTS bookings (\n  id SERIAL PRIMARY KEY,\n  package_id INT REFERENCES packages(id),\n  customer_phone TEXT NOT NULL,\n  lead_name TEXT,\n  lead_email TEXT,\n  travelers_count INT DEFAULT 1,\n  notes TEXT,\n  booking_status TEXT DEFAULT 'Pending',\n  payment_status TEXT DEFAULT 'Unpaid',\n  amount_paid NUMERIC(10,3) DEFAULT 0,\n  total_amount NUMERIC(10,3),\n  created_at TIMESTAMPTZ DEFAULT now()\n);\n\nCREATE TABLE IF NOT EXISTS travelers (\n  id SERIAL PRIMARY KEY,\n  booking_id INT REFERENCES bookings(id) ON DELETE CASCADE,\n  title TEXT,\n  first_name TEXT,\n  last_name TEXT,\n  dob DATE,\n  nationality TEXT,\n  passport_number TEXT,\n  passport_photo_url TEXT,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\n\nCREATE TABLE IF NOT EXISTS otp_codes (\n  id SERIAL PRIMARY KEY,\n  phone TEXT NOT NULL,\n  code TEXT NOT NULL,\n  purpose TEXT NOT NULL,\n  expires_at TIMESTAMPTZ NOT NULL,\n  used BOOLEAN DEFAULT false,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nCREATE INDEX IF NOT EXISTS idx_otp_lookup ON otp_codes (phone, code, purpose, used);\n",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ScW0SsXm5gQ2PL12",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-27T10:42:56.542Z",
+      "updatedAt": "2026-09-27T10:42:56.542Z"
+    }
+  ],
+  "activeVersion": null
+}
