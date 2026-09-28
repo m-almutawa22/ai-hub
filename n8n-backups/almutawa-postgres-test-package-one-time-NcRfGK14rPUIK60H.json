@@ -1,0 +1,93 @@
+{
+  "id": "NcRfGK14rPUIK60H",
+  "name": "Almutawa - Postgres Test Package (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-27T10:54:05.305Z",
+  "updatedAt": "2026-09-27T10:54:05.305Z",
+  "isArchived": false,
+  "versionId": "68c4c84a-91e0-44a4-847c-23a9999de339",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "b143f382-1c01-43dd-ba26-aa8e6db2dcc2",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6ca59417-c17e-45be-8f99-000bfee9fc16",
+      "name": "Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO packages (title, destination, price, seats_available, status, is_visible, departure_date, return_date, duration_days, transport_type, package_type, includes_visa, description) VALUES ('دبي - عرض تجريبي', 'دبي، الإمارات', 45, 20, 'Active', true, CURRENT_DATE + 10, CURRENT_DATE + 14, 5, 'Flight', 'Standard', false, 'رحلة تجريبية للاختبار') RETURNING id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "NcRfGK14rPUIK60H",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-27T10:54:05.307Z",
+      "updatedAt": "2026-09-27T10:54:05.307Z"
+    }
+  ],
+  "activeVersion": null
+}
