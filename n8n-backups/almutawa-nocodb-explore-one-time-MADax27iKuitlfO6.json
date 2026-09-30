@@ -1,0 +1,96 @@
+{
+  "id": "MADax27iKuitlfO6",
+  "name": "Almutawa - NocoDB Explore (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-29T19:33:52.404Z",
+  "updatedAt": "2026-09-29T19:34:00.520Z",
+  "isArchived": false,
+  "versionId": "baeed233-9a18-4d85-af3c-72442c7e286b",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "52f2da2b-a8dd-4871-9adc-1522e86658b3",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "53dd1993-8c73-4c75-bfe0-c8c59d164e3a",
+      "name": "List Bases",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://nocodb-production-77ad.up.railway.app/api/v2/meta/bases/p9rpoj256363bb4/tables",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xc-token",
+              "value": "nc_pat_oGTKv6pQ9c8yA0uv2HU4O08SCOhaMGdi8eXfDIPs"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "List Bases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "MADax27iKuitlfO6",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-29T19:33:52.405Z",
+      "updatedAt": "2026-09-29T19:33:52.405Z"
+    }
+  ],
+  "activeVersion": null
+}
