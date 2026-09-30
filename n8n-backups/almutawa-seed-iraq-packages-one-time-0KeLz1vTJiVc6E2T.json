@@ -1,0 +1,119 @@
+{
+  "id": "0KeLz1vTJiVc6E2T",
+  "name": "Almutawa - Seed Iraq Packages (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-30T03:31:20.857Z",
+  "updatedAt": "2026-09-30T03:31:20.857Z",
+  "isArchived": false,
+  "versionId": "bb15fa70-b82c-44a6-9a3c-19d7eee12ed8",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "35b3b17a-2175-47b0-86c9-b978a289fc61",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "424049e4-493c-40b7-999c-0b0b23baf64f",
+      "name": "Build SQL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function esc(s){ return String(s).replace(/'/g, \"''\"); }\nvar dates = [\n  { d: '2026-10-01' },\n  { d: '2026-10-08' },\n  { d: '2026-10-15' },\n  { d: '2026-10-22' },\n  { d: '2026-10-29' }\n];\nfunction addDays(dateStr, n){\n  var dt = new Date(dateStr + 'T00:00:00Z');\n  dt.setUTCDate(dt.getUTCDate() + n);\n  return dt.toISOString().slice(0,10);\n}\nvar tiers = [\n  {\n    key: 'mid',\n    label: '\\u0641\\u0646\\u0627\\u062f\\u0642 \\u0642\\u0631\\u064a\\u0628\\u0629 \\u0645\\u0646 \\u0627\\u0644\\u062d\\u0631\\u0645',\n    hotels: '\\u0643\\u0631\\u0628\\u0644\\u0627\\u0621: \\u0641\\u0646\\u062f\\u0642 \\u062f\\u0627\\u0631 \\u0627\\u0644\\u062a\\u0642\\u0648\\u0649 | \\u0627\\u0644\\u0646\\u062c\\u0641: \\u0641\\u0646\\u062f\\u0642 \\u0627\\u0644\\u0645\\u0642\\u0627\\u0645 | \\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629: \\u0641\\u0646\\u062f\\u0642 \\u0641\\u062f\\u0643 \\u0627\\u0644\\u0632\\u0647\\u0631\\u0627\\u0621',\n    prices: { 8: { price: 2600, orig: 2800 }, 15: { price: 3800, orig: 3990 } }\n  },\n  {\n    key: 'first',\n    label: '\\u0641\\u0646\\u0627\\u062f\\u0642 \\u062f\\u0631\\u062c\\u0629 \\u0623\\u0648\\u0644\\u0649',\n    hotels: '\\u0643\\u0631\\u0628\\u0644\\u0627\\u0621: \\u0641\\u0646\\u062f\\u0642 \\u0627\\u0644\\u0648\\u062a\\u064a\\u0646 | \\u0627\\u0644\\u0646\\u062c\\u0641: \\u0641\\u0646\\u062f\\u0642 \\u0632\\u0645\\u0632\\u0645 | \\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629: \\u0641\\u0646\\u062f\\u0642 \\u0636\\u064a\\u0627\\u0641\\u0629 \\u0627\\u0644\\u0625\\u0645\\u0627\\u0645 \\u0627\\u0644\\u062c\\u0648\\u0627\\u062f',\n    prices: { 8: { price: 3000, orig: 3200 }, 15: { price: 4200, orig: 4400 } }\n  }\n];\nvar nights = {\n  8: { karbala: 3, najaf: 3, kadhimiya: 1 },\n  15: { karbala: 8, najaf: 4, kadhimiya: 2 }\n};\nvar baseDesc = '\\u0632\\u064a\\u0627\\u0631\\u0629 \\u0627\\u0644\\u0625\\u0645\\u0627\\u0645 \\u0627\\u0644\\u062d\\u0633\\u064a\\u0646 (\\u0643\\u0631\\u0628\\u0644\\u0627\\u0621) \\u0648\\u0627\\u0644\\u0646\\u062c\\u0641 \\u0648\\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629. \\u0634\\u0627\\u0645\\u0644\\u0629 \\u062c\\u0645\\u064a\\u0639 \\u0627\\u0644\\u062e\\u062f\\u0645\\u0627\\u062a \\u0628\\u062f\\u0648\\u0646 \\u0627\\u0644\\u0641\\u064a\\u0632\\u0627 (\\u0627\\u0644\\u0648\\u062c\\u0628\\u0627\\u062a \\u0628\\u0646\\u0638\\u0627\\u0645 \\u0627\\u0644\\u0628\\u0648\\u0641\\u064a\\u0647 \\u0627\\u0644\\u0645\\u0641\\u062a\\u0648\\u062d\\u060c \\u0632\\u064a\\u0627\\u0631\\u0629 \\u0623\\u0648\\u0644\\u0627\\u062f \\u0645\\u0633\\u0644\\u0645 \\u0648\\u0627\\u0644\\u0633\\u064a\\u062f\\u0629 \\u0634\\u0631\\u064a\\u0641\\u0629\\u060c \\u0632\\u064a\\u0627\\u0631\\u0629 \\u0645\\u0633\\u062c\\u062f \\u0627\\u0644\\u0633\\u0647\\u0644\\u0629 \\u0648\\u062c\\u0627\\u0645\\u0639 \\u0627\\u0644\\u0643\\u0648\\u0641\\u0629). \\u0644\\u0644\\u0633\\u0639\\u0648\\u062f\\u064a\\u064a\\u0646 \\u0641\\u0642\\u0637.';\nvar rows = [];\ndates.forEach(function(dObj){\n  tiers.forEach(function(tier){\n    [8, 15].forEach(function(dur){\n      var p = tier.prices[dur];\n      var n = nights[dur];\n      var ret = addDays(dObj.d, dur - 1);\n      var title = '\\u0627\\u0644\\u0639\\u0631\\u0627\\u0642 (\\u0643\\u0631\\u0628\\u0644\\u0627\\u0621\\u060c \\u0627\\u0644\\u0646\\u062c\\u0641\\u060c \\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629) - ' + tier.label + ' - ' + dur + ' ' + (dur === 8 ? '\\u0623\\u064a\\u0627\\u0645' : '\\u064a\\u0648\\u0645') + ' - ' + dObj.d;\n      var desc = baseDesc + ' \\u0627\\u0644\\u0641\\u0646\\u0627\\u062f\\u0642: ' + tier.hotels + '. \\u0639\\u062f\\u062f \\u0627\\u0644\\u0644\\u064a\\u0627\\u0644\\u064a: \\u0643\\u0631\\u0628\\u0644\\u0627\\u0621 ' + n.karbala + '\\u060c \\u0627\\u0644\\u0646\\u062c\\u0641 ' + n.najaf + '\\u060c \\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629 ' + n.kadhimiya + '.';\n      var costNotes = '\\u0627\\u0644\\u0633\\u0639\\u0631 \\u0627\\u0644\\u0623\\u0635\\u0644\\u064a \\u0642\\u0628\\u0644 \\u0627\\u0644\\u062e\\u0635\\u0645: ' + p.orig + ' \\u0631\\u064a\\u0627\\u0644';\n      rows.push(\"('\" + esc(title) + \"', '\\u0627\\u0644\\u0639\\u0631\\u0627\\u0642 (\\u0643\\u0631\\u0628\\u0644\\u0627\\u0621\\u060c \\u0627\\u0644\\u0646\\u062c\\u0641\\u060c \\u0627\\u0644\\u0643\\u0627\\u0638\\u0645\\u064a\\u0629)', \" + p.price + \", 25, 'Active', true, '\" + dObj.d + \"'::date, '\" + ret + \"'::date, \" + dur + \", 'Flight', 'Standard', false, '\" + esc(desc) + \"', '\" + esc(costNotes) + \"')\");\n    });\n  });\n});\ndates.forEach(function(dObj){\n  var title = '\\u062a\\u0630\\u0627\\u0643\\u0631 \\u0637\\u064a\\u0631\\u0627\\u0646 \\u062f\\u0645\\u0627\\u0645 - \\u0628\\u063a\\u062f\\u0627\\u062f - \\u062f\\u0645\\u0627\\u0645 - ' + dObj.d;\n  var desc = '\\u062a\\u0630\\u0643\\u0631\\u0629 \\u0637\\u064a\\u0631\\u0627\\u0646 \\u0630\\u0647\\u0627\\u0628 \\u0648\\u0639\\u0648\\u062f\\u0629 \\u062f\\u0645\\u0627\\u0645 - \\u0628\\u063a\\u062f\\u0627\\u062f - \\u062f\\u0645\\u0627\\u0645. \\u0623\\u0633\\u0639\\u0627\\u0631 \\u062e\\u0627\\u0635\\u0629 \\u0644\\u0644\\u0645\\u062c\\u0645\\u0648\\u0639\\u0627\\u062a. \\u064a\\u0648\\u062c\\u062f \\u0644\\u062f\\u064a\\u0646\\u0627 \\u062a\\u0630\\u0627\\u0643\\u0631 \\u062f\\u0645\\u0627\\u0645-\\u0628\\u063a\\u062f\\u0627\\u062f-\\u0645\\u062f\\u064a\\u0646\\u0629 \\u0648\\u0627\\u0644\\u0639\\u0643\\u0633 \\u0643\\u0630\\u0644\\u0643.';\n  rows.push(\"('\" + esc(title) + \"', '\\u0628\\u063a\\u062f\\u0627\\u062f\\u060c \\u0627\\u0644\\u0639\\u0631\\u0627\\u0642', 1500, 25, 'Active', true, '\" + dObj.d + \"'::date, NULL, NULL, 'Flight', 'Standard', false, '\" + esc(desc) + \"', NULL)\");\n});\nvar sql = \"INSERT INTO packages (title, destination, price, seats_available, status, is_visible, departure_date, return_date, duration_days, transport_type, package_type, includes_visa, description, cost_notes) VALUES \" + rows.join(', ') + ' RETURNING id, title;';\nreturn [{ json: { sql: sql, count: rows.length } }];"
+      }
+    },
+    {
+      "id": "459ae1c6-678a-4d8b-906c-add367409b13",
+      "name": "Insert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sql }}"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Build SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build SQL": {
+      "main": [
+        [
+          {
+            "node": "Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "0KeLz1vTJiVc6E2T",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-09-30T03:31:20.860Z",
+      "updatedAt": "2026-09-30T03:31:20.860Z"
+    }
+  ],
+  "activeVersion": null
+}
