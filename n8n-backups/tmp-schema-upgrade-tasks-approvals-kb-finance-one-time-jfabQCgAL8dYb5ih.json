@@ -1,0 +1,93 @@
+{
+  "id": "jfabQCgAL8dYb5ih",
+  "name": "TMP - Schema Upgrade Tasks/Approvals/KB/Finance (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-03T20:18:56.049Z",
+  "updatedAt": "2026-10-04T03:03:12.000Z",
+  "isArchived": true,
+  "versionId": "ccae1eb9-491c-43db-9556-6171c1d2ac17",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "2a33a424-f8ef-4830-b022-e7a379d6f87b",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "aae95ec8-f997-402c-adde-1431e1d49917",
+      "name": "Upgrade Schema",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS received_at timestamptz; ALTER TABLE tasks ADD COLUMN IF NOT EXISTS estimated_minutes int; ALTER TABLE tasks ADD COLUMN IF NOT EXISTS plan text; ALTER TABLE tasks ADD COLUMN IF NOT EXISTS source text; ALTER TABLE tasks ADD COLUMN IF NOT EXISTS completed_at timestamptz; UPDATE tasks SET received_at = created_at WHERE received_at IS NULL; ALTER TABLE approvals ADD COLUMN IF NOT EXISTS executed_at timestamptz; ALTER TABLE approvals ADD COLUMN IF NOT EXISTS execution_result text; CREATE TABLE IF NOT EXISTS knowledge_base (id serial PRIMARY KEY, section text NOT NULL UNIQUE, title text NOT NULL, content text NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()); CREATE TABLE IF NOT EXISTS finance_transactions (id serial PRIMARY KEY, occurred_at timestamptz, account text NOT NULL DEFAULT 'unknown', scope text NOT NULL DEFAULT 'office' CHECK (scope IN ('office','personal')), direction text NOT NULL CHECK (direction IN ('in','out')), amount numeric NOT NULL, currency text NOT NULL DEFAULT 'BHD', counterparty text, category text, description text, source text, source_ref text UNIQUE, created_at timestamptz NOT NULL DEFAULT now()); SELECT 'ok' AS status;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Upgrade Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "jfabQCgAL8dYb5ih",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T20:18:56.051Z",
+      "updatedAt": "2026-10-03T20:18:56.051Z"
+    }
+  ],
+  "activeVersion": null
+}
