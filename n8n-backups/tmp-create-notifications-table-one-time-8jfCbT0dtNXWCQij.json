@@ -1,0 +1,93 @@
+{
+  "id": "8jfCbT0dtNXWCQij",
+  "name": "TMP - Create Notifications Table (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-03T19:36:33.087Z",
+  "updatedAt": "2026-10-03T19:36:39.000Z",
+  "isArchived": true,
+  "versionId": "c1ba9178-6e27-49ae-a292-c953e4ed0fff",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "6cee3556-1155-4798-94ff-87a73c5c9190",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "a0f9ebde-d243-43a3-a5b0-e7dd176abce5",
+      "name": "Create Notifications Table",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS notifications (id serial PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(), category text NOT NULL DEFAULT 'system', title text NOT NULL, body text, priority text NOT NULL DEFAULT 'normal' CHECK (priority IN ('low','normal','high','urgent')), entity text, entity_id text, source text, read_at timestamptz); CREATE INDEX IF NOT EXISTS notifications_unread_idx ON notifications (read_at) WHERE read_at IS NULL; INSERT INTO notifications (category, title, body, priority, source) SELECT 'system', 'مرحباً بصندوق الإشعارات', 'من الحين كل تنبيهات النظام والموافقات توصل هنا. اضغط على أي إشعار عشان تناقشه مع الوكيل.', 'normal', 'setup' WHERE NOT EXISTS (SELECT 1 FROM notifications); SELECT count(*)::int AS notifications FROM notifications;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Notifications Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "8jfCbT0dtNXWCQij",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T19:36:33.089Z",
+      "updatedAt": "2026-10-03T19:36:33.089Z"
+    }
+  ],
+  "activeVersion": null
+}
