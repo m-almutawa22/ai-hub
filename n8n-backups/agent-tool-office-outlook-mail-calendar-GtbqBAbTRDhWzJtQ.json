@@ -1,0 +1,446 @@
+{
+  "id": "GtbqBAbTRDhWzJtQ",
+  "name": "Agent Tool - Office Outlook (Mail + Calendar)",
+  "description": "Sub-workflow used by the AI agent and the email assistant: office Outlook mail (search/read/draft/reply/send/archive) and calendar (list/create/update/delete) via Microsoft Graph, returning clean compact results.",
+  "active": true,
+  "activeVersionId": "c8f84ca5-e700-4ae8-a009-3ea3abf2dcf7",
+  "createdAt": "2026-10-03T19:59:54.370Z",
+  "updatedAt": "2026-10-03T19:59:59.458Z",
+  "isArchived": false,
+  "versionId": "c8f84ca5-e700-4ae8-a009-3ea3abf2dcf7",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "5316d476-03b5-4550-b980-90e0e0ece82d",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        80
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "args",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1f8de4ad-80a6-440f-9038-3f59c83975b5",
+      "name": "Build Graph Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Builds the Microsoft Graph request for the office mailbox / calendar.\nconst inp = $input.first().json || {};\nconst action = String(inp.action || '');\nlet a = {};\ntry { a = typeof inp.args === 'string' ? (inp.args ? JSON.parse(inp.args) : {}) : (inp.args || {}); } catch (e) { return [{ json: { error: 'args must be valid JSON', skip: true } }]; }\nconst TZ = 'Arab Standard Time';\nconst enc = encodeURIComponent;\nconst id = String(a.id || a.message_id || a.event_id || '').trim();\nfunction need(v, name) { if (!v) throw new Error('missing ' + name); }\nfunction rcpts(s) { return String(s || '').split(/[,;]/).map(function (x) { return x.trim(); }).filter(Boolean).map(function (x) { return { emailAddress: { address: x } }; }); }\nconst SEL = 'id,conversationId,subject,from,receivedDateTime,bodyPreview,isRead,importance,hasAttachments,webLink';\nlet r;\ntry {\n  switch (action) {\n    case 'search_mail': {\n      const top = Math.min(Math.max(parseInt(a.limit || 10, 10) || 10, 1), 25);\n      if (a.query) r = { method: 'GET', url: '/me/messages?$search=' + enc('\"' + String(a.query).replace(/\"/g, '') + '\"') + '&$top=' + top + '&$select=' + SEL };\n      else {\n        const f = [];\n        if (a.days) f.push('receivedDateTime ge ' + new Date(Date.now() - Number(a.days) * 86400000).toISOString());\n        if (a.unread_only) f.push('isRead eq false');\n        r = { method: 'GET', url: '/me/mailFolders/inbox/messages?$top=' + top + '&$orderby=receivedDateTime desc&$select=' + SEL + (f.length ? '&$filter=' + enc(f.join(' and ')) : '') };\n      }\n      break; }\n    case 'read_mail': need(id, 'id'); r = { method: 'GET', url: '/me/messages/' + enc(id) + '?$select=' + SEL + ',toRecipients,ccRecipients,body' }; break;\n    case 'draft_reply': need(id, 'id'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/createReply', body: { comment: String(a.body || '') } }; break;\n    case 'reply': need(id, 'id'); need(a.body, 'body'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/reply', body: { comment: String(a.body) } }; break;\n    case 'create_draft': r = { method: 'POST', url: '/me/messages', body: { subject: String(a.subject || ''), body: { contentType: 'Text', content: String(a.body || '') }, toRecipients: rcpts(a.to) } }; break;\n    case 'send_mail': need(a.to, 'to'); need(a.subject, 'subject'); r = { method: 'POST', url: '/me/sendMail', body: { message: { subject: String(a.subject), body: { contentType: 'Text', content: String(a.body || '') }, toRecipients: rcpts(a.to), ccRecipients: rcpts(a.cc) }, saveToSentItems: true } }; break;\n    case 'archive': need(id, 'id'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/move', body: { destinationId: 'archive' } }; break;\n    case 'mark_read': need(id, 'id'); r = { method: 'PATCH', url: '/me/messages/' + enc(id), body: { isRead: true } }; break;\n    case 'list_events': {\n      const days = Math.min(Math.max(parseInt(a.days || 14, 10) || 14, 1), 90);\n      const start = a.start ? new Date(a.start) : new Date(Date.now() - 3600000);\n      const end = new Date(start.getTime() + days * 86400000);\n      r = { method: 'GET', url: '/me/calendarView?startDateTime=' + enc(start.toISOString()) + '&endDateTime=' + enc(end.toISOString()) + '&$orderby=start/dateTime&$top=60&$select=id,subject,start,end,location,bodyPreview,isAllDay,webLink' };\n      break; }\n    case 'create_event': {\n      need(a.subject, 'subject'); need(a.start, 'start');\n      const ev = { subject: String(a.subject), start: { dateTime: String(a.start), timeZone: TZ }, end: { dateTime: String(a.end || a.start), timeZone: TZ }, isReminderOn: true, reminderMinutesBeforeStart: parseInt(a.reminder_minutes || 30, 10) || 30 };\n      if (!a.end) { const s = new Date(String(a.start) + 'Z'); ev.end.dateTime = new Date(s.getTime() + (parseInt(a.duration_minutes || 60, 10) || 60) * 60000).toISOString().slice(0, 19); }\n      if (a.all_day) ev.isAllDay = true;\n      if (a.location) ev.location = { displayName: String(a.location) };\n      if (a.notes) ev.body = { contentType: 'Text', content: String(a.notes) };\n      if (a.attendees) ev.attendees = rcpts(a.attendees).map(function (x) { return { emailAddress: x.emailAddress, type: 'required' }; });\n      r = { method: 'POST', url: '/me/events', body: ev }; break; }\n    case 'update_event': {\n      need(id, 'id'); const ev = {};\n      if (a.subject) ev.subject = String(a.subject);\n      if (a.start) ev.start = { dateTime: String(a.start), timeZone: TZ };\n      if (a.end) ev.end = { dateTime: String(a.end), timeZone: TZ };\n      if (a.location) ev.location = { displayName: String(a.location) };\n      if (a.notes) ev.body = { contentType: 'Text', content: String(a.notes) };\n      r = { method: 'PATCH', url: '/me/events/' + enc(id), body: ev }; break; }\n    case 'delete_event': need(id, 'id'); r = { method: 'DELETE', url: '/me/events/' + enc(id) }; break;\n    default: return [{ json: { error: 'unknown action ' + action, skip: true } }];\n  }\n} catch (e) { return [{ json: { error: e.message, skip: true } }]; }\nreturn [{ json: { skip: false, action: action, method: r.method, url: 'https://graph.microsoft.com/v1.0' + r.url, hasBody: !!r.body, body: JSON.stringify(r.body || {}) } }];\n"
+      }
+    },
+    {
+      "id": "24c651bd-7026-44cb-b60a-0b21a51f45bc",
+      "name": "Valid Request?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skip }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "498fd6dc-d847-44bb-9666-3791a3d94c96",
+      "name": "Call Microsoft Graph",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "microsoftOutlookOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "outlook.timezone=\"Arab Standard Time\", outlook.body-content-type=\"text\""
+            },
+            {
+              "name": "ConsistencyLevel",
+              "value": "eventual"
+            }
+          ]
+        },
+        "sendBody": "={{ $json.hasBody }}",
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "GmTyqhB7AlHKcKou",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "id": "aa319b51-01c0-45ea-a1fc-d9d526f480c5",
+      "name": "Clean Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b = $('Build Graph Request').first().json;\nif (b.skip) return [{ json: { ok: false, error: b.error } }];\nconst res = $input.first().json || {};\nconst code = res.statusCode || 200;\nconst data = res.body !== undefined ? res.body : res;\nif (code >= 400) { const msg = (data && data.error && data.error.message) || ('HTTP ' + code); return [{ json: { ok: false, error: msg } }]; }\nfunction who(x) { const e = x && x.emailAddress; return e ? ((e.name ? e.name + ' ' : '') + '<' + e.address + '>') : ''; }\nfunction strip(h) { return String(h || '').replace(/<style[\\s\\S]*?<\\/style>/gi, ' ').replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/(p|div|tr|li|h[1-6])>/gi, '\\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"').replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n\\n').trim(); }\nfunction mail(m) { return { id: m.id, conversationId: m.conversationId, from: who(m.from), subject: m.subject || '', received: m.receivedDateTime || '', preview: (m.bodyPreview || '').slice(0, 200), isRead: m.isRead, importance: m.importance, hasAttachments: m.hasAttachments }; }\nfunction when(x) { return x ? String(x.dateTime || '').slice(0, 16).replace('T', ' ') : ''; }\nfunction ev(e) { return { id: e.id, subject: e.subject || '', start: when(e.start), end: when(e.end), allDay: !!e.isAllDay, location: (e.location && e.location.displayName) || '', notes: (e.bodyPreview || '').slice(0, 200) }; }\nswitch (b.action) {\n  case 'search_mail': return [{ json: { ok: true, messages: ((data && data.value) || []).map(mail) } }];\n  case 'read_mail': { let t = data.body && data.body.contentType === 'html' ? strip(data.body.content) : String((data.body && data.body.content) || ''); const tr = t.length > 4000; return [{ json: { ok: true, message: Object.assign(mail(data), { to: (data.toRecipients || []).map(who).join(', '), cc: (data.ccRecipients || []).map(who).join(', '), body: t.slice(0, 4000), truncated: tr }) } }]; }\n  case 'list_events': return [{ json: { ok: true, timezone: 'Bahrain (UTC+3)', events: ((data && data.value) || []).map(ev) } }];\n  case 'create_event': case 'update_event': return [{ json: { ok: true, event: ev(data) } }];\n  case 'draft_reply': case 'create_draft': return [{ json: { ok: true, draft_id: data.id, note: 'Draft saved in Outlook Drafts, not sent' } }];\n  default: return [{ json: { ok: true, done: b.action } }];\n}\n"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Build Graph Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Graph Request": {
+      "main": [
+        [
+          {
+            "node": "Valid Request?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Request?": {
+      "main": [
+        [
+          {
+            "node": "Call Microsoft Graph",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clean Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Microsoft Graph": {
+      "main": [
+        [
+          {
+            "node": "Clean Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "GtbqBAbTRDhWzJtQ",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T19:59:54.371Z",
+      "updatedAt": "2026-10-03T19:59:54.371Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "c8f84ca5-e700-4ae8-a009-3ea3abf2dcf7",
+    "workflowId": "GtbqBAbTRDhWzJtQ",
+    "nodes": [
+      {
+        "id": "5316d476-03b5-4550-b980-90e0e0ece82d",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          80
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "args",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1f8de4ad-80a6-440f-9038-3f59c83975b5",
+        "name": "Build Graph Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          80
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// Builds the Microsoft Graph request for the office mailbox / calendar.\nconst inp = $input.first().json || {};\nconst action = String(inp.action || '');\nlet a = {};\ntry { a = typeof inp.args === 'string' ? (inp.args ? JSON.parse(inp.args) : {}) : (inp.args || {}); } catch (e) { return [{ json: { error: 'args must be valid JSON', skip: true } }]; }\nconst TZ = 'Arab Standard Time';\nconst enc = encodeURIComponent;\nconst id = String(a.id || a.message_id || a.event_id || '').trim();\nfunction need(v, name) { if (!v) throw new Error('missing ' + name); }\nfunction rcpts(s) { return String(s || '').split(/[,;]/).map(function (x) { return x.trim(); }).filter(Boolean).map(function (x) { return { emailAddress: { address: x } }; }); }\nconst SEL = 'id,conversationId,subject,from,receivedDateTime,bodyPreview,isRead,importance,hasAttachments,webLink';\nlet r;\ntry {\n  switch (action) {\n    case 'search_mail': {\n      const top = Math.min(Math.max(parseInt(a.limit || 10, 10) || 10, 1), 25);\n      if (a.query) r = { method: 'GET', url: '/me/messages?$search=' + enc('\"' + String(a.query).replace(/\"/g, '') + '\"') + '&$top=' + top + '&$select=' + SEL };\n      else {\n        const f = [];\n        if (a.days) f.push('receivedDateTime ge ' + new Date(Date.now() - Number(a.days) * 86400000).toISOString());\n        if (a.unread_only) f.push('isRead eq false');\n        r = { method: 'GET', url: '/me/mailFolders/inbox/messages?$top=' + top + '&$orderby=receivedDateTime desc&$select=' + SEL + (f.length ? '&$filter=' + enc(f.join(' and ')) : '') };\n      }\n      break; }\n    case 'read_mail': need(id, 'id'); r = { method: 'GET', url: '/me/messages/' + enc(id) + '?$select=' + SEL + ',toRecipients,ccRecipients,body' }; break;\n    case 'draft_reply': need(id, 'id'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/createReply', body: { comment: String(a.body || '') } }; break;\n    case 'reply': need(id, 'id'); need(a.body, 'body'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/reply', body: { comment: String(a.body) } }; break;\n    case 'create_draft': r = { method: 'POST', url: '/me/messages', body: { subject: String(a.subject || ''), body: { contentType: 'Text', content: String(a.body || '') }, toRecipients: rcpts(a.to) } }; break;\n    case 'send_mail': need(a.to, 'to'); need(a.subject, 'subject'); r = { method: 'POST', url: '/me/sendMail', body: { message: { subject: String(a.subject), body: { contentType: 'Text', content: String(a.body || '') }, toRecipients: rcpts(a.to), ccRecipients: rcpts(a.cc) }, saveToSentItems: true } }; break;\n    case 'archive': need(id, 'id'); r = { method: 'POST', url: '/me/messages/' + enc(id) + '/move', body: { destinationId: 'archive' } }; break;\n    case 'mark_read': need(id, 'id'); r = { method: 'PATCH', url: '/me/messages/' + enc(id), body: { isRead: true } }; break;\n    case 'list_events': {\n      const days = Math.min(Math.max(parseInt(a.days || 14, 10) || 14, 1), 90);\n      const start = a.start ? new Date(a.start) : new Date(Date.now() - 3600000);\n      const end = new Date(start.getTime() + days * 86400000);\n      r = { method: 'GET', url: '/me/calendarView?startDateTime=' + enc(start.toISOString()) + '&endDateTime=' + enc(end.toISOString()) + '&$orderby=start/dateTime&$top=60&$select=id,subject,start,end,location,bodyPreview,isAllDay,webLink' };\n      break; }\n    case 'create_event': {\n      need(a.subject, 'subject'); need(a.start, 'start');\n      const ev = { subject: String(a.subject), start: { dateTime: String(a.start), timeZone: TZ }, end: { dateTime: String(a.end || a.start), timeZone: TZ }, isReminderOn: true, reminderMinutesBeforeStart: parseInt(a.reminder_minutes || 30, 10) || 30 };\n      if (!a.end) { const s = new Date(String(a.start) + 'Z'); ev.end.dateTime = new Date(s.getTime() + (parseInt(a.duration_minutes || 60, 10) || 60) * 60000).toISOString().slice(0, 19); }\n      if (a.all_day) ev.isAllDay = true;\n      if (a.location) ev.location = { displayName: String(a.location) };\n      if (a.notes) ev.body = { contentType: 'Text', content: String(a.notes) };\n      if (a.attendees) ev.attendees = rcpts(a.attendees).map(function (x) { return { emailAddress: x.emailAddress, type: 'required' }; });\n      r = { method: 'POST', url: '/me/events', body: ev }; break; }\n    case 'update_event': {\n      need(id, 'id'); const ev = {};\n      if (a.subject) ev.subject = String(a.subject);\n      if (a.start) ev.start = { dateTime: String(a.start), timeZone: TZ };\n      if (a.end) ev.end = { dateTime: String(a.end), timeZone: TZ };\n      if (a.location) ev.location = { displayName: String(a.location) };\n      if (a.notes) ev.body = { contentType: 'Text', content: String(a.notes) };\n      r = { method: 'PATCH', url: '/me/events/' + enc(id), body: ev }; break; }\n    case 'delete_event': need(id, 'id'); r = { method: 'DELETE', url: '/me/events/' + enc(id) }; break;\n    default: return [{ json: { error: 'unknown action ' + action, skip: true } }];\n  }\n} catch (e) { return [{ json: { error: e.message, skip: true } }]; }\nreturn [{ json: { skip: false, action: action, method: r.method, url: 'https://graph.microsoft.com/v1.0' + r.url, hasBody: !!r.body, body: JSON.stringify(r.body || {}) } }];\n"
+        }
+      },
+      {
+        "id": "24c651bd-7026-44cb-b60a-0b21a51f45bc",
+        "name": "Valid Request?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          80
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.skip }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "false",
+                  "singleValue": true
+                },
+                "rightValue": ""
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "498fd6dc-d847-44bb-9666-3791a3d94c96",
+        "name": "Call Microsoft Graph",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "method": "={{ $json.method }}",
+          "url": "={{ $json.url }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "microsoftOutlookOAuth2Api",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Prefer",
+                "value": "outlook.timezone=\"Arab Standard Time\", outlook.body-content-type=\"text\""
+              },
+              {
+                "name": "ConsistencyLevel",
+                "value": "eventual"
+              }
+            ]
+          },
+          "sendBody": "={{ $json.hasBody }}",
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.body }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 30000
+          }
+        },
+        "credentials": {
+          "microsoftOutlookOAuth2Api": {
+            "id": "GmTyqhB7AlHKcKou",
+            "name": "Microsoft Outlook account"
+          }
+        }
+      },
+      {
+        "id": "aa319b51-01c0-45ea-a1fc-d9d526f480c5",
+        "name": "Clean Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          80
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b = $('Build Graph Request').first().json;\nif (b.skip) return [{ json: { ok: false, error: b.error } }];\nconst res = $input.first().json || {};\nconst code = res.statusCode || 200;\nconst data = res.body !== undefined ? res.body : res;\nif (code >= 400) { const msg = (data && data.error && data.error.message) || ('HTTP ' + code); return [{ json: { ok: false, error: msg } }]; }\nfunction who(x) { const e = x && x.emailAddress; return e ? ((e.name ? e.name + ' ' : '') + '<' + e.address + '>') : ''; }\nfunction strip(h) { return String(h || '').replace(/<style[\\s\\S]*?<\\/style>/gi, ' ').replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/(p|div|tr|li|h[1-6])>/gi, '\\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"').replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n\\n').trim(); }\nfunction mail(m) { return { id: m.id, conversationId: m.conversationId, from: who(m.from), subject: m.subject || '', received: m.receivedDateTime || '', preview: (m.bodyPreview || '').slice(0, 200), isRead: m.isRead, importance: m.importance, hasAttachments: m.hasAttachments }; }\nfunction when(x) { return x ? String(x.dateTime || '').slice(0, 16).replace('T', ' ') : ''; }\nfunction ev(e) { return { id: e.id, subject: e.subject || '', start: when(e.start), end: when(e.end), allDay: !!e.isAllDay, location: (e.location && e.location.displayName) || '', notes: (e.bodyPreview || '').slice(0, 200) }; }\nswitch (b.action) {\n  case 'search_mail': return [{ json: { ok: true, messages: ((data && data.value) || []).map(mail) } }];\n  case 'read_mail': { let t = data.body && data.body.contentType === 'html' ? strip(data.body.content) : String((data.body && data.body.content) || ''); const tr = t.length > 4000; return [{ json: { ok: true, message: Object.assign(mail(data), { to: (data.toRecipients || []).map(who).join(', '), cc: (data.ccRecipients || []).map(who).join(', '), body: t.slice(0, 4000), truncated: tr }) } }]; }\n  case 'list_events': return [{ json: { ok: true, timezone: 'Bahrain (UTC+3)', events: ((data && data.value) || []).map(ev) } }];\n  case 'create_event': case 'update_event': return [{ json: { ok: true, event: ev(data) } }];\n  case 'draft_reply': case 'create_draft': return [{ json: { ok: true, draft_id: data.id, note: 'Draft saved in Outlook Drafts, not sent' } }];\n  default: return [{ json: { ok: true, done: b.action } }];\n}\n"
+        }
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Build Graph Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Graph Request": {
+        "main": [
+          [
+            {
+              "node": "Valid Request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Valid Request?": {
+        "main": [
+          [
+            {
+              "node": "Call Microsoft Graph",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Clean Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Microsoft Graph": {
+        "main": [
+          [
+            {
+              "node": "Clean Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Office Outlook tool v1",
+    "description": "Created with 5 nodes: When Called, Build Graph Request, Valid Request?, Call Microsoft Graph, Clean Result",
+    "autosaved": false,
+    "createdAt": "2026-10-03T19:59:54.372Z",
+    "updatedAt": "2026-10-03T19:59:54.372Z",
+    "workflowPublishHistory": [
+      {
+        "id": 201,
+        "workflowId": "GtbqBAbTRDhWzJtQ",
+        "versionId": "c8f84ca5-e700-4ae8-a009-3ea3abf2dcf7",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-03T20:00:01.954Z"
+      }
+    ]
+  }
+}
