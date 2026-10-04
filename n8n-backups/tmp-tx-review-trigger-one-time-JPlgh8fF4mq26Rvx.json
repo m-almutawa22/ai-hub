@@ -1,0 +1,93 @@
+{
+  "id": "JPlgh8fF4mq26Rvx",
+  "name": "TMP - tx_review trigger (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-04T04:25:28.119Z",
+  "updatedAt": "2026-10-04T04:25:34.000Z",
+  "isArchived": true,
+  "versionId": "a1eae90e-20d5-430b-b30e-73990db4143b",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "b8ad2ef2-bf37-406c-a7c0-94a72c65d9bc",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5485499e-65e0-474b-8c05-c9bac27430dc",
+      "name": "Approval Trigger",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE OR REPLACE FUNCTION trg_tx_review_decided() RETURNS trigger AS $f$ BEGIN IF NEW.request_type = 'tx_review' AND NEW.status IN ('approved','rejected') AND OLD.status = 'pending' THEN UPDATE finance_transactions SET status = CASE WHEN NEW.status = 'approved' THEN 'confirmed' ELSE 'ignored' END, note = COALESCE(NEW.decision_note, note), reviewed_at = now() WHERE id::text = NEW.details->>'tx_id' AND status = 'needs_review'; END IF; RETURN NEW; END $f$ LANGUAGE plpgsql; DROP TRIGGER IF EXISTS tx_review_decided ON approvals; CREATE TRIGGER tx_review_decided AFTER UPDATE ON approvals FOR EACH ROW EXECUTE FUNCTION trg_tx_review_decided(); SELECT 'ok' AS status;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Approval Trigger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "JPlgh8fF4mq26Rvx",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T04:25:28.121Z",
+      "updatedAt": "2026-10-04T04:25:28.121Z"
+    }
+  ],
+  "activeVersion": null
+}
