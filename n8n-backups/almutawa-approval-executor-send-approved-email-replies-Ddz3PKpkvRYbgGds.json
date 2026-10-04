@@ -1,0 +1,653 @@
+{
+  "id": "Ddz3PKpkvRYbgGds",
+  "name": "Almutawa - Approval Executor (send approved email replies)",
+  "description": "Every 2 minutes: sends office email replies the owner approved in the inbox, marks the related task done, logs the action, and posts a confirmation in the inbox.",
+  "active": true,
+  "activeVersionId": "69bf89b3-0d0c-406b-ad67-cb0291f53642",
+  "createdAt": "2026-10-04T03:04:41.291Z",
+  "updatedAt": "2026-10-04T03:49:38.862Z",
+  "isArchived": false,
+  "versionId": "69bf89b3-0d0c-406b-ad67-cb0291f53642",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "c4a7c561-625f-4b77-bf05-0032b3f7b0ed",
+      "name": "Every 2 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "e3d497a6-81d4-46a7-ab6d-c2005fedcdb1",
+      "name": "Claim Approved Replies",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE approvals SET executed_at = now(), execution_result = 'sending' WHERE id IN (SELECT id FROM approvals WHERE request_type = 'email_reply' AND status = 'approved' AND executed_at IS NULL ORDER BY id LIMIT 5 FOR UPDATE SKIP LOCKED) RETURNING id, summary, details, decided_by"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a36b20e7-2207-43e9-a479-5e28d8ebb3c4",
+      "name": "Prepare Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return $input.all().filter(function (i) { return i.json && i.json.id; }).map(function (i) { var d = i.json.details || {}; return { json: { approvalId: i.json.id, summary: i.json.summary, messageId: d.message_id || '', subject: d.subject || '', args: JSON.stringify({ id: d.message_id || '', body: String(d.draft || '') }) }, pairedItem: i.pairedItem }; });"
+      }
+    },
+    {
+      "id": "ee5d3e51-9d42-4b24-83f8-458870b369eb",
+      "name": "Send Reply",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "mode": "each",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "GtbqBAbTRDhWzJtQ"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "reply",
+            "args": "={{ $json.args }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "action",
+              "displayName": "action",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "args",
+              "displayName": "args",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "6a791fbf-968a-4d36-b3b7-555ada14180d",
+      "name": "Record Result",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH u AS (UPDATE approvals SET execution_result = $2 WHERE id = $1::int RETURNING id), t AS (UPDATE tasks SET status = CASE WHEN $3 = 'true' THEN 'done' ELSE 'open' END, completed_at = CASE WHEN $3 = 'true' THEN now() ELSE NULL END, updated_at = now() WHERE related_entity = 'email' AND related_id = $4 AND status = 'waiting_approval' RETURNING id), l AS (INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) VALUES ('system', 'approval_executor', CASE WHEN $3 = 'true' THEN 'email_reply_sent' ELSE 'email_reply_failed' END, 'approvals', $1, 'Approval Executor', jsonb_build_object('result', $2)) RETURNING id) SELECT $3 AS ok, $5 AS subject",
+        "options": {
+          "queryReplacement": "={{ [ String($('Prepare Reply').item.json.approvalId), $json.ok ? 'sent' : ('failed: ' + String($json.error || 'unknown')).slice(0, 300), String(!!$json.ok), $('Prepare Reply').item.json.messageId, $('Prepare Reply').item.json.subject ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a5ba0f44-ede5-4706-861e-4fa7c18f91d7",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "mode": "each",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zT6BZybZ1sxpZIf7"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "email",
+            "title": "={{ $json.ok === 'true' ? '✅ انرسل الرد: ' + $json.subject : '❌ تعذر إرسال الرد: ' + $json.subject }}",
+            "body": "={{ $json.ok === 'true' ? 'تم إرسال الرد اللي وافقت عليه من إيميل المكتب.' : 'صار خطأ أثناء الإرسال، راجع الطلب في الموافقات أو اطلب من الوكيل يعيد المحاولة.' }}",
+            "priority": "={{ $json.ok === 'true' ? 'low' : 'high' }}",
+            "entity": "approvals",
+            "entityId": "={{ String($('Prepare Reply').item.json.approvalId) }}",
+            "source": "approval_executor"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity",
+              "displayName": "entity",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entityId",
+              "displayName": "entityId",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 2 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Claim Approved Replies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Approved Replies": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Reply": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reply": {
+      "main": [
+        [
+          {
+            "node": "Record Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Result": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA",
+    "timezone": "Asia/Bahrain",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": {
+    "node:Every 2 Minutes": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Ddz3PKpkvRYbgGds",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T03:04:41.292Z",
+      "updatedAt": "2026-10-04T03:04:41.292Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "69bf89b3-0d0c-406b-ad67-cb0291f53642",
+    "workflowId": "Ddz3PKpkvRYbgGds",
+    "nodes": [
+      {
+        "id": "c4a7c561-625f-4b77-bf05-0032b3f7b0ed",
+        "name": "Every 2 Minutes",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "e3d497a6-81d4-46a7-ab6d-c2005fedcdb1",
+        "name": "Claim Approved Replies",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.7,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE approvals SET executed_at = now(), execution_result = 'sending' WHERE id IN (SELECT id FROM approvals WHERE request_type = 'email_reply' AND status = 'approved' AND executed_at IS NULL ORDER BY id LIMIT 5 FOR UPDATE SKIP LOCKED) RETURNING id, summary, details, decided_by"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "a36b20e7-2207-43e9-a479-5e28d8ebb3c4",
+        "name": "Prepare Reply",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "return $input.all().filter(function (i) { return i.json && i.json.id; }).map(function (i) { var d = i.json.details || {}; return { json: { approvalId: i.json.id, summary: i.json.summary, messageId: d.message_id || '', subject: d.subject || '', args: JSON.stringify({ id: d.message_id || '', body: String(d.draft || '') }) }, pairedItem: i.pairedItem }; });"
+        }
+      },
+      {
+        "id": "ee5d3e51-9d42-4b24-83f8-458870b369eb",
+        "name": "Send Reply",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "mode": "each",
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "GtbqBAbTRDhWzJtQ"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "action": "reply",
+              "args": "={{ $json.args }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "action",
+                "displayName": "action",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "args",
+                "displayName": "args",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      },
+      {
+        "id": "6a791fbf-968a-4d36-b3b7-555ada14180d",
+        "name": "Record Result",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.7,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH u AS (UPDATE approvals SET execution_result = $2 WHERE id = $1::int RETURNING id), t AS (UPDATE tasks SET status = CASE WHEN $3 = 'true' THEN 'done' ELSE 'open' END, completed_at = CASE WHEN $3 = 'true' THEN now() ELSE NULL END, updated_at = now() WHERE related_entity = 'email' AND related_id = $4 AND status = 'waiting_approval' RETURNING id), l AS (INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) VALUES ('system', 'approval_executor', CASE WHEN $3 = 'true' THEN 'email_reply_sent' ELSE 'email_reply_failed' END, 'approvals', $1, 'Approval Executor', jsonb_build_object('result', $2)) RETURNING id) SELECT $3 AS ok, $5 AS subject",
+          "options": {
+            "queryReplacement": "={{ [ String($('Prepare Reply').item.json.approvalId), $json.ok ? 'sent' : ('failed: ' + String($json.error || 'unknown')).slice(0, 300), String(!!$json.ok), $('Prepare Reply').item.json.messageId, $('Prepare Reply').item.json.subject ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "a5ba0f44-ede5-4706-861e-4fa7c18f91d7",
+        "name": "Notify Owner",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "mode": "each",
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "zT6BZybZ1sxpZIf7"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "category": "email",
+              "title": "={{ $json.ok === 'true' ? '✅ انرسل الرد: ' + $json.subject : '❌ تعذر إرسال الرد: ' + $json.subject }}",
+              "body": "={{ $json.ok === 'true' ? 'تم إرسال الرد اللي وافقت عليه من إيميل المكتب.' : 'صار خطأ أثناء الإرسال، راجع الطلب في الموافقات أو اطلب من الوكيل يعيد المحاولة.' }}",
+              "priority": "={{ $json.ok === 'true' ? 'low' : 'high' }}",
+              "entity": "approvals",
+              "entityId": "={{ String($('Prepare Reply').item.json.approvalId) }}",
+              "source": "approval_executor"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "body",
+                "displayName": "body",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "entity",
+                "displayName": "entity",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "entityId",
+                "displayName": "entityId",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every 2 Minutes": {
+        "main": [
+          [
+            {
+              "node": "Claim Approved Replies",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim Approved Replies": {
+        "main": [
+          [
+            {
+              "node": "Prepare Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Reply": {
+        "main": [
+          [
+            {
+              "node": "Send Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Reply": {
+        "main": [
+          [
+            {
+              "node": "Record Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Result": {
+        "main": [
+          [
+            {
+              "node": "Notify Owner",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Fix: stop when nothing to send",
+    "description": "Updated nodes: Prepare Reply",
+    "autosaved": false,
+    "createdAt": "2026-10-04T03:49:38.863Z",
+    "updatedAt": "2026-10-04T03:49:38.863Z",
+    "workflowPublishHistory": [
+      {
+        "id": 213,
+        "workflowId": "Ddz3PKpkvRYbgGds",
+        "versionId": "69bf89b3-0d0c-406b-ad67-cb0291f53642",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-04T03:49:41.072Z"
+      }
+    ]
+  }
+}
