@@ -1,0 +1,93 @@
+{
+  "id": "LA9IbGiLqPsbanDg",
+  "name": "TMP - Create Governance Tables (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-03T11:25:16.466Z",
+  "updatedAt": "2026-10-03T11:25:23.000Z",
+  "isArchived": true,
+  "versionId": "b2f3ce5b-19be-41bb-a364-ec339d4ea308",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "e11bf2d1-08c1-4aff-a830-96f9e0036b85",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "0f5d5ec8-ff87-41d7-861c-a506b70fea24",
+      "name": "Create Governance Tables",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS audit_log (id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(), actor_type text NOT NULL, actor_id text, action text NOT NULL, entity text, entity_id text, workflow text, details jsonb DEFAULT '{}'::jsonb); CREATE INDEX IF NOT EXISTS audit_log_entity_idx ON audit_log (entity, entity_id); CREATE INDEX IF NOT EXISTS audit_log_at_idx ON audit_log (at DESC); CREATE TABLE IF NOT EXISTS tasks (id serial PRIMARY KEY, title text NOT NULL, description text, status text NOT NULL DEFAULT 'open' CHECK (status IN ('open','in_progress','waiting_approval','waiting_owner','done','cancelled')), priority text NOT NULL DEFAULT 'normal' CHECK (priority IN ('low','normal','high','urgent')), assigned_to text, created_by text, due_at timestamptz, related_entity text, related_id text, result jsonb, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()); CREATE INDEX IF NOT EXISTS tasks_status_idx ON tasks (status); CREATE TABLE IF NOT EXISTS approvals (id serial PRIMARY KEY, task_id int REFERENCES tasks(id) ON DELETE SET NULL, request_type text NOT NULL, summary text NOT NULL, details jsonb DEFAULT '{}'::jsonb, amount_bhd numeric, requested_by text NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','changes_requested','expired')), decided_by text, decided_at timestamptz, decision_note text, channel text, created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz); CREATE INDEX IF NOT EXISTS approvals_status_idx ON approvals (status); CREATE TABLE IF NOT EXISTS ai_usage (id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT now(), workflow text, agent text, model text, tokens_in int, tokens_out int, cost_usd numeric, task_id int REFERENCES tasks(id) ON DELETE SET NULL); CREATE INDEX IF NOT EXISTS ai_usage_at_idx ON ai_usage (at DESC); SELECT (SELECT json_agg(table_name ORDER BY table_name) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('audit_log','tasks','approvals','ai_usage')) AS created;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Governance Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "LA9IbGiLqPsbanDg",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T11:25:16.467Z",
+      "updatedAt": "2026-10-03T11:25:16.467Z"
+    }
+  ],
+  "activeVersion": null
+}
