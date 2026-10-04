@@ -1,0 +1,394 @@
+{
+  "id": "zT6BZybZ1sxpZIf7",
+  "name": "System - Notify Owner (Inbox + Doorbell)",
+  "description": "Shared helper: any workflow calls it to put a notification in the agent page inbox; for non-low priority it also sends a one-line Telegram doorbell with the inbox link.",
+  "active": true,
+  "activeVersionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+  "createdAt": "2026-10-03T19:36:54.195Z",
+  "updatedAt": "2026-10-03T19:41:21.971Z",
+  "isArchived": false,
+  "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "cbe0dd93-e618-4403-a616-389a052dfabe",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "name": "body",
+              "type": "string"
+            },
+            {
+              "name": "priority",
+              "type": "string"
+            },
+            {
+              "name": "entity",
+              "type": "string"
+            },
+            {
+              "name": "entityId",
+              "type": "string"
+            },
+            {
+              "name": "source",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "56b0dfe6-df54-47f9-ac33-5b9a592ab6db",
+      "name": "Save Notification",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO notifications (category, title, body, priority, entity, entity_id, source) VALUES (COALESCE(NULLIF($1,''),'system'), $2, NULLIF($3,''), CASE WHEN $4 IN ('low','normal','high','urgent') THEN $4 ELSE 'normal' END, NULLIF($5,''), NULLIF($6,''), NULLIF($7,'')) RETURNING id, priority, title, (SELECT count(*)::int FROM notifications WHERE read_at IS NULL) + 1 AS unread, (SELECT count(*)::int FROM approvals WHERE status = 'pending') AS pending",
+        "options": {
+          "queryReplacement": "={{ [ String($json.category || ''), String($json.title || 'إشعار جديد'), String($json.body || ''), String($json.priority || 'normal'), String($json.entity || ''), String($json.entityId || ''), String($json.source || '') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "0c4a578f-63f4-49d9-928e-5a260afb712a",
+      "name": "Ring Doorbell?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.priority }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "rightValue": "low"
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "0c19ebdb-95b7-4b5d-9f97-5f549ed74c3f",
+      "name": "Telegram Doorbell",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8132574840",
+        "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://n8n-production-47b1.up.railway.app/webhook/agent",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "QfQTvpw3XcVYjBNy",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "14c85c3c-821c-4c08-933d-5ab86d80f40b"
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Save Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Notification": {
+      "main": [
+        [
+          {
+            "node": "Ring Doorbell?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ring Doorbell?": {
+      "main": [
+        [
+          {
+            "node": "Telegram Doorbell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "zT6BZybZ1sxpZIf7",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T19:36:54.195Z",
+      "updatedAt": "2026-10-03T19:36:54.195Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+    "workflowId": "zT6BZybZ1sxpZIf7",
+    "nodes": [
+      {
+        "id": "cbe0dd93-e618-4403-a616-389a052dfabe",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "category",
+                "type": "string"
+              },
+              {
+                "name": "title",
+                "type": "string"
+              },
+              {
+                "name": "body",
+                "type": "string"
+              },
+              {
+                "name": "priority",
+                "type": "string"
+              },
+              {
+                "name": "entity",
+                "type": "string"
+              },
+              {
+                "name": "entityId",
+                "type": "string"
+              },
+              {
+                "name": "source",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "56b0dfe6-df54-47f9-ac33-5b9a592ab6db",
+        "name": "Save Notification",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.7,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO notifications (category, title, body, priority, entity, entity_id, source) VALUES (COALESCE(NULLIF($1,''),'system'), $2, NULLIF($3,''), CASE WHEN $4 IN ('low','normal','high','urgent') THEN $4 ELSE 'normal' END, NULLIF($5,''), NULLIF($6,''), NULLIF($7,'')) RETURNING id, priority, title, (SELECT count(*)::int FROM notifications WHERE read_at IS NULL) + 1 AS unread, (SELECT count(*)::int FROM approvals WHERE status = 'pending') AS pending",
+          "options": {
+            "queryReplacement": "={{ [ String($json.category || ''), String($json.title || 'إشعار جديد'), String($json.body || ''), String($json.priority || 'normal'), String($json.entity || ''), String($json.entityId || ''), String($json.source || '') ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "0c4a578f-63f4-49d9-928e-5a260afb712a",
+        "name": "Ring Doorbell?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.priority }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                },
+                "rightValue": "low"
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "0c19ebdb-95b7-4b5d-9f97-5f549ed74c3f",
+        "name": "Telegram Doorbell",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "8132574840",
+          "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://n8n-production-47b1.up.railway.app/webhook/agent",
+          "additionalFields": {
+            "appendAttribution": false,
+            "disable_web_page_preview": true
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "QfQTvpw3XcVYjBNy",
+            "name": "Telegram account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "webhookId": "14c85c3c-821c-4c08-933d-5ab86d80f40b"
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Save Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Notification": {
+        "main": [
+          [
+            {
+              "node": "Ring Doorbell?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ring Doorbell?": {
+        "main": [
+          [
+            {
+              "node": "Telegram Doorbell",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Count includes new notification",
+    "description": "Updated nodes: Save Notification",
+    "autosaved": false,
+    "createdAt": "2026-10-03T19:41:21.972Z",
+    "updatedAt": "2026-10-03T19:41:21.972Z",
+    "workflowPublishHistory": [
+      {
+        "id": 200,
+        "workflowId": "zT6BZybZ1sxpZIf7",
+        "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-03T19:41:24.144Z"
+      }
+    ]
+  }
+}
