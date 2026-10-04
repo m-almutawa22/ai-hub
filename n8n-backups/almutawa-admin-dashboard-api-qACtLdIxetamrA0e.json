@@ -3,12 +3,12 @@
   "name": "Almutawa - Admin Dashboard API",
   "description": "Backend API for the staff admin dashboard: passcode-gated webhook supporting listBookings (joined with customer/package names), listPackages, updateBooking, and updatePackage actions against Airtable.",
   "active": true,
-  "activeVersionId": "a8f83647-d4c7-4b5b-9480-95e563b6a3a5",
+  "activeVersionId": "26a3fa08-4d12-474f-9e1f-ab5ceed47732",
   "createdAt": "2026-09-17T12:55:29.553Z",
-  "updatedAt": "2026-09-28T15:27:21.203Z",
+  "updatedAt": "2026-10-03T16:44:21.648Z",
   "isArchived": false,
-  "versionId": "a8f83647-d4c7-4b5b-9480-95e563b6a3a5",
-  "versionCounter": 70,
+  "versionId": "26a3fa08-4d12-474f-9e1f-ab5ceed47732",
+  "versionCounter": 72,
   "sourceWorkflowId": null,
   "triggerCount": 7,
   "nodes": [
@@ -34,7 +34,7 @@
     },
     {
       "id": "4076e99e-f5c7-4037-95cc-e1555f2978d6",
-      "name": "Check Passcode",
+      "name": "Is Staff Authorized?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
@@ -51,12 +51,13 @@
           },
           "conditions": [
             {
-              "leftValue": "={{ $json.body.passcode }}",
+              "leftValue": "={{ $json.authorized }}",
               "operator": {
-                "type": "string",
-                "operation": "equals"
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
               },
-              "rightValue": "Mutawa2026"
+              "rightValue": ""
             }
           ]
         }
@@ -263,7 +264,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const rows = $input.all().map(function(i){ var f = i.json; return { id: f.id, customerName: f.full_name || f.lead_name || '', customerPhone: f.customer_phone || '', packageTitle: f.title || '', travelers: f.travelers_count || 0, bookingStatus: f.booking_status || '', paymentStatus: f.payment_status || '', notes: f.notes || '', createdTime: f.created_at }; });\nreturn [{ json: { success: true, bookings: rows } }];"
+        "jsCode": "const rows = $input.all().filter(function(i){ return i.json && i.json.id != null; }).map(function(i){ var f = i.json; return { id: f.id, customerName: f.full_name || f.lead_name || '', customerPhone: f.customer_phone || '', packageTitle: f.title || '', travelers: f.travelers_count || 0, bookingStatus: f.booking_status || '', paymentStatus: f.payment_status || '', notes: f.notes || '', createdTime: f.created_at }; });\nreturn [{ json: { success: true, bookings: rows } }];"
       }
     },
     {
@@ -1165,7 +1166,8 @@
           "id": "2k1Ti2SitOd5gAN3",
           "name": "Postgres account"
         }
-      }
+      },
+      "alwaysOutputData": true
     },
     {
       "id": "d051da2b-cc82-45d3-bee1-187df4628a53",
@@ -1308,38 +1310,54 @@
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "id": "b6e240c1-3213-46a7-846d-ce067ccc3b4b",
+      "name": "Verify Staff Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        512
+      ],
+      "parameters": {
+        "jsCode": "const ADMIN_ONLY = [];\nfunction rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(arr){var out='';for(var i=0;i<arr.length;i++)out+=('0'+arr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var inner=wordsToBytes(sha256Core(ipad.concat(mb)));return bytesToHex(wordsToBytes(sha256Core(opad.concat(inner))));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst item = $input.first().json;\nconst body = item.body || {};\nconst tok = String(body.token || body.passcode || '');\nconst parts = tok.split('.');\nlet payload = null;\nif (parts.length === 2 && hmac256Hex(SECRET, parts[0]) === parts[1]) {\n  try { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch (e) { payload = null; }\n}\nlet authorized = !!(payload && payload.type === 'staff' && payload.exp && payload.exp > Date.now());\nconst perms = (payload && payload.permissions) || [];\nconst action = String(body.action || '');\nif (authorized && ADMIN_ONLY.indexOf(action) > -1) authorized = perms.indexOf('Full Admin') > -1;\nreturn [{ json: Object.assign({}, item, { authorized: authorized, staffId: payload ? payload.id : null }), pairedItem: { item: 0 } }];\n",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "c48a6206-9cec-4c20-babb-8027ecdfde70",
+      "name": "Admin Panel Auth Fix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        700
+      ],
+      "parameters": {
+        "jsCode": "let html = $json.html || '';\nhtml = html.split('<input type=\"password\" id=\"passcodeInput\" placeholder=\"كلمة المرور\">').join('<input type=\"text\" id=\"staffUserInput\" placeholder=\"اسم المستخدم أو رقم الهاتف\" autocomplete=\"username\"><input type=\"password\" id=\"passcodeInput\" placeholder=\"كلمة المرور\" autocomplete=\"current-password\">');\nhtml = html.split('أدخل كلمة المرور</p>').join('ادخل بحساب الموظف</p>');\nconst OLD = '    var pc = document.getElementById(\"passcodeInput\").value.trim();\\n    if (!pc) return;\\n    tryLogin(pc);';\nconst NEW = '    var u = (document.getElementById(\"staffUserInput\") || {}).value || \"\";\\n    var pw = document.getElementById(\"passcodeInput\").value;\\n    u = u.trim();\\n    if (!u || !pw) { document.getElementById(\"gateError\").textContent = \"اكتب اسم المستخدم وكلمة المرور\"; return; }\\n    document.getElementById(\"gateError\").textContent = \"\";\\n    fetch(\"https://n8n-production-47b1.up.railway.app/webhook/auth-api\", { method: \"POST\", headers: { \"Content-Type\": \"application/json\" }, body: JSON.stringify({ action: \"staff-login\", identifier: u, password: pw }) }).then(function(r){ return r.json(); }).then(function(d){ if (d && d.success && d.token) { tryLogin(d.token); } else { document.getElementById(\"gateError\").textContent = \"بيانات الدخول غير صحيحة\"; } }).catch(function(){ document.getElementById(\"gateError\").textContent = \"صار خطأ بالاتصال، حاول مرة ثانية\"; });';\nhtml = html.split('else { savedPc = localStorage.getItem(\"almutawa_admin_pc\"); }').join('else { savedPc = localStorage.getItem(\"almutawa_admin_pc\") || localStorage.getItem(\"ag_token\") || (localStorage.getItem(\"am_auth_type\") === \"staff\" ? localStorage.getItem(\"am_auth_token\") : null); }');\nhtml = html.split('try { localStorage.setItem(\"almutawa_admin_pc\", pc); } catch(e){}').join('try { localStorage.setItem(\"almutawa_admin_pc\", pc); localStorage.setItem(\"ag_token\", pc); } catch(e){}');\nhtml = html.split('try { localStorage.removeItem(\"almutawa_admin_pc\"); } catch(e){}').join('try { [\"almutawa_admin_pc\",\"ag_token\",\"ag_name\",\"am_auth_token\",\"am_auth_type\",\"am_auth_name\"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}');\nhtml = html.split('<button class=\"logout-btn\" id=\"logoutBtn\">خروج</button>').join('<div style=\"display:flex;gap:8px;\"><a class=\"logout-btn\" href=\"/webhook/agent\" target=\"_top\" style=\"text-decoration:none;\">🤖 الوكيل الذكي</a><button class=\"logout-btn\" id=\"logoutBtn\">خروج</button></div>');\nconst found = html.indexOf(OLD) > -1;\nhtml = html.split(OLD).join(NEW);\nhtml = html.split('\"كلمة المرور غير صحيحة\"').join('\"انتهت الجلسة أو بيانات الدخول غير صحيحة، سجّل دخول مرة ثانية\"');\nreturn [{ json: { html: html, loginPatched: found } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "72472323-2efa-44c1-a7c6-d302127bd8f9",
+      "name": "Public Website Auth Fix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        900
+      ],
+      "parameters": {
+        "jsCode": "let html = $json.html || '';\nhtml = html.split(\"if (type === 'staff') localStorage.setItem('almutawa_admin_pc', 'Mutawa2026');\").join(\"if (type === 'staff') localStorage.setItem('almutawa_admin_pc', (typeof token !== 'undefined' && token) ? token : authToken);\");\nhtml = html.split(\"encodeURIComponent('Mutawa2026')\").join(\"encodeURIComponent(authToken || '')\");\nhtml = html.split(\"localStorage.setItem('almutawa_admin_pc', 'Mutawa2026');\").join(\"localStorage.setItem('almutawa_admin_pc', authToken);\");\nconst leftover = html.indexOf('Mutawa2026') > -1;\nhtml = html.split('Mutawa2026').join('');\nreturn [{ json: { html: html, passcodeLeftover: leftover } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
     }
   ],
   "connections": {
-    "Admin API": {
-      "main": [
-        [
-          {
-            "node": "Check Passcode",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Passcode": {
-      "main": [
-        [
-          {
-            "node": "Route Action",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Unauthorized Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Route Action": {
       "main": [
         [
@@ -1800,6 +1818,68 @@
           }
         ]
       ]
+    },
+    "Admin API": {
+      "main": [
+        [
+          {
+            "node": "Verify Staff Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Staff Token": {
+      "main": [
+        [
+          {
+            "node": "Is Staff Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Staff Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Route Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unauthorized Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admin Panel HTML Patch": {
+      "main": [
+        [
+          {
+            "node": "Admin Panel Auth Fix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Public Website HTML Patch": {
+      "main": [
+        [
+          {
+            "node": "Public Website Auth Fix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1836,7 +1916,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "a8f83647-d4c7-4b5b-9480-95e563b6a3a5",
+    "versionId": "26a3fa08-4d12-474f-9e1f-ab5ceed47732",
     "workflowId": "qACtLdIxetamrA0e",
     "nodes": [
       {
@@ -1861,7 +1941,7 @@
       },
       {
         "id": "4076e99e-f5c7-4037-95cc-e1555f2978d6",
-        "name": "Check Passcode",
+        "name": "Is Staff Authorized?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
@@ -1878,12 +1958,13 @@
             },
             "conditions": [
               {
-                "leftValue": "={{ $json.body.passcode }}",
+                "leftValue": "={{ $json.authorized }}",
                 "operator": {
-                  "type": "string",
-                  "operation": "equals"
+                  "operation": "true",
+                  "singleValue": true,
+                  "type": "boolean"
                 },
-                "rightValue": "Mutawa2026"
+                "rightValue": ""
               }
             ]
           }
@@ -2090,7 +2171,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const rows = $input.all().map(function(i){ var f = i.json; return { id: f.id, customerName: f.full_name || f.lead_name || '', customerPhone: f.customer_phone || '', packageTitle: f.title || '', travelers: f.travelers_count || 0, bookingStatus: f.booking_status || '', paymentStatus: f.payment_status || '', notes: f.notes || '', createdTime: f.created_at }; });\nreturn [{ json: { success: true, bookings: rows } }];"
+          "jsCode": "const rows = $input.all().filter(function(i){ return i.json && i.json.id != null; }).map(function(i){ var f = i.json; return { id: f.id, customerName: f.full_name || f.lead_name || '', customerPhone: f.customer_phone || '', packageTitle: f.title || '', travelers: f.travelers_count || 0, bookingStatus: f.booking_status || '', paymentStatus: f.payment_status || '', notes: f.notes || '', createdTime: f.created_at }; });\nreturn [{ json: { success: true, bookings: rows } }];"
         }
       },
       {
@@ -2992,7 +3073,8 @@
             "id": "2k1Ti2SitOd5gAN3",
             "name": "Postgres account"
           }
-        }
+        },
+        "alwaysOutputData": true
       },
       {
         "id": "d051da2b-cc82-45d3-bee1-187df4628a53",
@@ -3135,38 +3217,54 @@
             "name": "Postgres account"
           }
         }
+      },
+      {
+        "id": "b6e240c1-3213-46a7-846d-ce067ccc3b4b",
+        "name": "Verify Staff Token",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          112,
+          512
+        ],
+        "parameters": {
+          "jsCode": "const ADMIN_ONLY = [];\nfunction rrot(x,n){return (x>>>n)|(x<<(32-n));}\nvar K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];\nfunction sha256Core(bytes){var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];var bitLen=bytes.length*8;bytes=bytes.slice();bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);for(var li=7;li>=0;li--)bytes.push(Math.floor(bitLen/Math.pow(2,li*8))&0xff);for(var cs=0;cs<bytes.length;cs+=64){var w=new Array(64);for(var t=0;t<16;t++){var o=cs+t*4;w[t]=((bytes[o]<<24)|(bytes[o+1]<<16)|(bytes[o+2]<<8)|(bytes[o+3]))>>>0;}for(t=16;t<64;t++){var s0=rrot(w[t-15],7)^rrot(w[t-15],18)^(w[t-15]>>>3);var s1=rrot(w[t-2],17)^rrot(w[t-2],19)^(w[t-2]>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;}var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];for(t=0;t<64;t++){var S1=rrot(e,6)^rrot(e,11)^rrot(e,25);var ch=(e&f)^((~e)&g);var t1=(h+S1+ch+K[t]+w[t])>>>0;var S0=rrot(a,2)^rrot(a,13)^rrot(a,22);var maj=(a&b)^(a&c)^(b&c);var t2=(S0+maj)>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;}return H;}\nfunction wordsToBytes(H){var out=[];for(var i=0;i<8;i++){out.push((H[i]>>>24)&0xff,(H[i]>>>16)&0xff,(H[i]>>>8)&0xff,H[i]&0xff);}return out;}\nfunction bytesToHex(arr){var out='';for(var i=0;i<arr.length;i++)out+=('0'+arr[i].toString(16)).slice(-2);return out;}\nfunction utf8Bytes(str){var b=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);if(c<0x80)b.push(c);else if(c<0x800){b.push(0xc0|(c>>6),0x80|(c&0x3f));}else{b.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}}return b;}\nfunction hmac256Hex(keyStr,msgStr){var kb=utf8Bytes(keyStr);if(kb.length>64)kb=wordsToBytes(sha256Core(kb));while(kb.length<64)kb.push(0);var ipad=kb.map(function(x){return x^0x36;});var opad=kb.map(function(x){return x^0x5c;});var mb=utf8Bytes(msgStr);var inner=wordsToBytes(sha256Core(ipad.concat(mb)));return bytesToHex(wordsToBytes(sha256Core(opad.concat(inner))));}\nconst SECRET = 'am_tourism_auth_9f3e7c2b1a8d4f6e0c5b9a2d7e4f1c8b6a3d0e9f2c5b8a1d4e7f0c3b6a9d2e5f';\nconst item = $input.first().json;\nconst body = item.body || {};\nconst tok = String(body.token || body.passcode || '');\nconst parts = tok.split('.');\nlet payload = null;\nif (parts.length === 2 && hmac256Hex(SECRET, parts[0]) === parts[1]) {\n  try { payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')); } catch (e) { payload = null; }\n}\nlet authorized = !!(payload && payload.type === 'staff' && payload.exp && payload.exp > Date.now());\nconst perms = (payload && payload.permissions) || [];\nconst action = String(body.action || '');\nif (authorized && ADMIN_ONLY.indexOf(action) > -1) authorized = perms.indexOf('Full Admin') > -1;\nreturn [{ json: Object.assign({}, item, { authorized: authorized, staffId: payload ? payload.id : null }), pairedItem: { item: 0 } }];\n",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "c48a6206-9cec-4c20-babb-8027ecdfde70",
+        "name": "Admin Panel Auth Fix",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          740,
+          700
+        ],
+        "parameters": {
+          "jsCode": "let html = $json.html || '';\nhtml = html.split('<input type=\"password\" id=\"passcodeInput\" placeholder=\"كلمة المرور\">').join('<input type=\"text\" id=\"staffUserInput\" placeholder=\"اسم المستخدم أو رقم الهاتف\" autocomplete=\"username\"><input type=\"password\" id=\"passcodeInput\" placeholder=\"كلمة المرور\" autocomplete=\"current-password\">');\nhtml = html.split('أدخل كلمة المرور</p>').join('ادخل بحساب الموظف</p>');\nconst OLD = '    var pc = document.getElementById(\"passcodeInput\").value.trim();\\n    if (!pc) return;\\n    tryLogin(pc);';\nconst NEW = '    var u = (document.getElementById(\"staffUserInput\") || {}).value || \"\";\\n    var pw = document.getElementById(\"passcodeInput\").value;\\n    u = u.trim();\\n    if (!u || !pw) { document.getElementById(\"gateError\").textContent = \"اكتب اسم المستخدم وكلمة المرور\"; return; }\\n    document.getElementById(\"gateError\").textContent = \"\";\\n    fetch(\"https://n8n-production-47b1.up.railway.app/webhook/auth-api\", { method: \"POST\", headers: { \"Content-Type\": \"application/json\" }, body: JSON.stringify({ action: \"staff-login\", identifier: u, password: pw }) }).then(function(r){ return r.json(); }).then(function(d){ if (d && d.success && d.token) { tryLogin(d.token); } else { document.getElementById(\"gateError\").textContent = \"بيانات الدخول غير صحيحة\"; } }).catch(function(){ document.getElementById(\"gateError\").textContent = \"صار خطأ بالاتصال، حاول مرة ثانية\"; });';\nhtml = html.split('else { savedPc = localStorage.getItem(\"almutawa_admin_pc\"); }').join('else { savedPc = localStorage.getItem(\"almutawa_admin_pc\") || localStorage.getItem(\"ag_token\") || (localStorage.getItem(\"am_auth_type\") === \"staff\" ? localStorage.getItem(\"am_auth_token\") : null); }');\nhtml = html.split('try { localStorage.setItem(\"almutawa_admin_pc\", pc); } catch(e){}').join('try { localStorage.setItem(\"almutawa_admin_pc\", pc); localStorage.setItem(\"ag_token\", pc); } catch(e){}');\nhtml = html.split('try { localStorage.removeItem(\"almutawa_admin_pc\"); } catch(e){}').join('try { [\"almutawa_admin_pc\",\"ag_token\",\"ag_name\",\"am_auth_token\",\"am_auth_type\",\"am_auth_name\"].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}');\nhtml = html.split('<button class=\"logout-btn\" id=\"logoutBtn\">خروج</button>').join('<div style=\"display:flex;gap:8px;\"><a class=\"logout-btn\" href=\"/webhook/agent\" target=\"_top\" style=\"text-decoration:none;\">🤖 الوكيل الذكي</a><button class=\"logout-btn\" id=\"logoutBtn\">خروج</button></div>');\nconst found = html.indexOf(OLD) > -1;\nhtml = html.split(OLD).join(NEW);\nhtml = html.split('\"كلمة المرور غير صحيحة\"').join('\"انتهت الجلسة أو بيانات الدخول غير صحيحة، سجّل دخول مرة ثانية\"');\nreturn [{ json: { html: html, loginPatched: found } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "72472323-2efa-44c1-a7c6-d302127bd8f9",
+        "name": "Public Website Auth Fix",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          740,
+          900
+        ],
+        "parameters": {
+          "jsCode": "let html = $json.html || '';\nhtml = html.split(\"if (type === 'staff') localStorage.setItem('almutawa_admin_pc', 'Mutawa2026');\").join(\"if (type === 'staff') localStorage.setItem('almutawa_admin_pc', (typeof token !== 'undefined' && token) ? token : authToken);\");\nhtml = html.split(\"encodeURIComponent('Mutawa2026')\").join(\"encodeURIComponent(authToken || '')\");\nhtml = html.split(\"localStorage.setItem('almutawa_admin_pc', 'Mutawa2026');\").join(\"localStorage.setItem('almutawa_admin_pc', authToken);\");\nconst leftover = html.indexOf('Mutawa2026') > -1;\nhtml = html.split('Mutawa2026').join('');\nreturn [{ json: { html: html, passcodeLeftover: leftover } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
       }
     ],
     "connections": {
-      "Admin API": {
-        "main": [
-          [
-            {
-              "node": "Check Passcode",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Check Passcode": {
-        "main": [
-          [
-            {
-              "node": "Route Action",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Unauthorized Response",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Route Action": {
         "main": [
           [
@@ -3627,23 +3725,85 @@
             }
           ]
         ]
+      },
+      "Admin API": {
+        "main": [
+          [
+            {
+              "node": "Verify Staff Token",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Staff Token": {
+        "main": [
+          [
+            {
+              "node": "Is Staff Authorized?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Staff Authorized?": {
+        "main": [
+          [
+            {
+              "node": "Route Action",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unauthorized Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admin Panel HTML Patch": {
+        "main": [
+          [
+            {
+              "node": "Admin Panel Auth Fix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Public Website HTML Patch": {
+        "main": [
+          [
+            {
+              "node": "Public Website Auth Fix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Wire postgres bookings/packages",
-    "description": "Wire the new Postgres bookings/packages nodes into the router and adapt the response builders to Postgres column names.",
+    "name": "Fix empty-bookings login failure; shared session; agent link",
+    "description": "Updated nodes: Build Bookings Response, Get Bookings, Admin Panel Auth Fix",
     "autosaved": false,
-    "createdAt": "2026-09-28T15:27:21.206Z",
-    "updatedAt": "2026-09-28T15:27:21.206Z",
+    "createdAt": "2026-10-03T16:44:21.654Z",
+    "updatedAt": "2026-10-03T16:44:21.654Z",
     "workflowPublishHistory": [
       {
-        "id": 164,
+        "id": 184,
         "workflowId": "qACtLdIxetamrA0e",
-        "versionId": "a8f83647-d4c7-4b5b-9480-95e563b6a3a5",
+        "versionId": "26a3fa08-4d12-474f-9e1f-ab5ceed47732",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-28T15:27:24.209Z"
+        "createdAt": "2026-10-03T16:44:23.968Z"
       }
     ]
   }
