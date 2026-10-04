@@ -1,0 +1,241 @@
+{
+  "id": "IH7uYovTI7DbIFvT",
+  "name": "Agent Tool - Read Gmail Message (clean)",
+  "description": "Sub-workflow tool for the Personal AI Agent: reads one Gmail message and returns clean plain text (HTML stripped, max 4000 chars) to keep AI token usage low.",
+  "active": true,
+  "activeVersionId": "b34ffa9c-ecea-420a-b47a-505ad6197e04",
+  "createdAt": "2026-10-03T18:56:04.225Z",
+  "updatedAt": "2026-10-03T18:56:04.225Z",
+  "isArchived": false,
+  "versionId": "b34ffa9c-ecea-420a-b47a-505ad6197e04",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "0dd4c47f-1c76-4f1e-8d55-81685f4d5b97",
+      "name": "When Called By Agent",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "messageId",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ab4db280-9148-4b44-bca2-fcd82db708bc",
+      "name": "Get Gmail Message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "get",
+        "messageId": "={{ $json.messageId }}",
+        "simple": false,
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GhXbtHoEb5eO8ZiQ",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "4d6a21c1-9e42-4767-89f4-1310cce68432"
+    },
+    {
+      "id": "f2a5764b-3321-4744-ab5b-fb09f1eba8d8",
+      "name": "Clean And Truncate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const m = $input.first().json || {};\nif (m.error) return [{ json: { error: 'could_not_read_message' } }];\nfunction addr(a){ if (!a) return ''; if (typeof a === 'string') return a; if (a.text) return a.text; if (Array.isArray(a.value)) return a.value.map(function(v){ return (v.name ? v.name + ' ' : '') + '<' + v.address + '>'; }).join(', '); return ''; }\nlet body = m.text || '';\nif (!body && m.html) { body = String(m.html).replace(/<style[\\s\\S]*?<\\/style>/gi, ' ').replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/(p|div|tr|li|h[1-6])>/gi, '\\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"'); }\nbody = body.replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n\\n').trim();\nconst MAX = 4000;\nconst truncated = body.length > MAX;\nif (truncated) body = body.slice(0, MAX);\nconst attachments = Object.keys(m.binary || {}).length || (Array.isArray(m.attachments) ? m.attachments.length : 0);\nreturn [{ json: { id: m.id, threadId: m.threadId, from: addr(m.from), to: addr(m.to), date: m.date || '', subject: m.subject || '', body: body, truncated: truncated, attachments: attachments } }];"
+      }
+    }
+  ],
+  "connections": {
+    "When Called By Agent": {
+      "main": [
+        [
+          {
+            "node": "Get Gmail Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail Message": {
+      "main": [
+        [
+          {
+            "node": "Clean And Truncate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "IH7uYovTI7DbIFvT",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T18:56:04.226Z",
+      "updatedAt": "2026-10-03T18:56:04.226Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b34ffa9c-ecea-420a-b47a-505ad6197e04",
+    "workflowId": "IH7uYovTI7DbIFvT",
+    "nodes": [
+      {
+        "id": "0dd4c47f-1c76-4f1e-8d55-81685f4d5b97",
+        "name": "When Called By Agent",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "messageId",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "ab4db280-9148-4b44-bca2-fcd82db708bc",
+        "name": "Get Gmail Message",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "get",
+          "messageId": "={{ $json.messageId }}",
+          "simple": false,
+          "options": {}
+        },
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "GhXbtHoEb5eO8ZiQ",
+            "name": "Gmail account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "webhookId": "4d6a21c1-9e42-4767-89f4-1310cce68432"
+      },
+      {
+        "id": "f2a5764b-3321-4744-ab5b-fb09f1eba8d8",
+        "name": "Clean And Truncate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const m = $input.first().json || {};\nif (m.error) return [{ json: { error: 'could_not_read_message' } }];\nfunction addr(a){ if (!a) return ''; if (typeof a === 'string') return a; if (a.text) return a.text; if (Array.isArray(a.value)) return a.value.map(function(v){ return (v.name ? v.name + ' ' : '') + '<' + v.address + '>'; }).join(', '); return ''; }\nlet body = m.text || '';\nif (!body && m.html) { body = String(m.html).replace(/<style[\\s\\S]*?<\\/style>/gi, ' ').replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/(p|div|tr|li|h[1-6])>/gi, '\\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"'); }\nbody = body.replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n\\n').trim();\nconst MAX = 4000;\nconst truncated = body.length > MAX;\nif (truncated) body = body.slice(0, MAX);\nconst attachments = Object.keys(m.binary || {}).length || (Array.isArray(m.attachments) ? m.attachments.length : 0);\nreturn [{ json: { id: m.id, threadId: m.threadId, from: addr(m.from), to: addr(m.to), date: m.date || '', subject: m.subject || '', body: body, truncated: truncated, attachments: attachments } }];"
+        }
+      }
+    ],
+    "connections": {
+      "When Called By Agent": {
+        "main": [
+          [
+            {
+              "node": "Get Gmail Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Gmail Message": {
+        "main": [
+          [
+            {
+              "node": "Clean And Truncate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Clean Gmail reader tool",
+    "description": "Created with 3 nodes: When Called By Agent, Get Gmail Message, Clean And Truncate",
+    "autosaved": false,
+    "createdAt": "2026-10-03T18:56:04.226Z",
+    "updatedAt": "2026-10-03T18:56:04.226Z",
+    "workflowPublishHistory": [
+      {
+        "id": 189,
+        "workflowId": "IH7uYovTI7DbIFvT",
+        "versionId": "b34ffa9c-ecea-420a-b47a-505ad6197e04",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-03T18:56:07.139Z"
+      }
+    ]
+  }
+}
