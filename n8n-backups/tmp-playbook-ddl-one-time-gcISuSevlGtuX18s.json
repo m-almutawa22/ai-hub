@@ -1,0 +1,93 @@
+{
+  "id": "gcISuSevlGtuX18s",
+  "name": "TMP - Playbook DDL (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-03T20:00:32.165Z",
+  "updatedAt": "2026-10-03T20:00:39.000Z",
+  "isArchived": true,
+  "versionId": "bff1940d-b264-496c-ad19-e3ed05f802f8",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "32d559d1-d0c2-467a-ae98-990ae2f70774",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "90895dcf-6f3a-45d8-bc97-ee9ae39e7eae",
+      "name": "Create Playbook Tables",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS work_playbook (id serial PRIMARY KEY, scope text NOT NULL DEFAULT 'email', title text NOT NULL, when_text text NOT NULL, action_text text NOT NULL, priority text NOT NULL DEFAULT 'normal' CHECK (priority IN ('low','normal','high','urgent')), active boolean NOT NULL DEFAULT true, created_by text, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()); CREATE TABLE IF NOT EXISTS processed_emails (message_id text PRIMARY KEY, received_at timestamptz, sender text, subject text, category text, importance text, summary text, matched_rule int, action_taken text, processed_at timestamptz NOT NULL DEFAULT now()); SELECT (SELECT count(*) FROM work_playbook)::int AS rules;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Playbook Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "gcISuSevlGtuX18s",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T20:00:32.166Z",
+      "updatedAt": "2026-10-03T20:00:32.166Z"
+    }
+  ],
+  "activeVersion": null
+}
