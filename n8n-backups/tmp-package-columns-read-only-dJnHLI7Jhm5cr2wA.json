@@ -1,0 +1,93 @@
+{
+  "id": "dJnHLI7Jhm5cr2wA",
+  "name": "TMP - Package Columns (read-only)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-03T18:55:41.502Z",
+  "updatedAt": "2026-10-03T18:55:48.000Z",
+  "isArchived": true,
+  "versionId": "2f99e640-dd6e-46ea-a2c8-d2e59c3fe333",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "c25e259a-22b1-49bb-8813-7bed100b1343",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "03a2459a-cd75-4e1e-a7c4-29d182b59330",
+      "name": "Package Columns",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT json_agg(column_name || ':' || data_type ORDER BY ordinal_position) AS cols, (SELECT json_agg(DISTINCT status) FROM packages) AS statuses FROM information_schema.columns WHERE table_schema='public' AND table_name='packages';"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Package Columns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "dJnHLI7Jhm5cr2wA",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-03T18:55:41.505Z",
+      "updatedAt": "2026-10-03T18:55:41.505Z"
+    }
+  ],
+  "activeVersion": null
+}
