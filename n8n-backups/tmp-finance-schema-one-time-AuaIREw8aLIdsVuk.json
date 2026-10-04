@@ -1,0 +1,93 @@
+{
+  "id": "AuaIREw8aLIdsVuk",
+  "name": "TMP - Finance Schema (one-time)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-04T04:22:11.296Z",
+  "updatedAt": "2026-10-04T04:22:17.000Z",
+  "isArchived": true,
+  "versionId": "1384925e-9d3a-4597-98b0-a4d89c1b0d0f",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "991ce5b4-f9c2-4615-9c6e-c7050bc12f51",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5d5f4126-afe0-485b-a9f8-75cb0327ab33",
+      "name": "Finance Schema",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS finance_accounts (id serial PRIMARY KEY, name text NOT NULL, bank text, hint text, scope text NOT NULL DEFAULT 'personal' CHECK (scope IN ('office','personal')), notes text, active boolean NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now()); CREATE TABLE IF NOT EXISTS recurring_commitments (id serial PRIMARY KEY, title text NOT NULL, scope text NOT NULL DEFAULT 'personal' CHECK (scope IN ('office','personal')), counterparty text, amount numeric, currency text NOT NULL DEFAULT 'BHD', frequency text NOT NULL DEFAULT 'monthly' CHECK (frequency IN ('weekly','monthly','quarterly','yearly','once')), due_day int, category text, active boolean NOT NULL DEFAULT true, last_paid_at timestamptz, notes text, created_at timestamptz NOT NULL DEFAULT now()); ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'needs_review'; ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS note text; ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS account_id int REFERENCES finance_accounts(id) ON DELETE SET NULL; ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS commitment_id int REFERENCES recurring_commitments(id) ON DELETE SET NULL; ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS raw_text text; ALTER TABLE finance_transactions ADD COLUMN IF NOT EXISTS reviewed_at timestamptz; CREATE INDEX IF NOT EXISTS ft_status_idx ON finance_transactions (status); CREATE INDEX IF NOT EXISTS ft_occ_idx ON finance_transactions (occurred_at DESC); SELECT 'ok' AS status;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Finance Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "AuaIREw8aLIdsVuk",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T04:22:11.298Z",
+      "updatedAt": "2026-10-04T04:22:11.298Z"
+    }
+  ],
+  "activeVersion": null
+}
