@@ -1,0 +1,1497 @@
+{
+ "table": "messages",
+ "backup_date": "2026-10-05",
+ "rows": 149,
+ "data": [
+  {
+   "id": 5,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "المطوع للسياحةا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:08:50.051386+00:00"
+  },
+  {
+   "id": 6,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "السلام عليكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:08:53.865058+00:00"
+  },
+  {
+   "id": 7,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "ممكن استفسار بخصوص طيران العراق",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:09:11.249641+00:00"
+  },
+  {
+   "id": 8,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Outbound",
+   "body": "أكيد، أي مدينة بالعراق تقصدون؟ (بغداد، النجف، كربلاء، البصرة، أو غيرها)",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:09:36.994235+00:00"
+  },
+  {
+   "id": 9,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "طيران الى النجف",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:10:26.6964+00:00"
+  },
+  {
+   "id": 10,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Outbound",
+   "body": "ما عندنا باكدج جاهز للنجف الآن في النظام، أقدر أشيك أسعار الطيران — متى تبون السفر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:10:56.186131+00:00"
+  },
+  {
+   "id": 11,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "والى بغداد",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:11:25.958096+00:00"
+  },
+  {
+   "id": 12,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Outbound",
+   "body": "متى تاريخ السفر لبغداد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:11:48.617698+00:00"
+  },
+  {
+   "id": 13,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "شفت اعلان حقكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:12:05.156994+00:00"
+  },
+  {
+   "id": 14,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "ب ١٥٠٠",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:12:11.825075+00:00"
+  },
+  {
+   "id": 15,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "متى اوقات الرحله ايكون",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:12:28.74537+00:00"
+  },
+  {
+   "id": 16,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "من 8 اكتوبر الى 22",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:12:49.244447+00:00"
+  },
+  {
+   "id": 17,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Outbound",
+   "body": "أي تاريخ تبين تسافرين لبغداد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:12:51.801438+00:00"
+  },
+  {
+   "id": 18,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Inbound",
+   "body": "👆",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:13:08.369669+00:00"
+  },
+  {
+   "id": 19,
+   "conversation_id": null,
+   "customer_phone": "+966506006862",
+   "direction": "Outbound",
+   "body": "تقصدين بغداد من 8 أكتوبر إلى 22 أكتوبر ولا تقصدين النجف؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-29T19:13:35.11365+00:00"
+  },
+  {
+   "id": 20,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "السلام عليكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:01:19.853641+00:00"
+  },
+  {
+   "id": 21,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "شخباركم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:01:27.131314+00:00"
+  },
+  {
+   "id": 22,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "تقبل الله اعمالكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:01:36.386502+00:00"
+  },
+  {
+   "id": 23,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "تقبل الله منا ومنكم، آمين. شلون أقدر أخدمك اليوم؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:02:03.602907+00:00"
+  },
+  {
+   "id": 24,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "شنو الرحلات اللي عندكم هلايام ولا لا أنقر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:02:37.401316+00:00"
+  },
+  {
+   "id": 25,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "هااايام",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:02:47.039828+00:00"
+  },
+  {
+   "id": 26,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "عندنا برامج داخل البحرين ورحلات برا. تبي داخلية ولا خارجية؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:03:12.447852+00:00"
+  },
+  {
+   "id": 27,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "‏لا عندكم رحلات خارجية لوين عندكم حاليا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:08:40.386943+00:00"
+  },
+  {
+   "id": 28,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "تقصد رحلات خارجية دينية (عمرة/مراقد) ولا سياحية/تسوق؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:09:07.215964+00:00"
+  },
+  {
+   "id": 29,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "شنو الللي عندكم موجود هالايام \n\nسويت لي امتحان كله اسأله ؟؟؟\nمسابقه خمن واربح؟؟\n\nشنو عندكم رحلات هالايام",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:10:55.212438+00:00"
+  },
+  {
+   "id": 30,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "آسف إذا أزعجتك بالأسئلة. تقصد رحلات دينية (عمرة/مراقد) ولا سياحية/تسوق بره؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:11:22.606515+00:00"
+  },
+  {
+   "id": 31,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "دينيه",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:21:02.314463+00:00"
+  },
+  {
+   "id": 32,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "تقصد عمرة ولا زيارة مراقد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T04:21:34.024662+00:00"
+  },
+  {
+   "id": 33,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "زياره",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:03:28.494639+00:00"
+  },
+  {
+   "id": 34,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "عندنا رحلات زيارة لكربلاء/النجف/الكاظمية بتواريخ 1 و8 أكتوبر — مدتها 8 أو 15 يوم والأسعار تبدأ من 2600 دينار. أي تاريخ تفضّل؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:04:03.972854+00:00"
+  },
+  {
+   "id": 35,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "بس عندكم هالتواريخ لو في غير بعد",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:04:49.483201+00:00"
+  },
+  {
+   "id": 36,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "حالياً عندنا مغادرتين بس: 1 وأيضاً 8 أكتوبر — لكل تاريخ خيار 8 أو 15 يوم والأسعار تبدأ من 2600 د. تفضل أي واحد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:05:16.568687+00:00"
+  },
+  {
+   "id": 37,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "انزين عندكم تذاكر بس ؟؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:05:46.719011+00:00"
+  },
+  {
+   "id": 38,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "نعم نقدر نوفر تذاكر طيران بس بدون سكن. تقصد كذا؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:06:11.930601+00:00"
+  },
+  {
+   "id": 39,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "اي بس تذاكر \nمتى التواريخ اللي متوفر فيها الطيران ايي في نهايه شهر عشره",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:07:06.623921+00:00"
+  },
+  {
+   "id": 40,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "حالياً متوفر بس مغادرتين: 1 و8 أكتوبر، وما عندنا رحلات بنهاية شهر 10. تحب أحجز على 1 أو 8 ولا أبحث لك عن تواريخ ثانية؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:07:42.811992+00:00"
+  },
+  {
+   "id": 41,
+   "conversation_id": null,
+   "customer_phone": "+97333777666",
+   "direction": "Inbound",
+   "body": "وين عندكم برامج",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:27:55.081994+00:00"
+  },
+  {
+   "id": 42,
+   "conversation_id": null,
+   "customer_phone": "+97333777666",
+   "direction": "Outbound",
+   "body": "هالأيام عندنا برامج للعراق (كربلاء، النجف، الكاظمية). برامج 8 أيام من 2600 ب.د، وبرامج 15 يوم من 3800-4200 ب.د، وفنادق درجة أولى أو قريبة من الحرم، وعندنا كمان تذاكر دمام-بغداد من 1500 ب.د. أيّ خيار تفضّل؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T05:28:24.89243+00:00"
+  },
+  {
+   "id": 43,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "هلا عزيزي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:13:00.003765+00:00"
+  },
+  {
+   "id": 44,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Inbound",
+   "body": "شنو عندكم رحلات الحين",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:13:13.214951+00:00"
+  },
+  {
+   "id": 45,
+   "conversation_id": null,
+   "customer_phone": "+97334161666",
+   "direction": "Outbound",
+   "body": "هذي الأيام عندنا رحلات زيارة لكربلاء/النجف/الكاظمية بمغادرات 1، 8، 15، 22، 29 أكتوبر — خيارات 8 أو 15 يوم والأسعار تبدأ من 2600 د.  \nواذا تبي تذاكر بس عندنا تذاكر دمام–بغداد بنفس التواريخ بسعر 1500 د.  \nتبي تذاكر بس ولا تبي باكدج مع سكن؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:13:46.191226+00:00"
+  },
+  {
+   "id": 46,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Inbound",
+   "body": "[صورة]: ",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:28:31.426333+00:00"
+  },
+  {
+   "id": 47,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Inbound",
+   "body": "ابغي استفسر عن رحله 15 يوم \nإذا ابغي بدون وجبات كم السعر \nوفرق السرير حق غرفة فردية كم \nفي الفنادق الدرجة اولي وفنادق القريبة",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:28:38.95465+00:00"
+  },
+  {
+   "id": 48,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Outbound",
+   "body": "عندنا باكج 15 يوم فنادق درجة أولى بـ4,200 د.ب، وباكج 15 يوم فنادق قريبة من الحرم بـ3,800 د.ب.  \nالسستم ما يوري سعر بدون وجبات ولا فرق السرير، تحب أحسب لك بدون وجبات ولغرفة فردية لأي نوع فنادق: الدرجة أولى ولا القريبة من الحرم؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:29:13.729872+00:00"
+  },
+  {
+   "id": 49,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Inbound",
+   "body": "اثنينهم إذا ممكن",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:30:53.379516+00:00"
+  },
+  {
+   "id": 50,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Outbound",
+   "body": "السستم فعلاً ما يوري سعر بدون وجبات ولا فرق الفردي. أبغي أستفسر من الإدارة وأرجع لك بالأسعار الدقيقة للدرجـة الأولى وللقريبة من الحرم، أراجع وأرجع لك؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:31:25.670657+00:00"
+  },
+  {
+   "id": 51,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Inbound",
+   "body": "اوك",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:31:39.16372+00:00"
+  },
+  {
+   "id": 52,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Inbound",
+   "body": "طيب",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:31:43.422842+00:00"
+  },
+  {
+   "id": 53,
+   "conversation_id": null,
+   "customer_phone": "+966535715938",
+   "direction": "Outbound",
+   "body": "حاضر، بأرجع لك بالأسعار بأقرب وقت.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T06:32:13.541367+00:00"
+  },
+  {
+   "id": 54,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "المطوع للسياحة",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:19:40.89243+00:00"
+  },
+  {
+   "id": 55,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "السلام عليكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:19:54.776817+00:00"
+  },
+  {
+   "id": 56,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "بغداد دمام تاريخ 15/10 متوفر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:20:16.52666+00:00"
+  },
+  {
+   "id": 57,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "وعليكم السلام، حياك الله في المطوع للسياحة. شلون أقدر أخدمك اليوم؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:20:19.435301+00:00"
+  },
+  {
+   "id": 58,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "وكم سعرها",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:20:25.103619+00:00"
+  },
+  {
+   "id": 59,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "على تاريخ 15/10 السعر 1500 د.ب للتذكرة الواحدة (≈15000 ر.س حسب سعر المكتب).  \nكم عدد المسافرين تبي؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:20:57.791988+00:00"
+  },
+  {
+   "id": 60,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "هذا دهاب وعوده",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:21:27.732814+00:00"
+  },
+  {
+   "id": 61,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "ابي فقط بغداد دمام",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:21:42.918596+00:00"
+  },
+  {
+   "id": 62,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "عندنا تذاكر دمام–بغداد–دمام بتواريخ 1، 8، 15، 22، 29 أكتوبر 2026.  \nالسعر 1500 د.ب للتذكرة الواحدة (ذهاب وعودة).  \nكم عدد المسافرين؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:22:13.725851+00:00"
+  },
+  {
+   "id": 63,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "شكرا حبيت فقط عوده",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:22:49.124918+00:00"
+  },
+  {
+   "id": 64,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "تقصد تذكرة عودة بس من بغداد للدمام؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:23:15.207659+00:00"
+  },
+  {
+   "id": 65,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "ايوا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:23:31.553933+00:00"
+  },
+  {
+   "id": 66,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "تمام فيصل، كم عدد المسافرين؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:24:11.011841+00:00"
+  },
+  {
+   "id": 67,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "2",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:24:59.373492+00:00"
+  },
+  {
+   "id": 68,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "حلو فيصل، أؤكد الحجز على 15/10 لعدد 2 ركاب (تذكرة عودة فقط)؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:25:33.214507+00:00"
+  },
+  {
+   "id": 69,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "بكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:47:49.539448+00:00"
+  },
+  {
+   "id": 70,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "ما عطيتينا السعر عشان استشير الزبون",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:47:49.917125+00:00"
+  },
+  {
+   "id": 71,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "السعر 1500 د.ب للتذكرة الواحدة (عودة فقط). لمجموع 2 ركاب = 3000 د.ب. أؤكد الحجز على 15/10/2026؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:48:20.40109+00:00"
+  },
+  {
+   "id": 72,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "[رسالة صوتية]: يا اخي اقولك هذه السعر حق الدهاب وعوده 1500 ريال انا ابغى فقط عوده فقط عوده من بغداد الى الدمام كم سعرها",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:49:33.77689+00:00"
+  },
+  {
+   "id": 73,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "أيوه فهمتك، هل تقصد 1500 ريال سعودي هذا سعر الذهاب والعودة؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:50:02.18629+00:00"
+  },
+  {
+   "id": 74,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "[رسالة صوتية]: ايوه هالسعر ذهب و العوده ب1500 صحيح انا ابغى بس عوده بكم سعرها",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:50:29.422629+00:00"
+  },
+  {
+   "id": 75,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "حسب سيستمنا تذكرة العودة فقط (بغداد→الدمام) لـ15/10/2026 سعرها 1500 د.ب للراكب، يعني تقريباً 15,000 ر.س حسب سعر المكتب 1 د.ب = 10 ر.س.  \nتقصد هالسعر ولا تقصد 1500 ريال فقط؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:51:00.42847+00:00"
+  },
+  {
+   "id": 76,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "غاليه فقط عوده ١٥٠٠",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:51:54.210859+00:00"
+  },
+  {
+   "id": 77,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "أوكي فهمت، للتوضيح: تقصد 1500 ريال سعودي للتذكرة الواحدة ولا 1500 د.ب؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:52:20.280086+00:00"
+  },
+  {
+   "id": 78,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "[رسالة صوتية]: يألفه خمسمائة ريال غالية بس العودة. يعني خمستاشه اااا مية ومية ومسين دينار خمستاشه الدينار. مية ومسين دينار السفر. يعني مية ومسين دينار غالية واغت.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:53:53.848572+00:00"
+  },
+  {
+   "id": 79,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "أفهمك، فعلاً واضح إن السعر مزعج، وآسف على هالضيق. رافعته لفريق المكتب وهم بيحاولون يدورون على تخفيض أو بدائل ويتواصلون معك. أبي أطلب منهم يتواصلون ويحاولون يخفضون السعر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:54:35.104323+00:00"
+  },
+  {
+   "id": 80,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "اوك",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:55:56.392707+00:00"
+  },
+  {
+   "id": 81,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "تمام، أرسلت طلب لفريق المكتب وهم بيتواصلون معاك قريب.  \nتفضل يتواصلون على نفس رقم الواتس؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:56:31.726493+00:00"
+  },
+  {
+   "id": 82,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "ايوا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:56:57.047015+00:00"
+  },
+  {
+   "id": 83,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "ممتاز يا فيصل. تفضل اتصال صوتي ولا رسالة واتس؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:57:32.203824+00:00"
+  },
+  {
+   "id": 84,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "ما يفرق",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:58:09.56779+00:00"
+  },
+  {
+   "id": 85,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Inbound",
+   "body": "اي شي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:58:13.465431+00:00"
+  },
+  {
+   "id": 86,
+   "conversation_id": null,
+   "customer_phone": "+966502088019",
+   "direction": "Outbound",
+   "body": "تمام يا فيصل، استلمنا ورفعنا الموضوع لفريق المكتب.  \nالفريق بيتواصل معاك على نفس رقم الواتس (مكالمة أو رسالة) بأقرب وقت، شكراً.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T07:58:47.785581+00:00"
+  },
+  {
+   "id": 87,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "المطوع للسياحة",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:23:46.990028+00:00"
+  },
+  {
+   "id": 88,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "السلام \nحبيت استفسر عن رحلات نوڤمبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:23:52.563043+00:00"
+  },
+  {
+   "id": 89,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "للعراق",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:23:59.348039+00:00"
+  },
+  {
+   "id": 90,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "عندنا رحلات للعراق (كربلاء، النجف، الكاظمية) بباقات 8 أيام و15 يوم؛ انطلاقات من 1 أكتوبر لحد 29 أكتوبر وبعض باقات الـ15 يوم ترجع داخل نوفمبر (مثلاً ترجع 5 أو 12 نوفمبر).  \nالأسعار من 2600 دينار إلى 4200 دينار، تحبين أشوف تواريخ نوفمبر بالتحديد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:24:38.88698+00:00"
+  },
+  {
+   "id": 91,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:25:43.196605+00:00"
+  },
+  {
+   "id": 92,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "وهل عندكم سياره لو بس طيارة؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:25:43.692272+00:00"
+  },
+  {
+   "id": 93,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "عندنا خيارين: تذاكر طيران منفردة (دمام-بغداد) أو باقات كاملة مع برنامج فنادق ورحلات لكربلاء/النجف. تفضلين تذكرة بس ولا باقة كاملة؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:26:17.5594+00:00"
+  },
+  {
+   "id": 94,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "باقه كامله",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:27:35.156946+00:00"
+  },
+  {
+   "id": 95,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تمام، كم عدد الأشخاص اللي راح يسافرون؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:28:11.748137+00:00"
+  },
+  {
+   "id": 96,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "٣ كبار و٣ صغار",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:29:03.434937+00:00"
+  },
+  {
+   "id": 97,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تمام سجلت 3 كبار و٣ صغار.  \nهالأيام عندنا باقات العراق (كربلاء/النجف/الكاظمية): باقة 15 يوم فنادق درجة أولى — مغادرة 22/10 ترجع 05/11 أو 29/10 ترجع 12/11 السعر 4200 د.ب؛ باقة 15 يوم فنادق قريبة من الحرم — 22/10→05/11 أو 29/10→12/11 السعر 3800 د.ب؛ وباقة 8 أيام قريبة من الحرم — 29/10→05/11 السعر 2600 د.ب.  \nأي واحدة تفضلين؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:29:48.350374+00:00"
+  },
+  {
+   "id": 98,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "ابغى عروض نوڤمبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:30:18.760494+00:00"
+  },
+  {
+   "id": 99,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "مو اكتوبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:30:21.509217+00:00"
+  },
+  {
+   "id": 100,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "والاطفال يناخد عليهم كامل؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:30:29.357823+00:00"
+  },
+  {
+   "id": 101,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "يعني طفله عمرها ٣ سنوات كم يصير عليها",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:30:39.032252+00:00"
+  },
+  {
+   "id": 102,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "طفلة 3 سنوات تُعتبر طفل ويطبق عليها سعر الطفل (مخفض عن سعر البالغ). \n\nأحسب لك سعرها لأي باقة من باقات نوفمبر اللي تفضلين؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:31:17.038152+00:00"
+  },
+  {
+   "id": 103,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "ممكن تواريخ نوفمير؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:32:06.765669+00:00"
+  },
+  {
+   "id": 104,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "حاليًا ما عندنا مغادرات تبدأ في نوفمبر، لكن فيه رحلات تنطلق نهاية أكتوبر وترجع في نوفمبر: 22/10→05/11 (15 يوم)، 29/10→05/11 (8 أيام)، 29/10→12/11 (15 يوم). أي وحدة تحبين أحسب لك سعرها؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:32:38.490825+00:00"
+  },
+  {
+   "id": 105,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "متى تنزل رحلات نوڤمبر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:33:26.371801+00:00"
+  },
+  {
+   "id": 106,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "ما عندنا موعد محدد لنزول مغادرات نوفمبر الحين. أبي أضيفك للقائمة وننبهك أول ما تنزل رحلات نوفمبر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:34:01.562204+00:00"
+  },
+  {
+   "id": 107,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اوك",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:34:13.920785+00:00"
+  },
+  {
+   "id": 108,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تم، ضفتك لقائمة التنبيه — بنبلغك أول ما تنزل مغادرات نوفمبر.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:34:49.386928+00:00"
+  },
+  {
+   "id": 109,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "فيه رحلات بر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:35:20.482348+00:00"
+  },
+  {
+   "id": 110,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "لو بس طيران؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:35:23.923463+00:00"
+  },
+  {
+   "id": 111,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "أيوه عندنا تذاكر طيران بس (دمام–بغداد ذهاب/عودة). التواريخ المتوفرة عندنا: 01/10، 08/10، 15/10، 22/10، 29/10 والسعر حالياً 1500 BHD للشخص. أحسب لك السعر على 3 كبار و3 صغار؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:35:57.132276+00:00"
+  },
+  {
+   "id": 112,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "مافهمتني",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:39:05.57569+00:00"
+  },
+  {
+   "id": 113,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اقصد باص او سياره",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:39:10.36757+00:00"
+  },
+  {
+   "id": 114,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تقصدين باص/سيارة بدل الطيران — يعني رحلة برّ كاملة من البحرين/الدمام للعراق؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:39:43.726731+00:00"
+  },
+  {
+   "id": 115,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اي من الدمام",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:40:03.065295+00:00"
+  },
+  {
+   "id": 116,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "حلو، عالسليم — للتأكيد واحد: تبين باص/سيارة من الدمام لباقة كاملة للعراق في نوفمبر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:40:45.686997+00:00"
+  },
+  {
+   "id": 117,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:41:00.570032+00:00"
+  },
+  {
+   "id": 118,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "بنتقسم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:41:04.209183+00:00"
+  },
+  {
+   "id": 119,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "ناس بالسياره وناس بطيران",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:41:11.150264+00:00"
+  },
+  {
+   "id": 120,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "ممتاز، كم راح يسافرون بالسيارة وكم بالطيّار؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:41:38.467523+00:00"
+  },
+  {
+   "id": 121,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "٢ طيران \n٤ سيارة",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:42:18.882897+00:00"
+  },
+  {
+   "id": 122,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "الا في السياره بيكونو وحدة كبيره و٣ صغار",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:42:29.957124+00:00"
+  },
+  {
+   "id": 123,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تمام سجلت: بالسيارة 1 كبير و3 صغار، وبالطيران 2 بالغين — تفضّلين أي تاريخ محدد في نوفمبر أراجع عليه التوافر والأسعار؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:43:03.534703+00:00"
+  },
+  {
+   "id": 124,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "٥ نوڤمبر تقريبا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:44:15.342497+00:00"
+  },
+  {
+   "id": 125,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "لا",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:44:28.912043+00:00"
+  },
+  {
+   "id": 126,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "١٢ نوڤمبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:44:33.117708+00:00"
+  },
+  {
+   "id": 127,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "على 12 نوفمبر ما فيه مغادرة مباشرة. أقرب خيار اللي يرجع يوم 12/11 مغادر 29 أكتوبر — عندنا باقة 15 يوم (ترجع 12/11) بسعر 3800 أو 4200 BHD حسب الفندق، وفيه باقة 8 أيام (ترجع 5/11) بسعر 2600 BHD. أحجز لكم على 29 أكتوبر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:45:35.878802+00:00"
+  },
+  {
+   "id": 128,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "لا مايناسبنا ٢٩ اكتوبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:46:07.134492+00:00"
+  },
+  {
+   "id": 129,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اذا نزلت عروض نوڤمبر ارسل لي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:46:18.696793+00:00"
+  },
+  {
+   "id": 130,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "تمّت، أم ريحانة — سجلت طلبك وبنرسل لك أول ما تنزل عروض نوفمبر. تريدين نرسل على نفس رقم الواتساب هذا؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:46:55.223884+00:00"
+  },
+  {
+   "id": 131,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اي",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:48:04.893037+00:00"
+  },
+  {
+   "id": 132,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "حاضر أم ريحانة، بنرسل لك عروض نوفمبر أول ما تنزل على نفس رقم الواتساب هذا.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T17:48:30.02043+00:00"
+  },
+  {
+   "id": 133,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "الفنادق بتكون تفسها؟؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T18:26:01.652062+00:00"
+  },
+  {
+   "id": 134,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "أي، العروض رح تنزل بنفس خيارات الفنادق: عندنا باقات \"قريبة من الحرم\" (كربلاء: دار التقوى، النجف: المقام، الكاظمية: فدك الزهراء) وباقات \"درجة أولى\" (كربلاء: الوتين، النجف: زمزم، الكاظمية: ضيافة الإمام الجواد). تحبين أحجز لك تنبيه للعروض على أي نوع؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T18:26:38.042619+00:00"
+  },
+  {
+   "id": 135,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Inbound",
+   "body": "اذا نزلت عروض نوفمبر نشوف",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T18:38:10.830661+00:00"
+  },
+  {
+   "id": 136,
+   "conversation_id": null,
+   "customer_phone": "+966545997738",
+   "direction": "Outbound",
+   "body": "حاضر أم ريحانة، بنرسل لك عروض نوفمبر أول ما تنزل على نفس رقم الواتساب هذا.",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-09-30T18:38:37.883264+00:00"
+  },
+  {
+   "id": 137,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "السلام عليكم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:07:15.417047+00:00"
+  },
+  {
+   "id": 138,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "[صورة]: ",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:07:43.003516+00:00"
+  },
+  {
+   "id": 139,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "وعليكم السلام، أهلاً وسهلاً في المطوع للسياحة — شلون أقدر أخدمك اليوم؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:07:44.311818+00:00"
+  },
+  {
+   "id": 140,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "استلمت الصورة، وش تبي أساعدك فيها؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:08:06.336652+00:00"
+  },
+  {
+   "id": 141,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "حاب استفسر عن سير الرحلة",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:08:26.367291+00:00"
+  },
+  {
+   "id": 142,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "تقصد متابعة حالة حجزك عندنا ولا تبغى تفاصيل سير البرنامج (المسار والتواريخ)؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:08:55.003524+00:00"
+  },
+  {
+   "id": 143,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "تفاصيل سير البرنامج",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:09:19.383424+00:00"
+  },
+  {
+   "id": 144,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "هذي الأيام عندنا برامج العراق (كربلاء، النجف، الكاظمية).  \nالبرنامج عادة: زيارة المرقدين وكذازيارات مكملة (أولاد مسلم، السيدة شريفة، مسجد السهلة، جامع الكوفة)، الوجبات بوفيه مفتوح؛ عندنا 8 أيام (ليالي: كربلاء 3، النجف 3، الكاظمية 1) سعر 2600 BHD أو فئة أولى 3000 BHD، وبرامج 15 يوم (كربلاء 8، النجف 4، الكاظمية 2) أسعار 3800–4200 BHD، ومغادرين أيام 8،15،22،29 أكتوبر.  \nأي واحد تبغى أرسلك له تفاصيل يوم بيوم؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:09:56.045057+00:00"
+  },
+  {
+   "id": 145,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "15 يوم",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:10:45.132565+00:00"
+  },
+  {
+   "id": 146,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "عندنا باقات 15 يوم لكربلاء–النجف–الكاظمية (الليالي: كربلاء 8، النجف 4، الكاظمية 2) — السعر: عادية 3800 BHD، فئة أولى 4200 BHD.  \nأي تاريخ يناسبك من 8، 15، 22، أو 29 أكتوبر؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:11:17.771876+00:00"
+  },
+  {
+   "id": 147,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "29 اكتوبر",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:11:30.555858+00:00"
+  },
+  {
+   "id": 148,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "4200 ريال أو دينار ؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:11:40.536565+00:00"
+  },
+  {
+   "id": 149,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "السعر 4200 دينار بحريني (BHD).  \nيعني تقريباً 42,000 ريال سعودي حسب سعر المكتب.  \nأكمل الحجز على 29 أكتوبر فئة أولى؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:12:06.352991+00:00"
+  },
+  {
+   "id": 150,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Inbound",
+   "body": "متأكد؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:12:51.102594+00:00"
+  },
+  {
+   "id": 151,
+   "conversation_id": null,
+   "customer_phone": "+966532556234",
+   "direction": "Outbound",
+   "body": "أيوه متأكد — السعر 4200 دينار بحريني (BHD).  \nحسب سعر المكتب 1 BHD = 10 SAR يعني تقريباً 42,000 ريال سعودي.  \nأكمل الحجز على 29 أكتوبر فئة أولى؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-01T16:13:17.642367+00:00"
+  },
+  {
+   "id": 152,
+   "conversation_id": null,
+   "customer_phone": "+966580888495",
+   "direction": "Inbound",
+   "body": "[صورة]: ",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-05T14:36:14.515627+00:00"
+  },
+  {
+   "id": 153,
+   "conversation_id": null,
+   "customer_phone": "+966580888495",
+   "direction": "Outbound",
+   "body": "وصلت الصور، شكراً. هذي صور جوازات للحجز ولا بطاقة ذكية؟",
+   "media_url": null,
+   "message_type": "text",
+   "timestamp": "2026-10-05T14:36:40.234231+00:00"
+  }
+ ]
+}
