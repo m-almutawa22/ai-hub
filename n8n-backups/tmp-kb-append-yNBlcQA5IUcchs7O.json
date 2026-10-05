@@ -1,0 +1,93 @@
+{
+  "id": "yNBlcQA5IUcchs7O",
+  "name": "TMP - KB Append",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-04T16:54:05.893Z",
+  "updatedAt": "2026-10-04T16:54:13.000Z",
+  "isArchived": true,
+  "versionId": "9cdac47e-336e-43ea-bec8-01a02e6ec0d7",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "f57d6b36-ad5d-4b6a-8e0c-a9fce1a73855",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ba92f3b0-4ee7-45e9-bb99-eec28e1c4bed",
+      "name": "Append KB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE knowledge_base SET content = content || E'\\n- 2026-10-04: صلاحيات الوكيل الإدارية (المستوى الأول): تقرير صحة النظام وآخر الأخطاء، تشغيل وإيقاف الأنظمة بتأكيد (الأنظمة الأساسية محمية)، إنشاء الموظفين وتعديل صلاحياتهم وإعادة تعيين كلماتهم (للـ Full Admin فقط)، تغيير كلمة مرور المالك. الوكيل صار المشغّل الاحتياطي إذا Claude مو متوفر، ويسجل المشاكل البرمجية كمهام للمطوّر.\\n- 2026-10-04: سحب صلاحيات تشغيل/إيقاف/قراءة الأنظمة من مساعد تيليجرام القديم (كان يقدر يوقف أي نظام بدون تأكيد)، وصار يوجّه لصفحة الوكيل.', updated_at = now() WHERE section = 'changelog'; UPDATE knowledge_base SET content = content || E'\\n- Agent Tool - System Admin: أداة الوكيل لقراءة حالة الأنظمة والأخطاء وتشغيلها وإيقافها عبر n8n API.\\n- Almutawa - Mohamed AI Assistant (Telegram): مساعد تيليجرام المختصر، يعرض قائمة الأنظمة فقط ويوجّه لصفحة الوكيل.', updated_at = now() WHERE section = 'components'; SELECT count(*) FROM knowledge_base;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Append KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "yNBlcQA5IUcchs7O",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T16:54:05.895Z",
+      "updatedAt": "2026-10-04T16:54:05.895Z"
+    }
+  ],
+  "activeVersion": null
+}
