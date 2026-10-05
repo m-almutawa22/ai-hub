@@ -5,10 +5,10 @@
   "active": true,
   "activeVersionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
   "createdAt": "2026-09-25T13:45:06.952Z",
-  "updatedAt": "2026-10-03T14:29:57.783Z",
+  "updatedAt": "2026-10-04T17:53:06.275Z",
   "isArchived": false,
   "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
-  "versionCounter": 14,
+  "versionCounter": 15,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -1493,7 +1493,8 @@
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true,
-    "errorWorkflow": "MfD6wYIbloXnfULA"
+    "errorWorkflow": "MfD6wYIbloXnfULA",
+    "saveDataSuccessExecution": "none"
   },
   "staticData": null,
   "pinData": null,
@@ -3018,6 +3019,22 @@
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
         "createdAt": "2026-10-03T14:30:00.597Z"
+      },
+      {
+        "id": 231,
+        "workflowId": "lqjYB7EP7xHmThVg",
+        "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-04T17:53:06.365Z"
+      },
+      {
+        "id": 230,
+        "workflowId": "lqjYB7EP7xHmThVg",
+        "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
+        "event": "deactivated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-04T17:53:06.354Z"
       }
     ]
   }
