@@ -1,0 +1,93 @@
+{
+  "id": "yXtqJCJ3kacGhTIK",
+  "name": "TMP - Close Dev Task",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-05T03:49:59.264Z",
+  "updatedAt": "2026-10-05T03:50:05.000Z",
+  "isArchived": true,
+  "versionId": "60c3b5e8-106e-4941-9331-a2545c181d52",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "51206022-ed2b-4153-bc07-e6dc21c3c1ff",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d2d8a52d-2557-4bad-8f55-8b44b66a241f",
+      "name": "Close Dev Task And Log",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tasks SET status = 'done', completed_at = now(), updated_at = now(), result = '{\"by\":\"developer\",\"note\":\"تم تنفيذ إغلاق المحادثات المنجزة وصندوق المنجزة\"}'::jsonb WHERE id = 2 AND status <> 'done'; UPDATE knowledge_base SET content = content || E'\\n- 2026-10-05: إرفاق الصور وملفات PDF والنصوص للوكيل (يقرأ الصور مباشرة ونص PDF). كل عنصر من الصندوق يفتح محادثة خاصة فيه، وتنقفل تلقائياً لما ينتهي (قرار الموافقة أو إنجاز المهمة) وتنتقل لقسم المنجزة؛ زر إنهاء المحادثة يدوياً. نسيت كلمة المرور برمز لمرة وحدة على تيليجرام والإيميل، وزر تغيير كلمة المرور. إصلاح خلط رقم طلب الموافقة برقم الحركة المالية، وقاعدة تجاهل تحويلات IBAN BH18BIBB...30. لا يوجد رقم هاتف مسجل للمالك (الدخول باسم المستخدم mohamed).', updated_at = now() WHERE section = 'changelog'; SELECT 1 AS ok;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Close Dev Task And Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "yXtqJCJ3kacGhTIK",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-05T03:49:59.265Z",
+      "updatedAt": "2026-10-05T03:49:59.265Z"
+    }
+  ],
+  "activeVersion": null
+}
