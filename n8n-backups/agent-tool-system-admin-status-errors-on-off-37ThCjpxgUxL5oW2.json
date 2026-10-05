@@ -1,0 +1,411 @@
+{
+  "id": "37ThCjpxgUxL5oW2",
+  "name": "Agent Tool - System Admin (status, errors, on/off)",
+  "description": "Sub-workflow for the AI agent: lists workflows and their status, reads recent failed executions with error messages, and turns workflows on/off through the n8n API (core agent/auth/error workflows cannot be stopped).",
+  "active": true,
+  "activeVersionId": "fa0238b6-7914-4c3b-b6df-56f4f886f7ec",
+  "createdAt": "2026-10-04T16:50:53.288Z",
+  "updatedAt": "2026-10-04T16:50:53.288Z",
+  "isArchived": false,
+  "versionId": "fa0238b6-7914-4c3b-b6df-56f4f886f7ec",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "bcffebd7-8820-43ec-bb68-68689275c1f5",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        80
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "args",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "30ac5856-2b7f-4a5b-bb29-fd67dd043946",
+      "name": "Build Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const inp = $input.first().json || {};\nlet a = {};\ntry { a = inp.args ? JSON.parse(inp.args) : {}; } catch (e) { a = {}; }\nconst base = 'https://n8n-production-47b1.up.railway.app/api/v1';\nconst id = String(a.id || a.workflow_id || '').replace(/[^A-Za-z0-9]/g, '');\nconst PROTECTED = ['FigFCnNDE93SB62P', 'lqjYB7EP7xHmThVg', 'MfD6wYIbloXnfULA'];\nlet r = null, err = '';\nswitch (inp.action) {\n  case 'list_workflows': r = { method: 'GET', url: base + '/workflows?limit=100' }; break;\n  case 'recent_errors': r = { method: 'GET', url: base + '/executions?status=error&includeData=true&limit=' + Math.min(parseInt(a.limit || 8, 10) || 8, 15) }; break;\n  case 'activate': if (!id) err = 'missing id'; else r = { method: 'POST', url: base + '/workflows/' + id + '/activate' }; break;\n  case 'deactivate': if (!id) err = 'missing id'; else if (PROTECTED.indexOf(id) > -1) err = 'this core workflow cannot be stopped from the agent'; else r = { method: 'POST', url: base + '/workflows/' + id + '/deactivate' }; break;\n  default: err = 'unknown action';\n}\nreturn [{ json: { skip: !r, error: err, action: inp.action, method: r ? r.method : 'GET', url: r ? r.url : '' } }];"
+      }
+    },
+    {
+      "id": "3c6a88b8-a5ea-4c01-9f7c-ad64287b02e0",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skip }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "e6050b04-fa89-4511-a7d3-9d4f76d8a937",
+      "name": "Call n8n API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "61db301a-0579-47ef-9e3a-0b5ce23d62e3",
+      "name": "Clean Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        80
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b = $('Build Request').first().json;\nif (b.skip) return [{ json: { ok: false, error: b.error } }];\nconst res = $input.first().json || {};\nconst code = res.statusCode || 200;\nconst d = res.body || {};\nif (code >= 400) return [{ json: { ok: false, error: (d && d.message) || ('HTTP ' + code) } }];\nif (b.action === 'list_workflows') { const l = (d.data || []).filter(function (w) { return !w.isArchived && !/^TMP/.test(w.name || ''); }).map(function (w) { return { id: w.id, name: w.name, active: !!w.active, updated: String(w.updatedAt || '').slice(0, 16) }; }); return [{ json: { ok: true, active_count: l.filter(function (w) { return w.active; }).length, workflows: l } }]; }\nif (b.action === 'recent_errors') { const l = (d.data || []).map(function (e) { const rd = (e.data && e.data.resultData) || {}; const er = rd.error || {}; return { execution_id: e.id, workflow_id: e.workflowId, workflow: (e.workflowData && e.workflowData.name) || '', at: String(e.startedAt || '').slice(0, 16), node: rd.lastNodeExecuted || (er.node && er.node.name) || '', error: String(er.message || er.description || '').slice(0, 300) }; }); return [{ json: { ok: true, errors: l } }]; }\nreturn [{ json: { ok: true, done: b.action, workflow: d.name || '', active: d.active } }];"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Build Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Request": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Call n8n API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clean Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call n8n API": {
+      "main": [
+        [
+          {
+            "node": "Clean Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "37ThCjpxgUxL5oW2",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T16:50:53.290Z",
+      "updatedAt": "2026-10-04T16:50:53.290Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "fa0238b6-7914-4c3b-b6df-56f4f886f7ec",
+    "workflowId": "37ThCjpxgUxL5oW2",
+    "nodes": [
+      {
+        "id": "bcffebd7-8820-43ec-bb68-68689275c1f5",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          80
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "args",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "30ac5856-2b7f-4a5b-bb29-fd67dd043946",
+        "name": "Build Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          80
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const inp = $input.first().json || {};\nlet a = {};\ntry { a = inp.args ? JSON.parse(inp.args) : {}; } catch (e) { a = {}; }\nconst base = 'https://n8n-production-47b1.up.railway.app/api/v1';\nconst id = String(a.id || a.workflow_id || '').replace(/[^A-Za-z0-9]/g, '');\nconst PROTECTED = ['FigFCnNDE93SB62P', 'lqjYB7EP7xHmThVg', 'MfD6wYIbloXnfULA'];\nlet r = null, err = '';\nswitch (inp.action) {\n  case 'list_workflows': r = { method: 'GET', url: base + '/workflows?limit=100' }; break;\n  case 'recent_errors': r = { method: 'GET', url: base + '/executions?status=error&includeData=true&limit=' + Math.min(parseInt(a.limit || 8, 10) || 8, 15) }; break;\n  case 'activate': if (!id) err = 'missing id'; else r = { method: 'POST', url: base + '/workflows/' + id + '/activate' }; break;\n  case 'deactivate': if (!id) err = 'missing id'; else if (PROTECTED.indexOf(id) > -1) err = 'this core workflow cannot be stopped from the agent'; else r = { method: 'POST', url: base + '/workflows/' + id + '/deactivate' }; break;\n  default: err = 'unknown action';\n}\nreturn [{ json: { skip: !r, error: err, action: inp.action, method: r ? r.method : 'GET', url: r ? r.url : '' } }];"
+        }
+      },
+      {
+        "id": "3c6a88b8-a5ea-4c01-9f7c-ad64287b02e0",
+        "name": "Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          80
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.skip }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "false",
+                  "singleValue": true
+                },
+                "rightValue": ""
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "e6050b04-fa89-4511-a7d3-9d4f76d8a937",
+        "name": "Call n8n API",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "method": "={{ $json.method }}",
+          "url": "={{ $json.url }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {
+            "timeout": 30000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "61db301a-0579-47ef-9e3a-0b5ce23d62e3",
+        "name": "Clean Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          80
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b = $('Build Request').first().json;\nif (b.skip) return [{ json: { ok: false, error: b.error } }];\nconst res = $input.first().json || {};\nconst code = res.statusCode || 200;\nconst d = res.body || {};\nif (code >= 400) return [{ json: { ok: false, error: (d && d.message) || ('HTTP ' + code) } }];\nif (b.action === 'list_workflows') { const l = (d.data || []).filter(function (w) { return !w.isArchived && !/^TMP/.test(w.name || ''); }).map(function (w) { return { id: w.id, name: w.name, active: !!w.active, updated: String(w.updatedAt || '').slice(0, 16) }; }); return [{ json: { ok: true, active_count: l.filter(function (w) { return w.active; }).length, workflows: l } }]; }\nif (b.action === 'recent_errors') { const l = (d.data || []).map(function (e) { const rd = (e.data && e.data.resultData) || {}; const er = rd.error || {}; return { execution_id: e.id, workflow_id: e.workflowId, workflow: (e.workflowData && e.workflowData.name) || '', at: String(e.startedAt || '').slice(0, 16), node: rd.lastNodeExecuted || (er.node && er.node.name) || '', error: String(er.message || er.description || '').slice(0, 300) }; }); return [{ json: { ok: true, errors: l } }]; }\nreturn [{ json: { ok: true, done: b.action, workflow: d.name || '', active: d.active } }];"
+        }
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Build Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Request": {
+        "main": [
+          [
+            {
+              "node": "Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Valid?": {
+        "main": [
+          [
+            {
+              "node": "Call n8n API",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Clean Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call n8n API": {
+        "main": [
+          [
+            {
+              "node": "Clean Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "v1",
+    "description": "Created with 5 nodes: When Called, Build Request, Valid?, Call n8n API, Clean Result",
+    "autosaved": false,
+    "createdAt": "2026-10-04T16:50:53.291Z",
+    "updatedAt": "2026-10-04T16:50:53.291Z",
+    "workflowPublishHistory": [
+      {
+        "id": 221,
+        "workflowId": "37ThCjpxgUxL5oW2",
+        "versionId": "fa0238b6-7914-4c3b-b6df-56f4f886f7ec",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-04T16:50:55.920Z"
+      }
+    ]
+  }
+}
