@@ -1,0 +1,121 @@
+{
+ "table": "audit_log",
+ "backup_date": "2026-10-05",
+ "rows": 9,
+ "data": [
+  {
+   "id": 1,
+   "at": "2026-10-03T18:57:57.840099+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "create_package_draft",
+   "entity": "packages",
+   "entity_id": "28",
+   "workflow": "Personal AI Agent",
+   "details": {
+    "title": "اختبار النظام - عمرة"
+   }
+  },
+  {
+   "id": 2,
+   "at": "2026-10-03T18:58:57.206368+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "update_package",
+   "entity": "packages",
+   "entity_id": "28",
+   "workflow": "Personal AI Agent",
+   "details": {
+    "price": 100,
+    "status": "Archived",
+    "is_visible": false
+   }
+  },
+  {
+   "id": 3,
+   "at": "2026-10-04T03:10:27.427278+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "task_create",
+   "entity": "tasks",
+   "entity_id": "1",
+   "workflow": "Personal AI Agent",
+   "details": {}
+  },
+  {
+   "id": 4,
+   "at": "2026-10-04T04:27:48.806966+00:00",
+   "actor_type": "staff",
+   "actor_id": "1",
+   "action": "approval_rejected",
+   "entity": "approvals",
+   "entity_id": "2",
+   "workflow": "Agent Inbox",
+   "details": {
+    "note": "حركة تجريبية من النظام"
+   }
+  },
+  {
+   "id": 5,
+   "at": "2026-10-04T04:27:53.01731+00:00",
+   "actor_type": "staff",
+   "actor_id": "1",
+   "action": "approval_rejected",
+   "entity": "approvals",
+   "entity_id": "1",
+   "workflow": "Agent Inbox",
+   "details": {
+    "note": "اختبار"
+   }
+  },
+  {
+   "id": 6,
+   "at": "2026-10-04T19:28:49.01367+00:00",
+   "actor_type": "staff",
+   "actor_id": "1",
+   "action": "password_change",
+   "entity": "staff",
+   "entity_id": "1",
+   "workflow": "Agent Inbox",
+   "details": {}
+  },
+  {
+   "id": 7,
+   "at": "2026-10-04T19:38:37.348745+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "task_create",
+   "entity": "tasks",
+   "entity_id": "2",
+   "workflow": "Personal AI Agent",
+   "details": {}
+  },
+  {
+   "id": 8,
+   "at": "2026-10-04T19:40:48.153137+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "tx_classify",
+   "entity": "finance_transactions",
+   "entity_id": "3",
+   "workflow": "Personal AI Agent",
+   "details": {
+    "scope": "personal",
+    "category": "سفر"
+   }
+  },
+  {
+   "id": 9,
+   "at": "2026-10-04T19:48:55.944666+00:00",
+   "actor_type": "agent",
+   "actor_id": "staff_1",
+   "action": "playbook_add",
+   "entity": "work_playbook",
+   "entity_id": "1",
+   "workflow": "Personal AI Agent",
+   "details": {
+    "title": "تصنيف الإيميلات المفيدة"
+   }
+  }
+ ]
+}
