@@ -1,0 +1,95 @@
+{
+ "table": "customers",
+ "backup_date": "2026-10-05",
+ "rows": 8,
+ "data": [
+  {
+   "id": 52,
+   "phone": "+966545997738",
+   "full_name": "Um Rayhanah 🍃",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-30T17:23:46.980597+00:00",
+   "notes": "أم ريحانة: مهتمة باقة كاملة للعراق (كربلاء/النجف/الكاظمية)، تاريخ مبدئي 12 نوفمبر.\nالمسافرين 3 كبار و3 صغار — تقسيمة: 2 طيران، 4 بالسيارة (بالسيارة 1 كبير و3 صغار). مغادرة من الدمام.\nما أرسلت صور الجوازات، تفضيل باقة كاملة، ما عندها طلبات خاصة.\nطلبت نرسل لها عروض نوفمبر أول ما تنزل.",
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 3,
+   "phone": "+966506006862",
+   "full_name": "Asyah",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-29T19:08:50.030097+00:00",
+   "notes": null,
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 33,
+   "phone": "+966502088019",
+   "full_name": "Faisal Qattan",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-30T07:19:40.883738+00:00",
+   "notes": "فيصل قطان. يريد تذكرة عودة فقط بغداد→الدمام 15/10/2026، لعدد 2 ركاب. سعر النظام 1500 د.ب للراكب؛ معترض بقوة ويطلب تخفيض/بدائل. لم يؤكد الحجز ولم يرسل صور الجوازات. يوافق تواصل فريق المكتب على نفس رقم الواتس.",
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 84,
+   "phone": "+966532556234",
+   "full_name": "Fire tannin",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-10-01T16:07:15.405053+00:00",
+   "notes": null,
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 92,
+   "phone": "+966580888495",
+   "full_name": "ɱŏhặmed wặřdặ",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-10-05T14:36:14.506115+00:00",
+   "notes": null,
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 25,
+   "phone": "+97333777666",
+   "full_name": "عميل اختبار",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-30T05:27:55.073665+00:00",
+   "notes": null,
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 13,
+   "phone": "+97334161666",
+   "full_name": "Mohamed Almutawa",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-30T04:01:19.844708+00:00",
+   "notes": "الاسم: محمد المطوع\nيفضل رحلات دينية (زيارات مراقد)\nالآن مهتم: زيارة مراقد، فقط تذاكر طيران\nحالة الحجز: لا يوجد حجز جاري\nلا توجد مستندات مستلمة",
+   "whatsapp_opt_in": true
+  },
+  {
+   "id": 28,
+   "phone": "+966535715938",
+   "full_name": "اللهم صلي ع محمد وال محمد",
+   "password_hash": null,
+   "password_salt": null,
+   "is_registered": false,
+   "created_at": "2026-09-30T06:28:31.414388+00:00",
+   "notes": null,
+   "whatsapp_opt_in": true
+  }
+ ]
+}
