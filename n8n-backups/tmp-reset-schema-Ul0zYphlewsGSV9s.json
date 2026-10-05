@@ -1,0 +1,93 @@
+{
+  "id": "Ul0zYphlewsGSV9s",
+  "name": "TMP - Reset Schema",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-04T18:06:43.390Z",
+  "updatedAt": "2026-10-04T18:06:50.000Z",
+  "isArchived": true,
+  "versionId": "f061cf00-fa26-4f51-995b-c2e7e73b1c42",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "5d1b27b9-139a-42a8-bde6-43cfacd9996d",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "b2fde8f3-b706-46e1-86dd-f67d44765feb",
+      "name": "Reset Schema",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE staff ADD COLUMN IF NOT EXISTS email text; ALTER TABLE staff ADD COLUMN IF NOT EXISTS telegram_chat_id text; CREATE TABLE IF NOT EXISTS staff_reset_codes (id serial PRIMARY KEY, staff_id int NOT NULL REFERENCES staff(id) ON DELETE CASCADE, code_hash text NOT NULL, expires_at timestamptz NOT NULL, attempts int NOT NULL DEFAULT 0, used_at timestamptz, created_at timestamptz NOT NULL DEFAULT now()); UPDATE staff SET email = COALESCE(email, 'm.almutawa22@gmail.com'), telegram_chat_id = COALESCE(telegram_chat_id, '8132574840') WHERE id = 1; SELECT 'ok' AS status;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Reset Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Ul0zYphlewsGSV9s",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T18:06:43.391Z",
+      "updatedAt": "2026-10-04T18:06:43.391Z"
+    }
+  ],
+  "activeVersion": null
+}
