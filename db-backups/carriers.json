@@ -1,0 +1,15 @@
+{
+ "table": "carriers",
+ "backup_date": "2026-10-05",
+ "rows": 1,
+ "data": [
+  {
+   "id": 1,
+   "name": "جمس الرافدين",
+   "type": "GMC",
+   "contact": "39112233",
+   "notes": "",
+   "created_at": "2026-09-27T06:52:00.213062+00:00"
+  }
+ ]
+}
