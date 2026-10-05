@@ -1,0 +1,18 @@
+{
+ "table": "suppliers",
+ "backup_date": "2026-10-05",
+ "rows": 1,
+ "data": [
+  {
+   "id": 1,
+   "name": "مطعم الضيافة",
+   "type": "Restaurant/Meals",
+   "city": "المنامة",
+   "contact": "17001122",
+   "service_description": "",
+   "default_price": 5,
+   "status": "Active",
+   "created_at": "2026-09-27T06:52:06.444079+00:00"
+  }
+ ]
+}
