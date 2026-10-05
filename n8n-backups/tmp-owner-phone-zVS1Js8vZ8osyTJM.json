@@ -1,0 +1,93 @@
+{
+  "id": "zVS1Js8vZ8osyTJM",
+  "name": "TMP - Owner Phone",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-04T19:26:59.635Z",
+  "updatedAt": "2026-10-05T03:41:05.000Z",
+  "isArchived": true,
+  "versionId": "1730cf8e-e0be-4001-b817-c9d6e1a4fa16",
+  "versionCounter": 4,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "540b82a6-7926-44e7-b162-99a57cf878b0",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9fdfe29e-cedd-4c88-b212-9d996cc62902",
+      "name": "Owner Phone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ap AS (UPDATE approvals SET status = 'approved', decided_by = 'staff_1', decided_at = now(), executed_at = now(), execution_result = 'classified', decision_note = 'دفعة من عميل للسفر للعراق' WHERE id = 3 AND status = 'pending' RETURNING id), tx AS (UPDATE finance_transactions SET category = 'دخل من عميل - رحلة العراق', scope = 'office', note = 'دفعة من عميل للسفر للعراق', status = 'confirmed', reviewed_at = now() WHERE id = 2 RETURNING id), rule AS (INSERT INTO work_playbook (scope, title, when_text, action_text, priority, created_by) SELECT 'finance', 'تجاهل تحويلات IBAN BH18BIBB...30', 'أي حركة مالية واردة أو صادرة طرفها IBAN يبدأ بـ BH18BIBB وينتهي بـ 30', 'تجاهلها تماماً: ليست تابعة للمالك، لا تُسجل كحركة ولا يُسأل عنها', 'low', 'staff_1' WHERE NOT EXISTS (SELECT 1 FROM work_playbook WHERE title LIKE 'تجاهل تحويلات IBAN BH18BIBB%') RETURNING id), ign AS (UPDATE approvals SET status = 'rejected', decided_by = 'staff_1', decided_at = now(), decision_note = 'ليست تابعة للمالك (قاعدة تجاهل الحساب)' WHERE request_type = 'tx_review' AND status = 'pending' AND (summary ILIKE '%BH18BIBB%' OR (details->>'tx_id')::int IN (SELECT id FROM finance_transactions WHERE raw_text ILIKE '%BH18BIBB%')) RETURNING id) SELECT (SELECT count(*) FROM ap) AS a3, (SELECT count(*) FROM tx) AS tx2, (SELECT count(*) FROM rule) AS rule_added, (SELECT count(*) FROM ign) AS ignored;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Owner Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "zVS1Js8vZ8osyTJM",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-04T19:26:59.637Z",
+      "updatedAt": "2026-10-04T19:26:59.637Z"
+    }
+  ],
+  "activeVersion": null
+}
