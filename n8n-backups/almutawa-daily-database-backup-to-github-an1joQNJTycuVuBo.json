@@ -1,0 +1,466 @@
+{
+  "id": "an1joQNJTycuVuBo",
+  "name": "Almutawa - Daily Database Backup to GitHub",
+  "description": "Daily 3:30 AM: dumps every public Postgres table (except otp_codes) to JSON, redacts secret-like strings, and commits one file per table to GitHub m-almutawa22/ai-hub under db-backups/ (git history keeps daily versions). Posts a low-priority inbox note.",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-05T17:02:53.949Z",
+  "updatedAt": "2026-10-05T17:02:53.949Z",
+  "isArchived": false,
+  "versionId": "e4799609-7893-4fbb-a052-bc7a8a75fc93",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "d2d8cfbd-da3f-422a-a4ed-961c57fec2e8",
+      "name": "Every Day 3:30 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 3,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "754b1603-b83b-4a8f-a304-bbdf0ae45571",
+      "name": "Ensure Dump Function",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE OR REPLACE FUNCTION public.backup_dump(tbl text) RETURNS json LANGUAGE plpgsql AS $fn$ DECLARE r json; BEGIN EXECUTE format('SELECT coalesce(json_agg(t), ''[]''::json) FROM public.%I t', tbl) INTO r; RETURN r; END $fn$;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "1755e690-bc4d-467f-9ef4-d3a8a8fbe2c2",
+      "name": "Dump All Tables",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT table_name, public.backup_dump(table_name)::text AS data FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name NOT IN ('otp_codes') ORDER BY table_name;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "d82117e4-8302-4753-b8f3-4c490dba7329",
+      "name": "Build Backup Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const day = new Date().toISOString().slice(0, 10);\nconst out = [];\nfor (const it of $input.all()) {\n  const t = it.json.table_name;\n  let raw = it.json.data || '[]';\n  let rows = 0;\n  try { rows = JSON.parse(raw).length; } catch (e) { rows = -1; }\n  raw = raw.replace(/AC[a-f0-9]{32}/gi, '[REDACTED_TWILIO_SID]')\n    .replace(/SK[a-f0-9]{32}/gi, '[REDACTED_TWILIO_KEY]')\n    .replace(/sk-[A-Za-z0-9_-]{20,}/g, '[REDACTED_API_KEY]')\n    .replace(/pat[A-Za-z0-9]{14}\\.[A-Za-z0-9]{40,}/g, '[REDACTED_AIRTABLE_TOKEN]')\n    .replace(/gh[pousr]_[A-Za-z0-9]{30,}/g, '[REDACTED_GITHUB_TOKEN]')\n    .replace(/xox[abposr]-[A-Za-z0-9-]{10,}/g, '[REDACTED_SLACK_TOKEN]');\n  const sizeMB = Buffer.byteLength(raw, 'utf8') / 1048576;\n  if (sizeMB > 45) { out.push({ json: { table: t, rows, skipped: true, sizeMB: sizeMB.toFixed(1) } }); continue; }\n  let parsed = [];\n  try { parsed = JSON.parse(raw); } catch (e) { parsed = raw; }\n  const content = JSON.stringify({ table: t, backup_date: day, rows, data: parsed }, null, 1);\n  out.push({ json: { table: t, rows, skipped: false, filePath: 'db-backups/' + t + '.json', fileContent: content, commitMessage: 'DB backup ' + t + ' (' + rows + ' rows) ' + day } });\n}\nreturn out;"
+      }
+    },
+    {
+      "id": "ad4535df-7868-4fb7-babd-35bd315c9f03",
+      "name": "Only Backable Tables",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skipped }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "8ed60390-59df-4467-967f-16579adf2f94",
+      "name": "Update Backup File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "m-almutawa22"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai-hub"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ $json.commitMessage }}"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "JcspQmaBsDM50abz",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "d768ede7-ebe2-4543-b012-a3e14afaa711"
+    },
+    {
+      "id": "81faa24b-777b-4ab1-ae54-be9d1d0a2ed0",
+      "name": "Create Backup File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        80
+      ],
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "m-almutawa22"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "ai-hub"
+        },
+        "filePath": "={{ $('Only Backable Tables').item.json.filePath }}",
+        "fileContent": "={{ $('Only Backable Tables').item.json.fileContent }}",
+        "commitMessage": "={{ $('Only Backable Tables').item.json.commitMessage }}"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "JcspQmaBsDM50abz",
+          "name": "GitHub account"
+        }
+      },
+      "webhookId": "dd8bdd12-423d-4234-af9c-f36b6ef593da"
+    },
+    {
+      "id": "9912351d-3b3f-4084-a8e1-abfde8b09379",
+      "name": "All Commits Done",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "mode": "append"
+      }
+    },
+    {
+      "id": "56621272-bebb-46fa-b59f-95dd9fcf4e58",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const all = $('Build Backup Files').all().map(i => i.json);\nconst done = all.filter(x => !x.skipped);\nconst skipped = all.filter(x => x.skipped);\nconst totalRows = done.reduce((s, x) => s + (x.rows > 0 ? x.rows : 0), 0);\nlet body = 'تم نسخ ' + done.length + ' جدول (' + totalRows + ' سجل) إلى GitHub: ai-hub/db-backups';\nif (skipped.length) body += '\\n⚠️ جداول كبيرة ما انحفظت: ' + skipped.map(x => x.table + ' (' + x.sizeMB + 'MB)').join('، ');\nreturn [{ json: { title: skipped.length ? '⚠️ نسخة قاعدة البيانات اكتملت مع ملاحظات' : '✅ نسخة قاعدة البيانات اليومية اكتملت', body, priority: skipped.length ? 'normal' : 'low' } }];"
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "a9d56b47-0e7c-4f76-ac47-03a13fb4a8ac",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2016,
+        0
+      ],
+      "parameters": {
+        "mode": "once",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zT6BZybZ1sxpZIf7"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "system",
+            "title": "={{ $json.title }}",
+            "body": "={{ $json.body }}",
+            "priority": "={{ $json.priority }}",
+            "entity": "backup",
+            "entityId": "={{ $now.toFormat('yyyy-MM-dd') }}",
+            "source": "db_backup"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity",
+              "displayName": "entity",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entityId",
+              "displayName": "entityId",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Day 3:30 AM": {
+      "main": [
+        [
+          {
+            "node": "Ensure Dump Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Dump Function": {
+      "main": [
+        [
+          {
+            "node": "Dump All Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dump All Tables": {
+      "main": [
+        [
+          {
+            "node": "Build Backup Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Backup Files": {
+      "main": [
+        [
+          {
+            "node": "Only Backable Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only Backable Tables": {
+      "main": [
+        [
+          {
+            "node": "Update Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Backup File": {
+      "main": [
+        [
+          {
+            "node": "All Commits Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Backup File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Backup File": {
+      "main": [
+        [
+          {
+            "node": "All Commits Done",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "All Commits Done": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "an1joQNJTycuVuBo",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-05T17:02:53.952Z",
+      "updatedAt": "2026-10-05T17:02:53.952Z"
+    }
+  ],
+  "activeVersion": null
+}
