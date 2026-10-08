@@ -3,12 +3,12 @@
   "name": "Almutawa - Personal AI Agent (Page + API)",
   "description": "Private staff page (/webhook/agent) with staff login + search-style command box, and API (/webhook/agent-api) running a GPT-5.4 agent with Gmail, Tavily web search, webpage reader and read-only Postgres tools.",
   "active": true,
-  "activeVersionId": "005a4b17-06de-4b2a-98dc-b95c6592ebc8",
+  "activeVersionId": "af9f7269-5908-4568-bb73-29094dcf6673",
   "createdAt": "2026-10-03T08:21:30.201Z",
-  "updatedAt": "2026-10-05T03:49:47.435Z",
+  "updatedAt": "2026-10-08T04:47:29.169Z",
   "isArchived": false,
-  "versionId": "005a4b17-06de-4b2a-98dc-b95c6592ebc8",
-  "versionCounter": 35,
+  "versionId": "af9f7269-5908-4568-bb73-29094dcf6673",
+  "versionCounter": 36,
   "sourceWorkflowId": null,
   "triggerCount": 4,
   "nodes": [
@@ -319,7 +319,7 @@
       ],
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ success: !$json.error, reply: $json.output || (\"صار خطأ أثناء التنفيذ: \" + ($json.error && $json.error.message ? $json.error.message : String($json.error || \"غير معروف\"))) }) }}",
+        "responseBody": "={{ JSON.stringify({ success: !$json.error, reply: $json.output || (\"صار خطأ أثناء التنفيذ: \" + (function(e){ if (!e) return \"غير معروف\"; if (typeof e === 'string') return e; return e.message || e.description || JSON.stringify(e).slice(0, 400); })($json.error)) }) }}",
         "options": {}
       }
     },
@@ -2551,7 +2551,7 @@
     "availableInMCP": true,
     "errorWorkflow": "MfD6wYIbloXnfULA",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "none",
+    "saveDataSuccessExecution": "all",
     "executionTimeout": 600
   },
   "staticData": null,
@@ -2582,7 +2582,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "005a4b17-06de-4b2a-98dc-b95c6592ebc8",
+    "versionId": "af9f7269-5908-4568-bb73-29094dcf6673",
     "workflowId": "FigFCnNDE93SB62P",
     "nodes": [
       {
@@ -2892,7 +2892,7 @@
         ],
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={{ JSON.stringify({ success: !$json.error, reply: $json.output || (\"صار خطأ أثناء التنفيذ: \" + ($json.error && $json.error.message ? $json.error.message : String($json.error || \"غير معروف\"))) }) }}",
+          "responseBody": "={{ JSON.stringify({ success: !$json.error, reply: $json.output || (\"صار خطأ أثناء التنفيذ: \" + (function(e){ if (!e) return \"غير معروف\"; if (typeof e === 'string') return e; return e.message || e.description || JSON.stringify(e).slice(0, 400); })($json.error)) }) }}",
           "options": {}
         }
       },
@@ -5120,19 +5120,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Prompt: attachments, approval vs tx id, finance rules, chat closing",
-    "description": "Updated nodes: Personal AI Agent",
+    "name": "Show real agent error details; keep executions for debugging",
+    "description": "Updated nodes: Respond Reply",
     "autosaved": false,
-    "createdAt": "2026-10-05T03:49:47.438Z",
-    "updatedAt": "2026-10-05T03:49:47.438Z",
+    "createdAt": "2026-10-08T04:47:29.170Z",
+    "updatedAt": "2026-10-08T04:47:29.170Z",
     "workflowPublishHistory": [
       {
-        "id": 244,
+        "id": 252,
         "workflowId": "FigFCnNDE93SB62P",
-        "versionId": "005a4b17-06de-4b2a-98dc-b95c6592ebc8",
+        "versionId": "af9f7269-5908-4568-bb73-29094dcf6673",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-05T03:49:49.958Z"
+        "createdAt": "2026-10-08T04:47:31.725Z"
       }
     ]
   }
