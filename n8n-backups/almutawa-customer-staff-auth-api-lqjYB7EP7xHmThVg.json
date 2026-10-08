@@ -3,12 +3,12 @@
   "name": "Almutawa - Customer & Staff Auth API",
   "description": null,
   "active": true,
-  "activeVersionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
+  "activeVersionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
   "createdAt": "2026-09-25T13:45:06.952Z",
-  "updatedAt": "2026-10-04T17:53:06.275Z",
+  "updatedAt": "2026-10-08T04:24:30.784Z",
   "isArchived": false,
-  "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
-  "versionCounter": 15,
+  "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
+  "versionCounter": 17,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -1030,7 +1030,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const items = $input.all();\nconst list = items.map(function(i){ var f = i.json.fields||{}; return { id: i.json.id, status: f['Booking Status'], paymentStatus: f['Payment Status'], travelers: f['Number of Travelers'], notes: f['Special Requests'] }; });\nreturn [{ json: { success: true, bookings: list } }];"
+        "jsCode": "const items = $input.all();\nfunction pick(f, re, exclude) {\n  for (const k of Object.keys(f)) {\n    if (!re.test(k) || (exclude && exclude.test(k))) continue;\n    let v = f[k];\n    if (Array.isArray(v)) v = v.filter(x => typeof x === 'string' && !/^rec[A-Za-z0-9]{10,}$/.test(x))[0];\n    if (typeof v === 'string' && v.trim() && !/^rec[A-Za-z0-9]{10,}$/.test(v)) return v;\n    if (typeof v === 'number') return v;\n  }\n  return null;\n}\nconst list = items.filter(i => i.json && i.json.id).map(function(i){\n  var f = i.json.fields || {};\n  return {\n    id: i.json.id,\n    packageName: pick(f, /(package|باقة).*(name|title)|^(title|package title)/i) || pick(f, /title|destination/i),\n    travelDate: pick(f, /(travel|departure|trip|start).*date|date.*(travel|departure)/i, /created|modified/i),\n    status: f['Booking Status'],\n    paymentStatus: f['Payment Status'],\n    travelers: f['Number of Travelers'],\n    notes: f['Special Requests']\n  };\n});\nreturn [{ json: { success: true, bookings: list } }];"
       }
     },
     {
@@ -1108,6 +1108,87 @@
           "name": "Postgres account"
         }
       }
+    },
+    {
+      "id": "74b8959e-d687-4b53-b06a-07f7edae1fd6",
+      "name": "Find Existing Signup",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        432
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "={{ '{Phone}=\"' + String($json.body.phone || '').replace(/\"/g, '') + '\"' }}",
+        "limit": 1,
+        "operation": "search",
+        "resource": "record",
+        "returnAll": false,
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "8a05c158-8fcb-4527-bf40-0f404f854bb1",
+      "name": "Already Registered?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1568,
+        432
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ !!($json.fields && $json.fields['Is Registered'] === true) }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "88399fa4-4c8c-4b42-8961-1c90cba8d642",
+      "name": "Signup Exists Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        288
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { success: false, error: 'already_registered' } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
     }
   ],
   "connections": {
@@ -1140,7 +1221,7 @@
         ],
         [
           {
-            "node": "Prepare Signup",
+            "node": "Find Existing Signup",
             "type": "main",
             "index": 0
           }
@@ -1487,6 +1568,35 @@
           }
         ]
       ]
+    },
+    "Find Existing Signup": {
+      "main": [
+        [
+          {
+            "node": "Already Registered?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Registered?": {
+      "main": [
+        [
+          {
+            "node": "Signup Exists Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Signup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1524,7 +1634,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
+    "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
     "workflowId": "lqjYB7EP7xHmThVg",
     "nodes": [
       {
@@ -2545,7 +2655,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const items = $input.all();\nconst list = items.map(function(i){ var f = i.json.fields||{}; return { id: i.json.id, status: f['Booking Status'], paymentStatus: f['Payment Status'], travelers: f['Number of Travelers'], notes: f['Special Requests'] }; });\nreturn [{ json: { success: true, bookings: list } }];"
+          "jsCode": "const items = $input.all();\nfunction pick(f, re, exclude) {\n  for (const k of Object.keys(f)) {\n    if (!re.test(k) || (exclude && exclude.test(k))) continue;\n    let v = f[k];\n    if (Array.isArray(v)) v = v.filter(x => typeof x === 'string' && !/^rec[A-Za-z0-9]{10,}$/.test(x))[0];\n    if (typeof v === 'string' && v.trim() && !/^rec[A-Za-z0-9]{10,}$/.test(v)) return v;\n    if (typeof v === 'number') return v;\n  }\n  return null;\n}\nconst list = items.filter(i => i.json && i.json.id).map(function(i){\n  var f = i.json.fields || {};\n  return {\n    id: i.json.id,\n    packageName: pick(f, /(package|باقة).*(name|title)|^(title|package title)/i) || pick(f, /title|destination/i),\n    travelDate: pick(f, /(travel|departure|trip|start).*date|date.*(travel|departure)/i, /created|modified/i),\n    status: f['Booking Status'],\n    paymentStatus: f['Payment Status'],\n    travelers: f['Number of Travelers'],\n    notes: f['Special Requests']\n  };\n});\nreturn [{ json: { success: true, bookings: list } }];"
         }
       },
       {
@@ -2623,6 +2733,87 @@
             "name": "Postgres account"
           }
         }
+      },
+      {
+        "id": "74b8959e-d687-4b53-b06a-07f7edae1fd6",
+        "name": "Find Existing Signup",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          1344,
+          432
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "={{ '{Phone}=\"' + String($json.body.phone || '').replace(/\"/g, '') + '\"' }}",
+          "limit": 1,
+          "operation": "search",
+          "resource": "record",
+          "returnAll": false,
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "8a05c158-8fcb-4527-bf40-0f404f854bb1",
+        "name": "Already Registered?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1568,
+          432
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ !!($json.fields && $json.fields['Is Registered'] === true) }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "boolean"
+                },
+                "rightValue": true
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "88399fa4-4c8c-4b42-8961-1c90cba8d642",
+        "name": "Signup Exists Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1792,
+          288
+        ],
+        "parameters": {
+          "jsCode": "return [{ json: { success: false, error: 'already_registered' } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
       }
     ],
     "connections": {
@@ -2655,7 +2846,7 @@
           ],
           [
             {
-              "node": "Prepare Signup",
+              "node": "Find Existing Signup",
               "type": "main",
               "index": 0
             }
@@ -3002,39 +3193,52 @@
             }
           ]
         ]
+      },
+      "Find Existing Signup": {
+        "main": [
+          [
+            {
+              "node": "Already Registered?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Already Registered?": {
+        "main": [
+          [
+            {
+              "node": "Signup Exists Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Signup",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "staff-create: require Full Admin token, drop passcode",
-    "description": "Updated nodes: Prepare Staff Create",
+    "name": "Signup: block re-signup of registered phone",
+    "description": "customer-signup no longer overwrites the password of an already-registered customer; returns already_registered so the user uses forgot-password instead.",
     "autosaved": false,
-    "createdAt": "2026-10-03T14:29:57.784Z",
-    "updatedAt": "2026-10-03T14:29:57.784Z",
+    "createdAt": "2026-10-08T04:24:30.785Z",
+    "updatedAt": "2026-10-08T04:24:30.785Z",
     "workflowPublishHistory": [
       {
-        "id": 182,
+        "id": 248,
         "workflowId": "lqjYB7EP7xHmThVg",
-        "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
+        "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-03T14:30:00.597Z"
-      },
-      {
-        "id": 231,
-        "workflowId": "lqjYB7EP7xHmThVg",
-        "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
-        "event": "activated",
-        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-04T17:53:06.365Z"
-      },
-      {
-        "id": 230,
-        "workflowId": "lqjYB7EP7xHmThVg",
-        "versionId": "3e124c32-f992-4eb8-b097-297bf6ddadc6",
-        "event": "deactivated",
-        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-04T17:53:06.354Z"
+        "createdAt": "2026-10-08T04:24:33.869Z"
       }
     ]
   }
