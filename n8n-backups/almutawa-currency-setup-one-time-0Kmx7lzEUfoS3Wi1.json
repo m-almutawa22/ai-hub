@@ -1,0 +1,98 @@
+{
+  "id": "0Kmx7lzEUfoS3Wi1",
+  "name": "Almutawa - Currency Setup (one-time)",
+  "description": "One-time: adds packages.currency (default BHD) and marks the Iraq/Dammam packages priced in SAR. Archive after running.",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-08T09:15:12.990Z",
+  "updatedAt": "2026-10-08T09:15:21.000Z",
+  "isArchived": true,
+  "versionId": "9b512e4e-423c-4c32-8b8b-7e5dcd8d6129",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "304d04cc-ca45-4225-8b58-f9b6a0dfbbcd",
+      "name": "Setup Hook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "one-time-currency-9q",
+        "responseMode": "lastNode"
+      },
+      "webhookId": "9bf81c1e-d46e-49e0-827f-059ee26e4f1f"
+    },
+    {
+      "id": "a599bfee-0c3e-4bbd-acef-81bcb804240c",
+      "name": "Add Currency",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE packages ADD COLUMN IF NOT EXISTS currency text DEFAULT 'BHD'; UPDATE packages SET currency = 'SAR' WHERE (destination ILIKE '%العراق%' OR title ILIKE '%دمام%') AND (currency IS NULL OR currency = 'BHD'); SELECT id, title, price, currency FROM packages ORDER BY id;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Setup Hook": {
+      "main": [
+        [
+          {
+            "node": "Add Currency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "0Kmx7lzEUfoS3Wi1",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-08T09:15:12.991Z",
+      "updatedAt": "2026-10-08T09:15:12.991Z"
+    }
+  ],
+  "activeVersion": null
+}
