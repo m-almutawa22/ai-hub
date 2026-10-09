@@ -1,0 +1,877 @@
+{
+  "id": "UwpTH8MW4kFyc7Lh",
+  "name": "Almutawa - Public Site API (packages + trip requests)",
+  "description": "Public API for the new website: GET public-packages (customer-facing fields only) and POST trip-request (saves request with TR- ref, notifies owner inbox + Telegram).",
+  "active": true,
+  "activeVersionId": "b09169c4-ac09-4a48-9667-459213cf4bc7",
+  "createdAt": "2026-10-08T09:14:52.931Z",
+  "updatedAt": "2026-10-08T09:15:26.071Z",
+  "isArchived": false,
+  "versionId": "b09169c4-ac09-4a48-9667-459213cf4bc7",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "id": "fda341b1-32e5-4727-b70b-99e2b3c0939a",
+      "name": "Packages Hook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "public-packages",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "21818a84-5661-41b5-83c9-0a5c77c51b89"
+    },
+    {
+      "id": "bbf5505e-ba0a-417a-8ed3-fdc288c6d88d",
+      "name": "Get Visible Packages",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, title, destination, price, COALESCE(currency,'BHD') AS currency, seats_available, to_char(departure_date,'YYYY-MM-DD') AS departure_date, to_char(return_date,'YYYY-MM-DD') AS return_date, duration_days, transport_type, package_type, includes_visa, description, image_url, region FROM packages WHERE is_visible = true AND COALESCE(status,'Active') = 'Active' AND (departure_date IS NULL OR departure_date >= current_date) ORDER BY departure_date NULLS LAST, id LIMIT 60;",
+        "options": {
+          "largeNumbersOutput": "numbers"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "31117b50-34af-4876-bb9d-d1419601b598",
+      "name": "Shape Packages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const out = $input.all().map(i => i.json).filter(p => p && p.id).map(p => ({\n  id: p.id,\n  title: p.title || '',\n  destination: p.destination || '',\n  price: p.price != null ? Number(p.price) : null,\n  currency: p.currency || 'BHD',\n  seats: p.seats_available,\n  departure: p.departure_date,\n  return: p.return_date,\n  days: p.duration_days,\n  transport: p.transport_type || '',\n  type: p.package_type || '',\n  visa: !!p.includes_visa,\n  description: String(p.description || '').slice(0, 600),\n  image: p.image_url || '',\n  region: p.region || ''\n}));\nreturn [{ json: { success: true, packages: out } }];"
+      }
+    },
+    {
+      "id": "9aecde39-a784-44dd-aa13-e1ebc8dc5862",
+      "name": "Respond Packages",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "public, max-age=120"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "d09e329f-7f02-45c1-8fde-16884f8dd43e",
+      "name": "Trip Request Hook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        320
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trip-request",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "94966ea5-f91f-4653-8b5d-6f9690980864"
+    },
+    {
+      "id": "00a61853-8f12-428a-8e3e-643603630a2c",
+      "name": "Validate Trip Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        320
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const b = ($input.first().json.body) || {};\nconst s = (v, n) => String(v == null ? '' : v).replace(/[<>]/g, '').trim().slice(0, n || 200);\nconst d = v => /^\\d{4}-\\d{2}-\\d{2}$/.test(String(v || '')) ? String(v) : '';\nconst phone = s(b.phone, 20).replace(/[^0-9+]/g, '');\nconst email = s(b.email, 120);\nconst errors = [];\nif (s(b.website)) errors.push('spam');\nif (!s(b.name)) errors.push('name');\nif (phone.replace(/\\D/g, '').length < 8 && !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) errors.push('contact');\nif (!s(b.to)) errors.push('to');\nconst services = Array.isArray(b.services) ? b.services.map(x => s(x, 40)).filter(Boolean).slice(0, 10) : [];\nconst ref = 'TR-' + Date.now().toString(36).toUpperCase().slice(-5) + Math.floor(Math.random() * 90 + 10);\nreturn [{ json: { valid: errors.length === 0, errors, ref, name: s(b.name, 120), phone, email, from: s(b.from, 120), to: s(b.to, 120), depart: d(b.depart), ret: d(b.return), adults: Math.max(0, Math.min(50, parseInt(b.adults, 10) || 1)), children: Math.max(0, Math.min(50, parseInt(b.children, 10) || 0)), services, budget: s(b.budget, 80), notes: s(b.notes, 1500), lang: b.lang === 'en' ? 'en' : 'ar' } }];"
+      }
+    },
+    {
+      "id": "77ff8ce5-6c21-4272-80de-7dad4265f288",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "06899fcc-bc7a-4797-b3e2-8eb457b9f427",
+      "name": "Save Trip Request",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        672,
+        224
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO trip_requests (ref, full_name, phone, email, from_place, to_place, depart_date, return_date, adults, children, services, budget, notes, lang) VALUES ($1, $2, NULLIF($3,''), NULLIF($4,''), NULLIF($5,''), $6, NULLIF($7,'')::date, NULLIF($8,'')::date, $9::int, $10::int, string_to_array(NULLIF($11,''), '|'), NULLIF($12,''), NULLIF($13,''), $14) RETURNING id, ref;",
+        "options": {
+          "queryReplacement": "={{ [ $json.ref, $json.name, $json.phone, $json.email, $json.from, $json.to, $json.depart, $json.ret, String($json.adults), String($json.children), $json.services.join('|'), $json.budget, $json.notes, $json.lang ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "7cdda18f-7dfe-4c1d-b161-ccf850eb9f37",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        896,
+        224
+      ],
+      "parameters": {
+        "mode": "once",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zT6BZybZ1sxpZIf7"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "trip_request",
+            "title": "={{ '✈️ طلب رحلة جديد ' + $('Validate Trip Request').item.json.ref + ': ' + ($('Validate Trip Request').item.json.from || '—') + ' ← ' + $('Validate Trip Request').item.json.to }}",
+            "body": "={{ (function(r){ return ['العميل: ' + r.name, 'الجوال: ' + (r.phone || '—'), 'الإيميل: ' + (r.email || '—'), 'من: ' + (r.from || '—') + '  إلى: ' + r.to, 'التواريخ: ' + (r.depart || '—') + ' → ' + (r.ret || '—'), 'المسافرين: ' + r.adults + ' بالغ، ' + r.children + ' طفل', 'الخدمات: ' + (r.services.join('، ') || '—'), 'الميزانية: ' + (r.budget || '—'), 'ملاحظات: ' + (r.notes || '—')].join('\\n'); })($('Validate Trip Request').item.json) }}",
+            "priority": "high",
+            "entity": "trip_request",
+            "entityId": "={{ $('Validate Trip Request').item.json.ref }}",
+            "source": "website"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "entity",
+              "displayName": "entity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "entityId",
+              "displayName": "entityId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "3ebbd9da-a555-4a1f-a795-b9e2ed97d4db",
+      "name": "Respond Trip OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        224
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, ref: $('Validate Trip Request').item.json.ref }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "49176292-d867-43e2-a3b4-e29f98cb50dd",
+      "name": "Respond Trip Invalid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        416
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, errors: $json.errors }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Packages Hook": {
+      "main": [
+        [
+          {
+            "node": "Get Visible Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Visible Packages": {
+      "main": [
+        [
+          {
+            "node": "Shape Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape Packages": {
+      "main": [
+        [
+          {
+            "node": "Respond Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trip Request Hook": {
+      "main": [
+        [
+          {
+            "node": "Validate Trip Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Trip Request": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Save Trip Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Trip Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Trip Request": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Owner": {
+      "main": [
+        [
+          {
+            "node": "Respond Trip OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "UwpTH8MW4kFyc7Lh",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-08T09:14:52.932Z",
+      "updatedAt": "2026-10-08T09:14:52.932Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b09169c4-ac09-4a48-9667-459213cf4bc7",
+    "workflowId": "UwpTH8MW4kFyc7Lh",
+    "nodes": [
+      {
+        "id": "fda341b1-32e5-4727-b70b-99e2b3c0939a",
+        "name": "Packages Hook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "GET",
+          "path": "public-packages",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "21818a84-5661-41b5-83c9-0a5c77c51b89"
+      },
+      {
+        "id": "bbf5505e-ba0a-417a-8ed3-fdc288c6d88d",
+        "name": "Get Visible Packages",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.7,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT id, title, destination, price, COALESCE(currency,'BHD') AS currency, seats_available, to_char(departure_date,'YYYY-MM-DD') AS departure_date, to_char(return_date,'YYYY-MM-DD') AS return_date, duration_days, transport_type, package_type, includes_visa, description, image_url, region FROM packages WHERE is_visible = true AND COALESCE(status,'Active') = 'Active' AND (departure_date IS NULL OR departure_date >= current_date) ORDER BY departure_date NULLS LAST, id LIMIT 60;",
+          "options": {
+            "largeNumbersOutput": "numbers"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "31117b50-34af-4876-bb9d-d1419601b598",
+        "name": "Shape Packages",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const out = $input.all().map(i => i.json).filter(p => p && p.id).map(p => ({\n  id: p.id,\n  title: p.title || '',\n  destination: p.destination || '',\n  price: p.price != null ? Number(p.price) : null,\n  currency: p.currency || 'BHD',\n  seats: p.seats_available,\n  departure: p.departure_date,\n  return: p.return_date,\n  days: p.duration_days,\n  transport: p.transport_type || '',\n  type: p.package_type || '',\n  visa: !!p.includes_visa,\n  description: String(p.description || '').slice(0, 600),\n  image: p.image_url || '',\n  region: p.region || ''\n}));\nreturn [{ json: { success: true, packages: out } }];"
+        }
+      },
+      {
+        "id": "9aecde39-a784-44dd-aa13-e1ebc8dc5862",
+        "name": "Respond Packages",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Cache-Control",
+                  "value": "public, max-age=120"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "d09e329f-7f02-45c1-8fde-16884f8dd43e",
+        "name": "Trip Request Hook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          320
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "trip-request",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "94966ea5-f91f-4653-8b5d-6f9690980864"
+      },
+      {
+        "id": "00a61853-8f12-428a-8e3e-643603630a2c",
+        "name": "Validate Trip Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          320
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const b = ($input.first().json.body) || {};\nconst s = (v, n) => String(v == null ? '' : v).replace(/[<>]/g, '').trim().slice(0, n || 200);\nconst d = v => /^\\d{4}-\\d{2}-\\d{2}$/.test(String(v || '')) ? String(v) : '';\nconst phone = s(b.phone, 20).replace(/[^0-9+]/g, '');\nconst email = s(b.email, 120);\nconst errors = [];\nif (s(b.website)) errors.push('spam');\nif (!s(b.name)) errors.push('name');\nif (phone.replace(/\\D/g, '').length < 8 && !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) errors.push('contact');\nif (!s(b.to)) errors.push('to');\nconst services = Array.isArray(b.services) ? b.services.map(x => s(x, 40)).filter(Boolean).slice(0, 10) : [];\nconst ref = 'TR-' + Date.now().toString(36).toUpperCase().slice(-5) + Math.floor(Math.random() * 90 + 10);\nreturn [{ json: { valid: errors.length === 0, errors, ref, name: s(b.name, 120), phone, email, from: s(b.from, 120), to: s(b.to, 120), depart: d(b.depart), ret: d(b.return), adults: Math.max(0, Math.min(50, parseInt(b.adults, 10) || 1)), children: Math.max(0, Math.min(50, parseInt(b.children, 10) || 0)), services, budget: s(b.budget, 80), notes: s(b.notes, 1500), lang: b.lang === 'en' ? 'en' : 'ar' } }];"
+        }
+      },
+      {
+        "id": "77ff8ce5-6c21-4272-80de-7dad4265f288",
+        "name": "Is Valid?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          320
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.valid }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "rightValue": ""
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "06899fcc-bc7a-4797-b3e2-8eb457b9f427",
+        "name": "Save Trip Request",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.7,
+        "position": [
+          672,
+          224
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO trip_requests (ref, full_name, phone, email, from_place, to_place, depart_date, return_date, adults, children, services, budget, notes, lang) VALUES ($1, $2, NULLIF($3,''), NULLIF($4,''), NULLIF($5,''), $6, NULLIF($7,'')::date, NULLIF($8,'')::date, $9::int, $10::int, string_to_array(NULLIF($11,''), '|'), NULLIF($12,''), NULLIF($13,''), $14) RETURNING id, ref;",
+          "options": {
+            "queryReplacement": "={{ [ $json.ref, $json.name, $json.phone, $json.email, $json.from, $json.to, $json.depart, $json.ret, String($json.adults), String($json.children), $json.services.join('|'), $json.budget, $json.notes, $json.lang ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "7cdda18f-7dfe-4c1d-b161-ccf850eb9f37",
+        "name": "Notify Owner",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          896,
+          224
+        ],
+        "parameters": {
+          "mode": "once",
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "zT6BZybZ1sxpZIf7"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "category": "trip_request",
+              "title": "={{ '✈️ طلب رحلة جديد ' + $('Validate Trip Request').item.json.ref + ': ' + ($('Validate Trip Request').item.json.from || '—') + ' ← ' + $('Validate Trip Request').item.json.to }}",
+              "body": "={{ (function(r){ return ['العميل: ' + r.name, 'الجوال: ' + (r.phone || '—'), 'الإيميل: ' + (r.email || '—'), 'من: ' + (r.from || '—') + '  إلى: ' + r.to, 'التواريخ: ' + (r.depart || '—') + ' → ' + (r.ret || '—'), 'المسافرين: ' + r.adults + ' بالغ، ' + r.children + ' طفل', 'الخدمات: ' + (r.services.join('، ') || '—'), 'الميزانية: ' + (r.budget || '—'), 'ملاحظات: ' + (r.notes || '—')].join('\\n'); })($('Validate Trip Request').item.json) }}",
+              "priority": "high",
+              "entity": "trip_request",
+              "entityId": "={{ $('Validate Trip Request').item.json.ref }}",
+              "source": "website"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "body",
+                "displayName": "body",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "entity",
+                "displayName": "entity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "entityId",
+                "displayName": "entityId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "3ebbd9da-a555-4a1f-a795-b9e2ed97d4db",
+        "name": "Respond Trip OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1120,
+          224
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, ref: $('Validate Trip Request').item.json.ref }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "49176292-d867-43e2-a3b4-e29f98cb50dd",
+        "name": "Respond Trip Invalid",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          672,
+          416
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, errors: $json.errors }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Packages Hook": {
+        "main": [
+          [
+            {
+              "node": "Get Visible Packages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Visible Packages": {
+        "main": [
+          [
+            {
+              "node": "Shape Packages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Shape Packages": {
+        "main": [
+          [
+            {
+              "node": "Respond Packages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trip Request Hook": {
+        "main": [
+          [
+            {
+              "node": "Validate Trip Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Trip Request": {
+        "main": [
+          [
+            {
+              "node": "Is Valid?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Valid?": {
+        "main": [
+          [
+            {
+              "node": "Save Trip Request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Trip Invalid",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Trip Request": {
+        "main": [
+          [
+            {
+              "node": "Notify Owner",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Notify Owner": {
+        "main": [
+          [
+            {
+              "node": "Respond Trip OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Include package currency",
+    "description": "Updated nodes: Get Visible Packages, Shape Packages",
+    "autosaved": false,
+    "createdAt": "2026-10-08T09:15:26.072Z",
+    "updatedAt": "2026-10-08T09:15:26.072Z",
+    "workflowPublishHistory": [
+      {
+        "id": 257,
+        "workflowId": "UwpTH8MW4kFyc7Lh",
+        "versionId": "b09169c4-ac09-4a48-9667-459213cf4bc7",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-08T09:15:28.934Z"
+      }
+    ]
+  }
+}
