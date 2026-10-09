@@ -1,0 +1,98 @@
+{
+  "id": "KWf5Wagmvy75kqzC",
+  "name": "Almutawa - Site v2 Setup (one-time)",
+  "description": "One-time: adds image_url/region to packages and creates trip_requests table. Archive after running.",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-08T09:12:41.957Z",
+  "updatedAt": "2026-10-08T09:12:52.000Z",
+  "isArchived": true,
+  "versionId": "f18861be-0c6c-4599-ab18-19e4c36b7153",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "d4b77ba6-297f-4206-9ec1-72940cc44dca",
+      "name": "Setup Hook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "one-time-site-setup-7x",
+        "responseMode": "lastNode"
+      },
+      "webhookId": "a3c8a2f3-0559-496b-a4f5-af44697c800a"
+    },
+    {
+      "id": "8973ebe3-67a9-46e4-918f-452456324fe9",
+      "name": "Create Site Tables",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE packages ADD COLUMN IF NOT EXISTS image_url text; ALTER TABLE packages ADD COLUMN IF NOT EXISTS region text; CREATE TABLE IF NOT EXISTS trip_requests (id serial PRIMARY KEY, ref text UNIQUE, full_name text, phone text, email text, from_place text, to_place text, depart_date date, return_date date, adults int, children int, services text[], budget text, notes text, lang text, source text DEFAULT 'website', status text DEFAULT 'new', customer_token_id text, created_at timestamptz DEFAULT now()); SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'packages' ORDER BY ordinal_position;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Setup Hook": {
+      "main": [
+        [
+          {
+            "node": "Create Site Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "KWf5Wagmvy75kqzC",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-08T09:12:41.959Z",
+      "updatedAt": "2026-10-08T09:12:41.959Z"
+    }
+  ],
+  "activeVersion": null
+}
