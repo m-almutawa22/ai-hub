@@ -1,0 +1,162 @@
+{
+  "id": "UQDpD2zu7fR7Q5r0",
+  "name": "TEMP - Twilio OTP template",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-08T16:35:59.531Z",
+  "updatedAt": "2026-10-08T16:50:02.000Z",
+  "isArchived": true,
+  "versionId": "d7a3a193-b809-49c9-84f3-54fee2ca9047",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "940da7fc-9629-4fab-851c-e83f1ff7441b",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "7607a9c5-fe19-411d-82be-8cc9277f9974",
+      "name": "Templates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "return [{json:{name:'almutawa_otp_ar',language:'ar',copy:'نسخ الرمز'}},{json:{name:'almutawa_otp_en',language:'en',copy:'Copy code'}}];"
+      }
+    },
+    {
+      "id": "6a23dd89-9afa-41dc-8af8-d511b2d86fca",
+      "name": "Create Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://content.twilio.com/v1/Content",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ friendly_name: $json.name, language: $json.language, variables: { \"1\": \"123456\" }, types: { \"whatsapp/authentication\": { add_security_recommendation: true, code_expiration_minutes: 10, actions: [{ type: \"COPY_CODE\", copy_code_text: $json.copy }] } } }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "6453c6c9-13b4-494b-a5aa-a01c01838954",
+      "name": "Submit For Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://content.twilio.com/v1/Content/\" + $json.sid + \"/ApprovalRequests/whatsapp\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $json.friendly_name, category: \"AUTHENTICATION\" }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Templates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Templates": {
+      "main": [
+        [
+          {
+            "node": "Create Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Content": {
+      "main": [
+        [
+          {
+            "node": "Submit For Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "UQDpD2zu7fR7Q5r0",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-08T16:35:59.533Z",
+      "updatedAt": "2026-10-08T16:35:59.533Z"
+    }
+  ],
+  "activeVersion": null
+}
