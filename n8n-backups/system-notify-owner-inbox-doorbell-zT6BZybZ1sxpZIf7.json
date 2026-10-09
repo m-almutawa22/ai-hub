@@ -3,12 +3,12 @@
   "name": "System - Notify Owner (Inbox + Doorbell)",
   "description": "Shared helper: any workflow calls it to put a notification in the agent page inbox; for non-low priority it also sends a one-line Telegram doorbell with the inbox link.",
   "active": true,
-  "activeVersionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+  "activeVersionId": "f3f5ff2c-ccdc-4d22-9dc7-c21f879037aa",
   "createdAt": "2026-10-03T19:36:54.195Z",
-  "updatedAt": "2026-10-03T19:41:21.971Z",
+  "updatedAt": "2026-10-08T09:12:12.090Z",
   "isArchived": false,
-  "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
-  "versionCounter": 3,
+  "versionId": "f3f5ff2c-ccdc-4d22-9dc7-c21f879037aa",
+  "versionCounter": 4,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -123,7 +123,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "8132574840",
-        "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://n8n-production-47b1.up.railway.app/webhook/agent",
+        "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://app.almutawabh.com/agent",
         "additionalFields": {
           "appendAttribution": false,
           "disable_web_page_preview": true
@@ -208,7 +208,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+    "versionId": "f3f5ff2c-ccdc-4d22-9dc7-c21f879037aa",
     "workflowId": "zT6BZybZ1sxpZIf7",
     "nodes": [
       {
@@ -322,7 +322,7 @@
           "resource": "message",
           "operation": "sendMessage",
           "chatId": "8132574840",
-          "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://n8n-production-47b1.up.railway.app/webhook/agent",
+          "text": "={{ $json.priority === \"urgent\" ? \"🔴\" : ($json.priority === \"high\" ? \"🟠\" : \"🔔\") }} {{ $json.title }}\nفي الصندوق: {{ $json.unread }} إشعار غير مقروء، {{ $json.pending }} موافقة معلقة\nhttps://app.almutawabh.com/agent",
           "additionalFields": {
             "appendAttribution": false,
             "disable_web_page_preview": true
@@ -375,19 +375,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Count includes new notification",
-    "description": "Updated nodes: Save Notification",
+    "name": "Doorbell link to app.almutawabh.com",
+    "description": "Updated nodes: Telegram Doorbell",
     "autosaved": false,
-    "createdAt": "2026-10-03T19:41:21.972Z",
-    "updatedAt": "2026-10-03T19:41:21.972Z",
+    "createdAt": "2026-10-08T09:12:12.091Z",
+    "updatedAt": "2026-10-08T09:12:12.091Z",
     "workflowPublishHistory": [
       {
-        "id": 200,
+        "id": 254,
         "workflowId": "zT6BZybZ1sxpZIf7",
-        "versionId": "38c17712-8081-49aa-b7ca-48a02944f38b",
+        "versionId": "f3f5ff2c-ccdc-4d22-9dc7-c21f879037aa",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-03T19:41:24.144Z"
+        "createdAt": "2026-10-08T09:12:53.042Z"
       }
     ]
   }
