@@ -3,12 +3,12 @@
   "name": "Almutawa - Customer & Staff Auth API",
   "description": null,
   "active": true,
-  "activeVersionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
+  "activeVersionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
   "createdAt": "2026-09-25T13:45:06.952Z",
-  "updatedAt": "2026-10-08T04:24:30.784Z",
+  "updatedAt": "2026-10-08T18:23:13.234Z",
   "isArchived": false,
-  "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
-  "versionCounter": 17,
+  "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
+  "versionCounter": 22,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -359,7 +359,9 @@
             "Full Name": "={{ $json.name }}",
             "Password Hash": "={{ $json.hash }}",
             "Password Salt": "={{ $json.salt }}",
-            "Is Registered": false
+            "Is Registered": false,
+            "Email": "={{ (function(e){ e = String(e||'').trim().toLowerCase(); return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/.test(e) ? e : ''; })($('Auth API').item.json.body.email) }}",
+            "WhatsApp Opt-In": "={{ $('Auth API').item.json.body.whatsappOptIn === true }}"
           }
         },
         "options": {
@@ -504,8 +506,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        896,
-        768
+        1792,
+        736
       ],
       "parameters": {
         "method": "POST",
@@ -518,7 +520,7 @@
           "parameters": [
             {
               "name": "To",
-              "value": "={{ 'whatsapp:' + $('Prepare OTP').item.json.phone }}"
+              "value": "={{ 'whatsapp:' + $('Pick OTP Channel').first().json.phone }}"
             },
             {
               "name": "MessagingServiceSid",
@@ -526,7 +528,7 @@
             },
             {
               "name": "Body",
-              "value": "={{ 'رمز التحقق الخاص بك: ' + $('Prepare OTP').item.json.code + ' (صالح 10 دقائق)' }}"
+              "value": "={{ 'رمز التحقق الخاص بك: ' + $('Pick OTP Channel').first().json.code + ' (صالح 10 دقائق)' }}"
             }
           ]
         }
@@ -536,7 +538,8 @@
           "id": "NIIn1eNIQz6Zu5UB",
           "name": "Twilio account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "id": "8fcf3f25-8914-4d3e-9778-7c867959a733",
@@ -544,13 +547,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1120,
-        768
+        2016,
+        640
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "return [{ json: { success: true } }];"
+        "jsCode": "const c = $('Pick OTP Channel').first().json;\nlet ch = c.channel;\ntry { if (ch === 'email' && $('Send OTP WhatsApp').isExecuted) ch = 'whatsapp'; } catch (e) {}\nreturn [{ json: { success: true, channel: ch, to: ch === 'email' ? c.masked : '' } }];"
       }
     },
     {
@@ -1189,6 +1192,117 @@
         "language": "javaScript",
         "mode": "runOnceForAllItems"
       }
+    },
+    {
+      "id": "02d525a8-8efa-474d-a0f4-4f1f366ae3b6",
+      "name": "Find OTP Customer",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        640
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "cachedResultName": "ALMUTAWA Tourism CRM",
+          "mode": "id",
+          "value": "appPB4D3VkkSJKjRK"
+        },
+        "filterByFormula": "={{ '{Phone}=\"' + String($('Prepare OTP').item.json.phone || '').replace(/\"/g, '') + '\"' }}",
+        "limit": 1,
+        "operation": "search",
+        "resource": "record",
+        "returnAll": false,
+        "table": {
+          "__rl": true,
+          "cachedResultName": "Customers",
+          "mode": "id",
+          "value": "tblm8JWYMAoamikUz"
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "b5031ba0-514c-41c4-9241-cb25944e648c",
+      "name": "Pick OTP Channel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        640
+      ],
+      "parameters": {
+        "jsCode": "const rec = ($input.first() && $input.first().json) || {};\nconst f = rec.fields || {};\nconst p = $('Prepare OTP').first().json;\nconst email = String(f.Email || '').trim().toLowerCase();\nconst ok = /^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/.test(email);\nconst reset = p.purpose === 'reset';\nconst titleAr = reset ? 'إعادة تعيين كلمة المرور' : 'تأكيد إنشاء حسابك';\nconst titleEn = reset ? 'Password reset' : 'Confirm your account';\nconst name = String(f['Full Name'] || '').replace(/[<>&\"]/g, '');\nconst code = String(p.code);\nconst html = '<div style=\"margin:0;padding:24px;background:#F5F1E8;font-family:Tahoma,Arial,sans-serif\">'\n + '<div style=\"max-width:480px;margin:auto;background:#fff;border-radius:18px;overflow:hidden;border:1px solid #E6E1D6\">'\n + '<div style=\"background:#0B2340;padding:22px;text-align:center\"><div style=\"color:#DAA628;font-size:20px;font-weight:bold\">المطوع للسياحة</div><div style=\"color:#ffffff;opacity:.7;font-size:11px;letter-spacing:3px;margin-top:4px\">AL MUTAWA TOURISM</div></div>'\n + '<div dir=\"rtl\" style=\"padding:26px 24px 10px;text-align:right;color:#14202E\">'\n + '<div style=\"font-size:17px;font-weight:bold;color:#0B2340\">' + titleAr + '</div>'\n + '<p style=\"font-size:14px;line-height:1.9;color:#5C6B7D;margin:10px 0 0\">' + (name ? ('أهلاً ' + name + '، ') : 'أهلاً، ') + 'هذا رمز التحقق الخاص فيك:</p></div>'\n + '<div style=\"text-align:center;padding:10px 24px 6px\"><div style=\"display:inline-block;background:#FAF7F0;border:1px dashed #DAA628;border-radius:14px;padding:14px 26px;font-size:32px;letter-spacing:10px;font-weight:bold;color:#0B2340;font-family:Courier New,monospace\">' + code + '</div></div>'\n + '<div dir=\"rtl\" style=\"padding:8px 24px 0;text-align:right;font-size:12.5px;line-height:1.9;color:#5C6B7D\">الرمز صالح لمدة 10 دقائق. لا تشارك هذا الرمز مع أي أحد — فريقنا ما بيطلبه منك أبداً. إذا ما طلبت هذا الرمز تجاهل الرسالة.</div>'\n + '<div dir=\"ltr\" style=\"padding:14px 24px 22px;text-align:left;font-size:12px;line-height:1.8;color:#8A96A3;border-top:1px solid #F0ECE3;margin-top:16px\">' + titleEn + ' — your verification code is <b style=\"color:#0B2340\">' + code + '</b>. It expires in 10 minutes. Never share it with anyone.</div>'\n + '</div><div style=\"text-align:center;font-size:11px;color:#9AA5B1;margin-top:14px\">almutawabh.com · +973 3344 4748</div></div>';\nconst masked = ok ? email.replace(/^(.)([^@]*)(@.*)$/, function(m, a, b, c){ return a + '*'.repeat(Math.min(Math.max(b.length,1), 6)) + c; }) : '';\nreturn [{ json: { phone: p.phone, code: code, purpose: p.purpose, email: ok ? email : '', channel: ok ? 'email' : 'whatsapp', masked: masked, subject: 'رمز التحقق ' + code + ' | المطوع للسياحة', html: html } }];",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "606b8e32-997a-4789-8b0c-36d1d1f3f89e",
+      "name": "Has Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1344,
+        640
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.channel }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "email"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "af51b2c9-2617-4054-a996-484b9d624331",
+      "name": "Send OTP Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1568,
+        544
+      ],
+      "parameters": {
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "المطوع للسياحة - Al Mutawa Tourism"
+        },
+        "resource": "message",
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GhXbtHoEb5eO8ZiQ",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "8ec19eb8-4406-414f-942e-641a72891e87"
     }
   ],
   "connections": {
@@ -1337,28 +1451,6 @@
         [
           {
             "node": "Save OTP",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save OTP": {
-      "main": [
-        [
-          {
-            "node": "Send OTP WhatsApp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send OTP WhatsApp": {
-      "main": [
-        [
-          {
-            "node": "OTP Sent Response",
             "type": "main",
             "index": 0
           }
@@ -1597,6 +1689,86 @@
           }
         ]
       ]
+    },
+    "Save OTP": {
+      "main": [
+        [
+          {
+            "node": "Find OTP Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find OTP Customer": {
+      "main": [
+        [
+          {
+            "node": "Pick OTP Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick OTP Channel": {
+      "main": [
+        [
+          {
+            "node": "Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Email?": {
+      "main": [
+        [
+          {
+            "node": "Send OTP Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send OTP WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send OTP Email": {
+      "main": [
+        [
+          {
+            "node": "OTP Sent Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send OTP WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send OTP WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "OTP Sent Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodeGroups": [],
@@ -1604,7 +1776,7 @@
     "executionOrder": "v1",
     "availableInMCP": true,
     "errorWorkflow": "MfD6wYIbloXnfULA",
-    "saveDataSuccessExecution": "none"
+    "saveDataSuccessExecution": "all"
   },
   "staticData": null,
   "pinData": null,
@@ -1634,7 +1806,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
+    "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
     "workflowId": "lqjYB7EP7xHmThVg",
     "nodes": [
       {
@@ -1984,7 +2156,9 @@
               "Full Name": "={{ $json.name }}",
               "Password Hash": "={{ $json.hash }}",
               "Password Salt": "={{ $json.salt }}",
-              "Is Registered": false
+              "Is Registered": false,
+              "Email": "={{ (function(e){ e = String(e||'').trim().toLowerCase(); return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/.test(e) ? e : ''; })($('Auth API').item.json.body.email) }}",
+              "WhatsApp Opt-In": "={{ $('Auth API').item.json.body.whatsappOptIn === true }}"
             }
           },
           "options": {
@@ -2129,8 +2303,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
         "position": [
-          896,
-          768
+          1792,
+          736
         ],
         "parameters": {
           "method": "POST",
@@ -2143,7 +2317,7 @@
             "parameters": [
               {
                 "name": "To",
-                "value": "={{ 'whatsapp:' + $('Prepare OTP').item.json.phone }}"
+                "value": "={{ 'whatsapp:' + $('Pick OTP Channel').first().json.phone }}"
               },
               {
                 "name": "MessagingServiceSid",
@@ -2151,7 +2325,7 @@
               },
               {
                 "name": "Body",
-                "value": "={{ 'رمز التحقق الخاص بك: ' + $('Prepare OTP').item.json.code + ' (صالح 10 دقائق)' }}"
+                "value": "={{ 'رمز التحقق الخاص بك: ' + $('Pick OTP Channel').first().json.code + ' (صالح 10 دقائق)' }}"
               }
             ]
           }
@@ -2161,7 +2335,8 @@
             "id": "NIIn1eNIQz6Zu5UB",
             "name": "Twilio account"
           }
-        }
+        },
+        "onError": "continueRegularOutput"
       },
       {
         "id": "8fcf3f25-8914-4d3e-9778-7c867959a733",
@@ -2169,13 +2344,13 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1120,
-          768
+          2016,
+          640
         ],
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "return [{ json: { success: true } }];"
+          "jsCode": "const c = $('Pick OTP Channel').first().json;\nlet ch = c.channel;\ntry { if (ch === 'email' && $('Send OTP WhatsApp').isExecuted) ch = 'whatsapp'; } catch (e) {}\nreturn [{ json: { success: true, channel: ch, to: ch === 'email' ? c.masked : '' } }];"
         }
       },
       {
@@ -2814,6 +2989,117 @@
           "language": "javaScript",
           "mode": "runOnceForAllItems"
         }
+      },
+      {
+        "id": "02d525a8-8efa-474d-a0f4-4f1f366ae3b6",
+        "name": "Find OTP Customer",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          640
+        ],
+        "parameters": {
+          "base": {
+            "__rl": true,
+            "cachedResultName": "ALMUTAWA Tourism CRM",
+            "mode": "id",
+            "value": "appPB4D3VkkSJKjRK"
+          },
+          "filterByFormula": "={{ '{Phone}=\"' + String($('Prepare OTP').item.json.phone || '').replace(/\"/g, '') + '\"' }}",
+          "limit": 1,
+          "operation": "search",
+          "resource": "record",
+          "returnAll": false,
+          "table": {
+            "__rl": true,
+            "cachedResultName": "Customers",
+            "mode": "id",
+            "value": "tblm8JWYMAoamikUz"
+          }
+        },
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dJPlPtRxY8Txd9y9",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "alwaysOutputData": true
+      },
+      {
+        "id": "b5031ba0-514c-41c4-9241-cb25944e648c",
+        "name": "Pick OTP Channel",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          640
+        ],
+        "parameters": {
+          "jsCode": "const rec = ($input.first() && $input.first().json) || {};\nconst f = rec.fields || {};\nconst p = $('Prepare OTP').first().json;\nconst email = String(f.Email || '').trim().toLowerCase();\nconst ok = /^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$/.test(email);\nconst reset = p.purpose === 'reset';\nconst titleAr = reset ? 'إعادة تعيين كلمة المرور' : 'تأكيد إنشاء حسابك';\nconst titleEn = reset ? 'Password reset' : 'Confirm your account';\nconst name = String(f['Full Name'] || '').replace(/[<>&\"]/g, '');\nconst code = String(p.code);\nconst html = '<div style=\"margin:0;padding:24px;background:#F5F1E8;font-family:Tahoma,Arial,sans-serif\">'\n + '<div style=\"max-width:480px;margin:auto;background:#fff;border-radius:18px;overflow:hidden;border:1px solid #E6E1D6\">'\n + '<div style=\"background:#0B2340;padding:22px;text-align:center\"><div style=\"color:#DAA628;font-size:20px;font-weight:bold\">المطوع للسياحة</div><div style=\"color:#ffffff;opacity:.7;font-size:11px;letter-spacing:3px;margin-top:4px\">AL MUTAWA TOURISM</div></div>'\n + '<div dir=\"rtl\" style=\"padding:26px 24px 10px;text-align:right;color:#14202E\">'\n + '<div style=\"font-size:17px;font-weight:bold;color:#0B2340\">' + titleAr + '</div>'\n + '<p style=\"font-size:14px;line-height:1.9;color:#5C6B7D;margin:10px 0 0\">' + (name ? ('أهلاً ' + name + '، ') : 'أهلاً، ') + 'هذا رمز التحقق الخاص فيك:</p></div>'\n + '<div style=\"text-align:center;padding:10px 24px 6px\"><div style=\"display:inline-block;background:#FAF7F0;border:1px dashed #DAA628;border-radius:14px;padding:14px 26px;font-size:32px;letter-spacing:10px;font-weight:bold;color:#0B2340;font-family:Courier New,monospace\">' + code + '</div></div>'\n + '<div dir=\"rtl\" style=\"padding:8px 24px 0;text-align:right;font-size:12.5px;line-height:1.9;color:#5C6B7D\">الرمز صالح لمدة 10 دقائق. لا تشارك هذا الرمز مع أي أحد — فريقنا ما بيطلبه منك أبداً. إذا ما طلبت هذا الرمز تجاهل الرسالة.</div>'\n + '<div dir=\"ltr\" style=\"padding:14px 24px 22px;text-align:left;font-size:12px;line-height:1.8;color:#8A96A3;border-top:1px solid #F0ECE3;margin-top:16px\">' + titleEn + ' — your verification code is <b style=\"color:#0B2340\">' + code + '</b>. It expires in 10 minutes. Never share it with anyone.</div>'\n + '</div><div style=\"text-align:center;font-size:11px;color:#9AA5B1;margin-top:14px\">almutawabh.com · +973 3344 4748</div></div>';\nconst masked = ok ? email.replace(/^(.)([^@]*)(@.*)$/, function(m, a, b, c){ return a + '*'.repeat(Math.min(Math.max(b.length,1), 6)) + c; }) : '';\nreturn [{ json: { phone: p.phone, code: code, purpose: p.purpose, email: ok ? email : '', channel: ok ? 'email' : 'whatsapp', masked: masked, subject: 'رمز التحقق ' + code + ' | المطوع للسياحة', html: html } }];",
+          "language": "javaScript",
+          "mode": "runOnceForAllItems"
+        }
+      },
+      {
+        "id": "606b8e32-997a-4789-8b0c-36d1d1f3f89e",
+        "name": "Has Email?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1344,
+          640
+        ],
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.channel }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "string"
+                },
+                "rightValue": "email"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        }
+      },
+      {
+        "id": "af51b2c9-2617-4054-a996-484b9d624331",
+        "name": "Send OTP Email",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          1568,
+          544
+        ],
+        "parameters": {
+          "emailType": "html",
+          "message": "={{ $json.html }}",
+          "operation": "send",
+          "options": {
+            "appendAttribution": false,
+            "senderName": "المطوع للسياحة - Al Mutawa Tourism"
+          },
+          "resource": "message",
+          "sendTo": "={{ $json.email }}",
+          "subject": "={{ $json.subject }}"
+        },
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "GhXbtHoEb5eO8ZiQ",
+            "name": "Gmail account"
+          }
+        },
+        "onError": "continueErrorOutput",
+        "webhookId": "8ec19eb8-4406-414f-942e-641a72891e87"
       }
     ],
     "connections": {
@@ -2962,28 +3248,6 @@
           [
             {
               "node": "Save OTP",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Save OTP": {
-        "main": [
-          [
-            {
-              "node": "Send OTP WhatsApp",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Send OTP WhatsApp": {
-        "main": [
-          [
-            {
-              "node": "OTP Sent Response",
               "type": "main",
               "index": 0
             }
@@ -3222,23 +3486,103 @@
             }
           ]
         ]
+      },
+      "Save OTP": {
+        "main": [
+          [
+            {
+              "node": "Find OTP Customer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find OTP Customer": {
+        "main": [
+          [
+            {
+              "node": "Pick OTP Channel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick OTP Channel": {
+        "main": [
+          [
+            {
+              "node": "Has Email?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Email?": {
+        "main": [
+          [
+            {
+              "node": "Send OTP Email",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send OTP WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send OTP Email": {
+        "main": [
+          [
+            {
+              "node": "OTP Sent Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send OTP WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send OTP WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "OTP Sent Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Signup: block re-signup of registered phone",
-    "description": "customer-signup no longer overwrites the password of an already-registered customer; returns already_registered so the user uses forgot-password instead.",
+    "name": "Find OTP Customer always outputs",
+    "description": "Updated nodes: Find OTP Customer",
     "autosaved": false,
-    "createdAt": "2026-10-08T04:24:30.785Z",
-    "updatedAt": "2026-10-08T04:24:30.785Z",
+    "createdAt": "2026-10-08T18:23:13.235Z",
+    "updatedAt": "2026-10-08T18:23:13.235Z",
     "workflowPublishHistory": [
       {
-        "id": 248,
+        "id": 265,
         "workflowId": "lqjYB7EP7xHmThVg",
-        "versionId": "780de8f7-a145-4e6a-88ec-12e1633928ec",
+        "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-08T04:24:33.869Z"
+        "createdAt": "2026-10-08T18:23:21.057Z"
       }
     ]
   }
