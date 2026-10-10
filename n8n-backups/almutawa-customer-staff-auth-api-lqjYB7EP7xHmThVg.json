@@ -3,12 +3,12 @@
   "name": "Almutawa - Customer & Staff Auth API",
   "description": null,
   "active": true,
-  "activeVersionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
+  "activeVersionId": "e6175f57-f36a-44d8-9b1b-25e55ad1da3f",
   "createdAt": "2026-09-25T13:45:06.952Z",
-  "updatedAt": "2026-10-08T18:23:13.234Z",
+  "updatedAt": "2026-10-09T15:56:41.307Z",
   "isArchived": false,
-  "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
-  "versionCounter": 22,
+  "versionId": "e6175f57-f36a-44d8-9b1b-25e55ad1da3f",
+  "versionCounter": 25,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -527,8 +527,12 @@
               "value": "MG4cf17c1ce3add815f97ff92153a3033d"
             },
             {
-              "name": "Body",
-              "value": "={{ 'رمز التحقق الخاص بك: ' + $('Pick OTP Channel').first().json.code + ' (صالح 10 دقائق)' }}"
+              "name": "ContentSid",
+              "value": "HXc27f13735257999bca07d064e95428a3"
+            },
+            {
+              "name": "ContentVariables",
+              "value": "={{ JSON.stringify({ '1': String($('Pick OTP Channel').first().json.code) }) }}"
             }
           ]
         }
@@ -1280,20 +1284,20 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1568,
+        1792,
         544
       ],
       "parameters": {
         "emailType": "html",
-        "message": "={{ $json.html }}",
+        "message": "={{ $('Pick OTP Channel').first().json.html }}",
         "operation": "send",
         "options": {
           "appendAttribution": false,
           "senderName": "المطوع للسياحة - Al Mutawa Tourism"
         },
         "resource": "message",
-        "sendTo": "={{ $json.email }}",
-        "subject": "={{ $json.subject }}"
+        "sendTo": "={{ $('Pick OTP Channel').first().json.email }}",
+        "subject": "={{ $('Pick OTP Channel').first().json.subject }}"
       },
       "credentials": {
         "gmailOAuth2": {
@@ -1303,6 +1307,38 @@
       },
       "onError": "continueErrorOutput",
       "webhookId": "8ec19eb8-4406-414f-942e-641a72891e87"
+    },
+    {
+      "id": "e7b2406d-182b-4425-a913-fc03eb5a2bee",
+      "name": "Send OTP Email (info@)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1568,
+        400
+      ],
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "المطوع للسياحة <info@almutawabh.com>",
+        "html": "={{ $json.html }}",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "info@almutawabh.com"
+        },
+        "resource": "email",
+        "subject": "={{ $json.subject }}",
+        "toEmail": "={{ $json.email }}"
+      },
+      "credentials": {
+        "smtp": {
+          "id": "aZcjd9LhOapUlHIE",
+          "name": "SMTP account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "f30ee743-1384-4007-a3dc-afce622d7429",
+      "disabled": true
     }
   ],
   "connections": {
@@ -1806,7 +1842,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
+    "versionId": "e6175f57-f36a-44d8-9b1b-25e55ad1da3f",
     "workflowId": "lqjYB7EP7xHmThVg",
     "nodes": [
       {
@@ -2324,8 +2360,12 @@
                 "value": "MG4cf17c1ce3add815f97ff92153a3033d"
               },
               {
-                "name": "Body",
-                "value": "={{ 'رمز التحقق الخاص بك: ' + $('Pick OTP Channel').first().json.code + ' (صالح 10 دقائق)' }}"
+                "name": "ContentSid",
+                "value": "HXc27f13735257999bca07d064e95428a3"
+              },
+              {
+                "name": "ContentVariables",
+                "value": "={{ JSON.stringify({ '1': String($('Pick OTP Channel').first().json.code) }) }}"
               }
             ]
           }
@@ -3077,20 +3117,20 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          1568,
+          1792,
           544
         ],
         "parameters": {
           "emailType": "html",
-          "message": "={{ $json.html }}",
+          "message": "={{ $('Pick OTP Channel').first().json.html }}",
           "operation": "send",
           "options": {
             "appendAttribution": false,
             "senderName": "المطوع للسياحة - Al Mutawa Tourism"
           },
           "resource": "message",
-          "sendTo": "={{ $json.email }}",
-          "subject": "={{ $json.subject }}"
+          "sendTo": "={{ $('Pick OTP Channel').first().json.email }}",
+          "subject": "={{ $('Pick OTP Channel').first().json.subject }}"
         },
         "credentials": {
           "gmailOAuth2": {
@@ -3100,6 +3140,38 @@
         },
         "onError": "continueErrorOutput",
         "webhookId": "8ec19eb8-4406-414f-942e-641a72891e87"
+      },
+      {
+        "id": "e7b2406d-182b-4425-a913-fc03eb5a2bee",
+        "name": "Send OTP Email (info@)",
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2.1,
+        "position": [
+          1568,
+          400
+        ],
+        "parameters": {
+          "emailFormat": "html",
+          "fromEmail": "المطوع للسياحة <info@almutawabh.com>",
+          "html": "={{ $json.html }}",
+          "operation": "send",
+          "options": {
+            "appendAttribution": false,
+            "replyTo": "info@almutawabh.com"
+          },
+          "resource": "email",
+          "subject": "={{ $json.subject }}",
+          "toEmail": "={{ $json.email }}"
+        },
+        "credentials": {
+          "smtp": {
+            "id": "aZcjd9LhOapUlHIE",
+            "name": "SMTP account"
+          }
+        },
+        "onError": "continueErrorOutput",
+        "webhookId": "f30ee743-1384-4007-a3dc-afce622d7429",
+        "disabled": true
       }
     ],
     "connections": {
@@ -3570,19 +3642,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Find OTP Customer always outputs",
-    "description": "Updated nodes: Find OTP Customer",
+    "name": "WhatsApp OTP via approved template",
+    "description": "Updated nodes: Send OTP WhatsApp",
     "autosaved": false,
-    "createdAt": "2026-10-08T18:23:13.235Z",
-    "updatedAt": "2026-10-08T18:23:13.235Z",
+    "createdAt": "2026-10-09T15:56:41.308Z",
+    "updatedAt": "2026-10-09T15:56:41.308Z",
     "workflowPublishHistory": [
       {
-        "id": 265,
+        "id": 269,
         "workflowId": "lqjYB7EP7xHmThVg",
-        "versionId": "b6746f18-5d93-4922-85b2-2fb48707064a",
+        "versionId": "e6175f57-f36a-44d8-9b1b-25e55ad1da3f",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-10-08T18:23:21.057Z"
+        "createdAt": "2026-10-09T15:56:44.909Z"
       }
     ]
   }
