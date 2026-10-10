@@ -1,0 +1,173 @@
+{
+  "id": "LTqzLpSZphBA4gJu",
+  "name": "Twilio Create Templates",
+  "description": "One-off: create WhatsApp OTP and booking templates in Twilio and submit for approval",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-09T15:54:50.088Z",
+  "updatedAt": "2026-10-09T15:56:49.000Z",
+  "isArchived": true,
+  "versionId": "26cf4c35-eb80-4ca2-acd9-f59c7a968167",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "8e324f06-5f96-44bc-b7ca-659debe565e8",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9751dd34-889c-4f75-a76b-dd8a5c6b7535",
+      "name": "Defs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "return [\n { json: { name: 'almutawa_otp_ar2', category: 'AUTHENTICATION', content: { friendly_name: 'almutawa_otp_ar2', language: 'ar', variables: { '1': '123456' }, types: { 'whatsapp/authentication': { body: '{{1}}', add_security_recommendation: true, code_expiration_minutes: 10, actions: [{ type: 'COPY_CODE', copy_code_text: 'نسخ الرمز' }] } } } } },\n { json: { name: 'almutawa_otp_en2', category: 'AUTHENTICATION', content: { friendly_name: 'almutawa_otp_en2', language: 'en', variables: { '1': '123456' }, types: { 'whatsapp/authentication': { body: '{{1}}', add_security_recommendation: true, code_expiration_minutes: 10, actions: [{ type: 'COPY_CODE', copy_code_text: 'Copy code' }] } } } } },\n { json: { name: 'almutawa_booking_confirm_ar', category: 'UTILITY', content: { friendly_name: 'almutawa_booking_confirm_ar', language: 'ar', variables: { '1': 'محمد', '2': 'AMT-1024', '3': 'باقة إسطنبول 5 أيام - 12 نوفمبر' }, types: { 'twilio/text': { body: 'مرحباً {{1}}،\\nتم تأكيد حجزك رقم {{2}} لدى المطوع للسياحة.\\nالتفاصيل: {{3}}\\nلأي استفسار راسلنا على هذا الرقم. نتمنى لك رحلة سعيدة.' } } } } }\n];"
+      }
+    },
+    {
+      "id": "3d1c7fd8-08d5-4d89-96c6-903339988ddc",
+      "name": "Create Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://content.twilio.com/v1/Content",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.content) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "0cf7c77c-18df-4a16-8565-9b467ccfb92a",
+      "name": "Submit Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://content.twilio.com/v1/Content/{{ $json.sid }}/ApprovalRequests/whatsapp",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $('Defs').item.json.name, category: $('Defs').item.json.category }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Defs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defs": {
+      "main": [
+        [
+          {
+            "node": "Create Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Content": {
+      "main": [
+        [
+          {
+            "node": "Submit Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "LTqzLpSZphBA4gJu",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-09T15:54:50.089Z",
+      "updatedAt": "2026-10-09T15:54:50.089Z"
+    }
+  ],
+  "activeVersion": null
+}
