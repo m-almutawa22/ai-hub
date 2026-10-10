@@ -1,0 +1,102 @@
+{
+  "id": "eVtRneMtCUkmyAct",
+  "name": "TEMP - SMTP test",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-09T14:55:49.635Z",
+  "updatedAt": "2026-10-09T14:57:28.000Z",
+  "isArchived": true,
+  "versionId": "0bfa65ba-f487-4332-9f99-afafe4545466",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "64601080-8bd5-484e-9a1e-556bd53f7d74",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ac8119cf-09db-40f9-b11c-10c63d7fddbb",
+      "name": "Test SMTP",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "email",
+        "operation": "send",
+        "fromEmail": "المطوع للسياحة <info@almutawabh.com>",
+        "toEmail": "m.almutawa22@gmail.com",
+        "subject": "اختبار إرسال من info@almutawabh.com",
+        "emailFormat": "html",
+        "html": "<div dir=\"rtl\" style=\"font-family:Tahoma,Arial\">هذه رسالة اختبار: صار النظام يرسل من إيميل الشركة info@almutawabh.com بنجاح.</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "smtp": {
+          "id": "aZcjd9LhOapUlHIE",
+          "name": "SMTP account"
+        }
+      },
+      "webhookId": "d6639a5d-3c38-4cbd-95cc-9424dcf7a8dc"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Test SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "eVtRneMtCUkmyAct",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-09T14:55:49.636Z",
+      "updatedAt": "2026-10-09T14:55:49.636Z"
+    }
+  ],
+  "activeVersion": null
+}
