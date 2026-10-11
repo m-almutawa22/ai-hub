@@ -3,12 +3,12 @@
   "name": "Almutawa - Error Alerts (Shared)",
   "description": "Shared error-handling workflow. Any other workflow can reference this as its errorWorkflow setting so a failure anywhere sends an immediate Telegram alert to the office group with the workflow name and execution link.",
   "active": true,
-  "activeVersionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+  "activeVersionId": "ea860980-55e3-4fde-9d60-638927d53ae1",
   "createdAt": "2026-09-16T16:08:41.808Z",
-  "updatedAt": "2026-09-16T16:10:48.479Z",
+  "updatedAt": "2026-10-10T09:35:44.826Z",
   "isArchived": false,
-  "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
-  "versionCounter": 1,
+  "versionId": "ea860980-55e3-4fde-9d60-638927d53ae1",
+  "versionCounter": 2,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -35,7 +35,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-1004357436155",
+        "chatId": "8132574840",
         "text": "=WARNING: A workflow failed.\nWorkflow: {{ $json.workflow.name }}\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}\nDetails: {{ $json.execution.url }}",
         "additionalFields": {
           "appendAttribution": false
@@ -96,7 +96,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+    "versionId": "ea860980-55e3-4fde-9d60-638927d53ae1",
     "workflowId": "MfD6wYIbloXnfULA",
     "nodes": [
       {
@@ -122,7 +122,7 @@
         "parameters": {
           "resource": "message",
           "operation": "sendMessage",
-          "chatId": "-1004357436155",
+          "chatId": "8132574840",
           "text": "=WARNING: A workflow failed.\nWorkflow: {{ $json.workflow.name }}\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}\nDetails: {{ $json.execution.url }}",
           "additionalFields": {
             "appendAttribution": false
@@ -152,19 +152,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Initial - shared error alert workflow",
-    "description": "Initial version: Error Trigger receives failures from any workflow that references this as its errorWorkflow, and sends a Telegram alert with the failing workflow's name and a link to the execution.",
+    "name": "Error alerts to owner private chat",
+    "description": "Updated nodes: Send Error Alert",
     "autosaved": false,
-    "createdAt": "2026-09-16T16:08:41.809Z",
-    "updatedAt": "2026-09-16T16:08:41.809Z",
+    "createdAt": "2026-10-10T09:35:44.827Z",
+    "updatedAt": "2026-10-10T09:35:44.827Z",
     "workflowPublishHistory": [
       {
-        "id": 2,
+        "id": 282,
         "workflowId": "MfD6wYIbloXnfULA",
-        "versionId": "381558d1-9f57-42b1-878d-dcd3dd51dd78",
+        "versionId": "ea860980-55e3-4fde-9d60-638927d53ae1",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-16T16:10:56.215Z"
+        "createdAt": "2026-10-10T09:35:48.170Z"
       }
     ]
   }
