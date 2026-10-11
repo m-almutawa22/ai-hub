@@ -1,0 +1,181 @@
+{
+  "id": "dnM9aoDqKcrCWQma",
+  "name": "Airtable peek (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T09:48:16.208Z",
+  "updatedAt": "2026-10-10T09:48:53.000Z",
+  "isArchived": true,
+  "versionId": "500b0b25-7d42-483d-b697-b9d7c70f94ae",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "ec081057-2900-42ec-a9d8-41efc0cf2cf6",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "9da13afa-e853-4d56-9c13-3e652af3f3d3",
+      "name": "Pk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblbCLAD8HLLwA9R7",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "50"
+            },
+            {
+              "name": "fields[]",
+              "value": "Title"
+            },
+            {
+              "name": "fields[]",
+              "value": "Departure Date"
+            },
+            {
+              "name": "fields[]",
+              "value": "Bookings"
+            },
+            {
+              "name": "fields[]",
+              "value": "Status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "002a1b6e-e6fb-4609-8d43-801082c85342",
+      "name": "Bk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblZ6AQCBmEY2KYHr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "20"
+            },
+            {
+              "name": "fields[]",
+              "value": "Package"
+            },
+            {
+              "name": "fields[]",
+              "value": "Travelers"
+            },
+            {
+              "name": "fields[]",
+              "value": "Number of Travelers"
+            },
+            {
+              "name": "fields[]",
+              "value": "Created Date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "executeOnce": true
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Pk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pk": {
+      "main": [
+        [
+          {
+            "node": "Bk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "dnM9aoDqKcrCWQma",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:48:16.210Z",
+      "updatedAt": "2026-10-10T09:48:16.210Z"
+    }
+  ],
+  "activeVersion": null
+}
