@@ -1,0 +1,94 @@
+{
+  "id": "217yvEvXO0k0WsBt",
+  "name": "DB helper 2 (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T09:35:22.586Z",
+  "updatedAt": "2026-10-10T09:38:34.000Z",
+  "isArchived": true,
+  "versionId": "454d681c-ba7e-4307-9754-d8c3a893fa63",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "e46bebdf-199f-42be-9522-3d5e30810eb4",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ea36cc68-fdac-4115-aca6-ed1ed001394d",
+      "name": "Q",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE reminders SET status = 'done' WHERE id = 1; SELECT length(facts) fl, rules IS NOT NULL r, length(kb) kl, length(subs) sl, reminders, followups FROM (SELECT (SELECT string_agg('[' || id || '] (' || category || ') ' || fact, E'\\n' ORDER BY category, id) FROM (SELECT * FROM agent_memory WHERE active ORDER BY id DESC LIMIT 300) m) AS facts, (SELECT string_agg('- [' || id || '] ' || title || ': ' || coalesce(when_text,'') || ' => ' || coalesce(action_text,''), E'\\n' ORDER BY id) FROM work_playbook WHERE active) AS rules, (SELECT string_agg('## ' || title || E'\\n' || content, E'\\n\\n' ORDER BY id) FROM knowledge_base WHERE section IN ('owner','how_to_use','finance','rules')) AS kb, (SELECT string_agg('[' || id || '] ' || name || ' | ' || kind || ' | status ' || status || ' | decision ' || decision || ' | next due ' || coalesce(to_char(next_due,'YYYY-MM-DD'),'?') || ' | cost ' || coalesce(cost::text || ' ' || currency,'?') || ' ' || coalesce(billing_cycle,'') || ' | why: ' || coalesce(purpose,'?') || ' | link: ' || coalesce(manage_url,'?'), E'\\n' ORDER BY id) FROM subscriptions WHERE status <> 'cancelled') AS subs, (SELECT string_agg('[' || id || '] ' || title || ' @ ' || to_char(due_at AT TIME ZONE 'Asia/Bahrain','YYYY-MM-DD HH24:MI') || CASE WHEN repeat_daily_until_done THEN ' (daily until done)' ELSE '' END, E'\\n' ORDER BY due_at) FROM reminders WHERE status = 'pending') AS reminders, (SELECT string_agg(x, E'\\n') FROM (SELECT '[reminder ' || id || '] ' || title || ' (sent ' || to_char(last_sent_at AT TIME ZONE 'Asia/Bahrain','MM-DD HH24:MI') || ')' AS x FROM reminders WHERE last_sent_at > now() - interval '3 days' AND status IN ('sent','pending') UNION ALL SELECT '[subscription ' || id || '] ' || name || ' due ' || to_char(next_due,'YYYY-MM-DD') FROM subscriptions WHERE status = 'active' AND decision <> 'cancel' AND next_due IS NOT NULL AND next_due - remind_days_before <= (now() AT TIME ZONE 'Asia/Bahrain')::date AND (snooze_until IS NULL OR snooze_until <= (now() AT TIME ZONE 'Asia/Bahrain')::date)) f) AS followups) z",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "217yvEvXO0k0WsBt",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:35:22.587Z",
+      "updatedAt": "2026-10-10T09:35:22.587Z"
+    }
+  ],
+  "activeVersion": null
+}
