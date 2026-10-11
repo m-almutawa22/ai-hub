@@ -1,0 +1,449 @@
+{
+  "id": "0nFZ5wRNrlwEcTai",
+  "name": "Agent Tool - Image Design",
+  "description": "Sub-workflow for the AI agent: generates an ad/design image with OpenAI, stores it in the media table, returns a public link, and optionally sets it as a package image.",
+  "active": true,
+  "activeVersionId": "441136ed-e2bd-4066-8939-3f0985410238",
+  "createdAt": "2026-10-10T12:42:35.193Z",
+  "updatedAt": "2026-10-10T12:44:48.390Z",
+  "isArchived": false,
+  "versionId": "441136ed-e2bd-4066-8939-3f0985410238",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "35a37000-32b2-4f13-b787-764dce2ebf96",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "prompt",
+              "type": "string"
+            },
+            {
+              "name": "size",
+              "type": "string"
+            },
+            {
+              "name": "package_id",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c354df81-b4dc-4f3c-999c-ef24b58297b2",
+      "name": "Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const i = $input.first().json;\nconst sizes = { square: '1024x1024', portrait: '1024x1536', landscape: '1536x1024', story: '1024x1536' };\nconst size = sizes[String(i.size || 'square').toLowerCase()] || (/^\\d+x\\d+$/.test(String(i.size)) ? String(i.size) : '1024x1024');\nconst style = ' Professional travel-agency advertising design for Al Mutawa Tourism (المطوع للسياحة), Bahrain. Clean, premium, high quality. Write any Arabic text exactly as given, right-to-left, correct spelling. STRICT: do NOT invent prices, dates, phone numbers, websites or offers. Only show prices/dates/contact details that appear in this request. If a contact is needed use only WhatsApp +973 33444748.';\nreturn [{ json: { body: { model: 'gpt-image-2', prompt: String(i.prompt || '') + style, size, quality: 'medium', n: 1 }, package_id: String(i.package_id || ''), name: String(i.name || 'design') } }];"
+      }
+    },
+    {
+      "id": "2a057abf-4ff3-45a1-b79f-1b7a7147a493",
+      "name": "Generate Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 240000
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "59270dc2-10e3-4059-81f4-0749d962954d",
+      "name": "Pick Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst b = r.body || {};\nconst d = (b.data || [])[0] || {};\nif (!d.b64_json) return [{ json: { ok: false, b64: '', error: (b.error && b.error.message) || ('HTTP ' + r.statusCode) } }];\nreturn [{ json: { ok: true, b64: d.b64_json, error: '' } }];"
+      }
+    },
+    {
+      "id": "aa99e9cf-28bc-486c-82be-0389ac5ae74f",
+      "name": "Save Media",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH m AS (INSERT INTO media (mime, name, data, source) SELECT 'image/png', $1::text, decode($2::text, 'base64'), 'agent_design' WHERE $2::text <> '' RETURNING id, k), u AS (SELECT 'https://almutawabh.com/webhook/media?id=' || id || '&k=' || k AS url FROM m), p AS (UPDATE packages SET image_url = (SELECT url FROM u) WHERE id = NULLIF($3::text, '')::int AND EXISTS (SELECT 1 FROM u) RETURNING id) SELECT (SELECT url FROM u) AS url, (SELECT count(*) FROM p) AS package_updated, $4::text AS error",
+        "options": {
+          "queryReplacement": "={{ [ $('Prepare').first().json.name, $json.b64, $('Prepare').first().json.package_id, $json.error ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "59eb8bdf-bbc7-4514-a5ff-2e58fd7a9018",
+      "name": "Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nif (!r.url) return [{ json: { ok: false, error: r.error || 'image generation failed' } }];\nreturn [{ json: { ok: true, image_url: r.url, package_updated: Number(r.package_updated) > 0, show_to_user: '![design](' + r.url + ')' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Pick Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Image": {
+      "main": [
+        [
+          {
+            "node": "Save Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Media": {
+      "main": [
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "0nFZ5wRNrlwEcTai",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:42:35.194Z",
+      "updatedAt": "2026-10-10T12:42:35.194Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "441136ed-e2bd-4066-8939-3f0985410238",
+    "workflowId": "0nFZ5wRNrlwEcTai",
+    "nodes": [
+      {
+        "id": "35a37000-32b2-4f13-b787-764dce2ebf96",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "prompt",
+                "type": "string"
+              },
+              {
+                "name": "size",
+                "type": "string"
+              },
+              {
+                "name": "package_id",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c354df81-b4dc-4f3c-999c-ef24b58297b2",
+        "name": "Prepare",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const i = $input.first().json;\nconst sizes = { square: '1024x1024', portrait: '1024x1536', landscape: '1536x1024', story: '1024x1536' };\nconst size = sizes[String(i.size || 'square').toLowerCase()] || (/^\\d+x\\d+$/.test(String(i.size)) ? String(i.size) : '1024x1024');\nconst style = ' Professional travel-agency advertising design for Al Mutawa Tourism (المطوع للسياحة), Bahrain. Clean, premium, high quality. Write any Arabic text exactly as given, right-to-left, correct spelling. STRICT: do NOT invent prices, dates, phone numbers, websites or offers. Only show prices/dates/contact details that appear in this request. If a contact is needed use only WhatsApp +973 33444748.';\nreturn [{ json: { body: { model: 'gpt-image-2', prompt: String(i.prompt || '') + style, size, quality: 'medium', n: 1 }, package_id: String(i.package_id || ''), name: String(i.name || 'design') } }];"
+        }
+      },
+      {
+        "id": "2a057abf-4ff3-45a1-b79f-1b7a7147a493",
+        "name": "Generate Image",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/images/generations",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 240000
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "59270dc2-10e3-4059-81f4-0749d962954d",
+        "name": "Pick Image",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nconst b = r.body || {};\nconst d = (b.data || [])[0] || {};\nif (!d.b64_json) return [{ json: { ok: false, b64: '', error: (b.error && b.error.message) || ('HTTP ' + r.statusCode) } }];\nreturn [{ json: { ok: true, b64: d.b64_json, error: '' } }];"
+        }
+      },
+      {
+        "id": "aa99e9cf-28bc-486c-82be-0389ac5ae74f",
+        "name": "Save Media",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH m AS (INSERT INTO media (mime, name, data, source) SELECT 'image/png', $1::text, decode($2::text, 'base64'), 'agent_design' WHERE $2::text <> '' RETURNING id, k), u AS (SELECT 'https://almutawabh.com/webhook/media?id=' || id || '&k=' || k AS url FROM m), p AS (UPDATE packages SET image_url = (SELECT url FROM u) WHERE id = NULLIF($3::text, '')::int AND EXISTS (SELECT 1 FROM u) RETURNING id) SELECT (SELECT url FROM u) AS url, (SELECT count(*) FROM p) AS package_updated, $4::text AS error",
+          "options": {
+            "queryReplacement": "={{ [ $('Prepare').first().json.name, $json.b64, $('Prepare').first().json.package_id, $json.error ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "59eb8bdf-bbc7-4514-a5ff-2e58fd7a9018",
+        "name": "Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nif (!r.url) return [{ json: { ok: false, error: r.error || 'image generation failed' } }];\nreturn [{ json: { ok: true, image_url: r.url, package_updated: Number(r.package_updated) > 0, show_to_user: '![design](' + r.url + ')' } }];"
+        }
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Prepare",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare": {
+        "main": [
+          [
+            {
+              "node": "Generate Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Image": {
+        "main": [
+          [
+            {
+              "node": "Pick Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Image": {
+        "main": [
+          [
+            {
+              "node": "Save Media",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Media": {
+        "main": [
+          [
+            {
+              "node": "Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "No invented prices/phones",
+    "description": "Updated nodes: Prepare",
+    "autosaved": false,
+    "createdAt": "2026-10-10T12:44:48.391Z",
+    "updatedAt": "2026-10-10T12:44:48.391Z",
+    "workflowPublishHistory": [
+      {
+        "id": 297,
+        "workflowId": "0nFZ5wRNrlwEcTai",
+        "versionId": "441136ed-e2bd-4066-8939-3f0985410238",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T12:46:36.719Z"
+      }
+    ]
+  }
+}
