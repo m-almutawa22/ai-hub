@@ -1,0 +1,94 @@
+{
+  "id": "l0SIb3dMgRGTiMhy",
+  "name": "Setup Agent Memory (one-off)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T08:16:06.896Z",
+  "updatedAt": "2026-10-10T08:16:34.000Z",
+  "isArchived": true,
+  "versionId": "a3e92e38-6993-4264-95ed-e400ca9cbc8e",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "f084f43a-3892-4d2e-970e-81baca28532e",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "2809bb4e-f5de-4c55-bca7-f187fa3c5c72",
+      "name": "Setup Memory",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_memory (category, fact, source) VALUES ('عن محمد','محمد المطوع صاحب مكتب المطوع للسياحة (مؤسسة فردية، سجل تجاري 177114-01) في كرزكان، البحرين: سفر وسياحة، رحلات جماعية، وخدمات تخليص معاملات حكومية للعملاء.','claude'), ('عن محمد','يشتغل دوام كامل في شركة المنصوري كمسؤول علاقات عامة ويخلص كل معاملاتها الحكومية. وقته ضيق؛ يبي يدير الشغلين بحوالي ساعة باليوم ويوافق بنعم/لا سريعة.','claude'), ('عن محمد','عنده موظف مساعد واحد في المكتب للمهام البسيطة فقط.','claude'), ('طريقة التعامل','كلمه بالعربي باللهجة الخليجية، مختصر وعملي.','claude'), ('طريقة التعامل','أي شي يحتاج تدخله ينحط في قائمة معلقة لين يفضى، والشغل اللي ما يحتاجه يكمل.','claude'), ('طريقة التعامل','هو يعتبرك ساعده اليمين: نفّذ الشغل بالأدوات بدل ما تكتفي بالكلام، وإذا ما تقدر قول بوضوح شنو الناقص.','claude'), ('المكتب','الحساب الرسمي في انستقرام: @almutawa.tourism. إيميل المكتب Outlook هو الأساسي، وGmail شخصي وأولويته منخفضة.','claude'), ('المكتب','حساب بنك السلام One Zero هو حساب المكتب. بعض البنوك ترسل إشعارات بالإيميل وبعضها SMS.','claude'), ('المكتب','عنده أكثر من رقم واتساب لخدمة العملاء، ورقم واتساب بزنس شخصي على جواله منفصل عن النظام.','claude'), ('قرارات','الميزانية المبدئية للذكاء الاصطناعي مؤقتة وتزيد إذا أثبت النظام نفسه؛ التنبيه عند 50/80/100%.','claude'), ('قرارات','البداية لمكتب المطوع فقط؛ لا بيانات أو حسابات من شركة المنصوري بدون موافقة رسمية. المعاملات الحكومية فقط من حساباته الشخصية أو المفوّضة.','claude'), ('قرارات','لا تُطلق أي حملة إعلانية أو رسائل جماعية بدون أمر صريح منه.','claude'), ('أهداف','يبي الوكيل يرد على إيميلات العملاء ويرسل العروض، يسوي تقارير، يتابع الفلوس الداخلة والطالعة، يطلب أسعار من الموردين ويضيف العمولة، ومستقبلاً يخلص المعاملات الحكومية ويسوي اجتماعات صوتية.','claude'), ('أهداف','يخطط لعلامة سياحية ثانية (توأم) بنفس النظام بس بواجهة واسم مختلف.','claude'), ('أدوات التسويق','حالياً الوكيل يكتب نصوص الإعلانات فقط؛ تصميم الصور والفيديو لسه ما انبنى. قل هذا بوضوح بدل ما توعد بصورة.','claude'); SELECT count(*) AS mem_count FROM agent_memory",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Setup Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "l0SIb3dMgRGTiMhy",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T08:16:06.899Z",
+      "updatedAt": "2026-10-10T08:16:06.899Z"
+    }
+  ],
+  "activeVersion": null
+}
