@@ -1,0 +1,753 @@
+{
+  "id": "i1BEdaQAzpYtnYsT",
+  "name": "Agent Tool - Design Studio",
+  "description": "Agent design studio: new design, edit an existing design by feedback (image edit), or full redesign; saves each version in designs + media and returns approve/edit/redesign buttons.",
+  "active": true,
+  "activeVersionId": "fbebc3bc-8b23-4998-bb0f-6700d4f639d7",
+  "createdAt": "2026-10-10T14:20:46.577Z",
+  "updatedAt": "2026-10-10T14:23:44.431Z",
+  "isArchived": false,
+  "versionId": "fbebc3bc-8b23-4998-bb0f-6700d4f639d7",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "825bdea6-162f-408b-acf5-8416e06326d3",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "mode",
+              "type": "string"
+            },
+            {
+              "name": "prompt",
+              "type": "string"
+            },
+            {
+              "name": "size",
+              "type": "string"
+            },
+            {
+              "name": "package_id",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "base_design_id",
+              "type": "string"
+            },
+            {
+              "name": "brief",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "39e7de62-27e2-4111-9863-61cf5dc6d477",
+      "name": "Get Base Design",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT coalesce((SELECT encode(m.data, 'base64') FROM designs d JOIN media m ON m.id = d.media_id WHERE d.id = NULLIF($1::text, '')::int), '') AS b64, (SELECT d.package_id FROM designs d WHERE d.id = NULLIF($1::text, '')::int) AS base_package_id, (SELECT d.brief FROM designs d WHERE d.id = NULLIF($1::text, '')::int) AS base_brief",
+        "options": {
+          "queryReplacement": "={{ [ String($json.base_design_id || '') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "46bc3c15-931e-40cb-891e-3c9aab6cd572",
+      "name": "Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const i = $('When Called').first().json;\nconst b = $input.first().json;\nconst sizes = { square: '1024x1024', portrait: '1024x1536', landscape: '1536x1024', story: '1024x1536' };\nconst size = sizes[String(i.size || 'square').toLowerCase()] || (/^\\d+x\\d+$/.test(String(i.size)) ? String(i.size) : '1024x1024');\nconst rules = ' Professional travel-agency advertising design for Al Mutawa Tourism (المطوع للسياحة), Bahrain. Clean, premium, navy and gold. Write all Arabic text exactly as given, right-to-left, correct spelling. STRICT: do NOT invent prices, dates, phone numbers, websites or offers; only show details written in this request. Never draw any other or made-up logo.';\nconst mode = String(i.mode || 'new').toLowerCase();\nconst isEdit = mode === 'edit' && !!b.b64;\nconst prompt = isEdit ? ('Edit this advertisement image. Apply ONLY these changes and keep everything else (layout, text, colors, photos, logo) the same: ' + String(i.prompt || '') + rules) : ('Create a brand-new advertisement design. The attached image is the OFFICIAL office logo: place it exactly as it is (same shape, colors and text, not redrawn, not distorted) clearly in a top corner of the design. Design brief: ' + String(i.prompt || '') + rules);\nconst out = { json: { isEdit, mode: isEdit ? 'edit' : (mode === 'redesign' ? 'redesign' : 'new'), prompt, size: isEdit ? 'auto' : size, package_id: String(i.package_id || b.base_package_id || ''), name: String(i.name || 'design'), base_design_id: String(i.base_design_id || ''), brief: String(i.brief || b.base_brief || ''), feedback: isEdit ? String(i.prompt || '') : '' } };\nif (isEdit) out.binary = { data: { data: b.b64, mimeType: 'image/png', fileName: 'base.png' } };\nreturn [out];"
+      }
+    },
+    {
+      "id": "9a6a26b9-8b7c-4e42-957e-0f19994d7aff",
+      "name": "Is Edit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.isEdit }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "60ebe80e-3178-4899-9b4d-94e349991cd1",
+      "name": "Edit Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "inputDataFieldName": "data",
+              "name": "image",
+              "parameterType": "formBinaryData"
+            },
+            {
+              "name": "model",
+              "value": "gpt-image-2"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $('Prepare').first().json.prompt }}"
+            },
+            {
+              "name": "size",
+              "value": "={{ $('Prepare').first().json.size }}"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 240000
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "805c5f13-6d0e-4d29-a3f2-0e31842aeb08",
+      "name": "Pick Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        96
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst b = r.body || {};\nconst d = (b.data || [])[0] || {};\nif (!d.b64_json) return [{ json: { b64: '', error: (b.error && b.error.message) || ('HTTP ' + r.statusCode) } }];\nreturn [{ json: { b64: d.b64_json, error: '' } }];"
+      }
+    },
+    {
+      "id": "6145dafb-2960-4929-8415-edb95091dd48",
+      "name": "Save Design",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        96
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH m AS (INSERT INTO media (mime, name, data, source) SELECT 'image/png', $1::text, decode($2::text, 'base64'), 'agent_design' WHERE $2::text <> '' RETURNING id, k), d AS (INSERT INTO designs (package_id, parent_id, mode, brief, prompt, feedback, media_id, url) SELECT NULLIF($3::text, '')::int, NULLIF($4::text, '')::int, $5::text, NULLIF($6::text, ''), $7::text, NULLIF($8::text, ''), m.id, 'https://almutawabh.com/webhook/media?id=' || m.id || '&k=' || m.k FROM m RETURNING id, url, package_id) SELECT (SELECT id FROM d) AS design_id, (SELECT url FROM d) AS url, (SELECT package_id FROM d) AS package_id, $9::text AS error",
+        "options": {
+          "queryReplacement": "={{ [ $('Prepare').first().json.name, $json.b64, $('Prepare').first().json.package_id, $('Prepare').first().json.base_design_id, $('Prepare').first().json.mode, $('Prepare').first().json.brief, $('Prepare').first().json.prompt, $('Prepare').first().json.feedback, $json.error ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "f55ed418-f455-4133-838d-55ac5a14b380",
+      "name": "Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        96
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nif (!r.url) return [{ json: { ok: false, error: r.error || 'image generation failed' } }];\nreturn [{ json: { ok: true, design_id: r.design_id, image_url: r.url, package_id: r.package_id, show_to_user: '![\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + '](' + r.url + ')\\n\\n[[\\u2705 \\u0627\\u0639\\u062a\\u0645\\u0627\\u062f \\u0627\\u0644\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + ']] [[\\u270f\\ufe0f \\u062a\\u0639\\u062f\\u064a\\u0644 \\u0627\\u0644\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + ']] [[\\ud83d\\udd04 \\u062a\\u0635\\u0645\\u064a\\u0645 \\u062c\\u062f\\u064a\\u062f \\u0628\\u062f\\u0644 ' + r.design_id + ']]', note: 'Paste show_to_user exactly at the end of your reply. Not approved yet; the package photo changes only after approval.' } }];"
+      }
+    },
+    {
+      "id": "33a4e7e4-4c33-4449-8e04-9acd76fdb8f3",
+      "name": "Get Logo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "data",
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 30000
+        },
+        "url": "https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Get Base Design",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Base Design": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare": {
+      "main": [
+        [
+          {
+            "node": "Is Edit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Edit?": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Logo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Pick Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Image": {
+      "main": [
+        [
+          {
+            "node": "Save Design",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Design": {
+      "main": [
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Logo": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "i1BEdaQAzpYtnYsT",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T14:20:46.578Z",
+      "updatedAt": "2026-10-10T14:20:46.578Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "fbebc3bc-8b23-4998-bb0f-6700d4f639d7",
+    "workflowId": "i1BEdaQAzpYtnYsT",
+    "nodes": [
+      {
+        "id": "825bdea6-162f-408b-acf5-8416e06326d3",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          96
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "prompt",
+                "type": "string"
+              },
+              {
+                "name": "size",
+                "type": "string"
+              },
+              {
+                "name": "package_id",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "base_design_id",
+                "type": "string"
+              },
+              {
+                "name": "brief",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "39e7de62-27e2-4111-9863-61cf5dc6d477",
+        "name": "Get Base Design",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          96
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT coalesce((SELECT encode(m.data, 'base64') FROM designs d JOIN media m ON m.id = d.media_id WHERE d.id = NULLIF($1::text, '')::int), '') AS b64, (SELECT d.package_id FROM designs d WHERE d.id = NULLIF($1::text, '')::int) AS base_package_id, (SELECT d.brief FROM designs d WHERE d.id = NULLIF($1::text, '')::int) AS base_brief",
+          "options": {
+            "queryReplacement": "={{ [ String($json.base_design_id || '') ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "46bc3c15-931e-40cb-891e-3c9aab6cd572",
+        "name": "Prepare",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          96
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const i = $('When Called').first().json;\nconst b = $input.first().json;\nconst sizes = { square: '1024x1024', portrait: '1024x1536', landscape: '1536x1024', story: '1024x1536' };\nconst size = sizes[String(i.size || 'square').toLowerCase()] || (/^\\d+x\\d+$/.test(String(i.size)) ? String(i.size) : '1024x1024');\nconst rules = ' Professional travel-agency advertising design for Al Mutawa Tourism (المطوع للسياحة), Bahrain. Clean, premium, navy and gold. Write all Arabic text exactly as given, right-to-left, correct spelling. STRICT: do NOT invent prices, dates, phone numbers, websites or offers; only show details written in this request. Never draw any other or made-up logo.';\nconst mode = String(i.mode || 'new').toLowerCase();\nconst isEdit = mode === 'edit' && !!b.b64;\nconst prompt = isEdit ? ('Edit this advertisement image. Apply ONLY these changes and keep everything else (layout, text, colors, photos, logo) the same: ' + String(i.prompt || '') + rules) : ('Create a brand-new advertisement design. The attached image is the OFFICIAL office logo: place it exactly as it is (same shape, colors and text, not redrawn, not distorted) clearly in a top corner of the design. Design brief: ' + String(i.prompt || '') + rules);\nconst out = { json: { isEdit, mode: isEdit ? 'edit' : (mode === 'redesign' ? 'redesign' : 'new'), prompt, size: isEdit ? 'auto' : size, package_id: String(i.package_id || b.base_package_id || ''), name: String(i.name || 'design'), base_design_id: String(i.base_design_id || ''), brief: String(i.brief || b.base_brief || ''), feedback: isEdit ? String(i.prompt || '') : '' } };\nif (isEdit) out.binary = { data: { data: b.b64, mimeType: 'image/png', fileName: 'base.png' } };\nreturn [out];"
+        }
+      },
+      {
+        "id": "9a6a26b9-8b7c-4e42-957e-0f19994d7aff",
+        "name": "Is Edit?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          672,
+          96
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.isEdit }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "60ebe80e-3178-4899-9b4d-94e349991cd1",
+        "name": "Edit Image",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/images/edits",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "inputDataFieldName": "data",
+                "name": "image",
+                "parameterType": "formBinaryData"
+              },
+              {
+                "name": "model",
+                "value": "gpt-image-2"
+              },
+              {
+                "name": "prompt",
+                "value": "={{ $('Prepare').first().json.prompt }}"
+              },
+              {
+                "name": "size",
+                "value": "={{ $('Prepare').first().json.size }}"
+              },
+              {
+                "name": "quality",
+                "value": "medium"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 240000
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "805c5f13-6d0e-4d29-a3f2-0e31842aeb08",
+        "name": "Pick Image",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          96
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nconst b = r.body || {};\nconst d = (b.data || [])[0] || {};\nif (!d.b64_json) return [{ json: { b64: '', error: (b.error && b.error.message) || ('HTTP ' + r.statusCode) } }];\nreturn [{ json: { b64: d.b64_json, error: '' } }];"
+        }
+      },
+      {
+        "id": "6145dafb-2960-4929-8415-edb95091dd48",
+        "name": "Save Design",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1344,
+          96
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH m AS (INSERT INTO media (mime, name, data, source) SELECT 'image/png', $1::text, decode($2::text, 'base64'), 'agent_design' WHERE $2::text <> '' RETURNING id, k), d AS (INSERT INTO designs (package_id, parent_id, mode, brief, prompt, feedback, media_id, url) SELECT NULLIF($3::text, '')::int, NULLIF($4::text, '')::int, $5::text, NULLIF($6::text, ''), $7::text, NULLIF($8::text, ''), m.id, 'https://almutawabh.com/webhook/media?id=' || m.id || '&k=' || m.k FROM m RETURNING id, url, package_id) SELECT (SELECT id FROM d) AS design_id, (SELECT url FROM d) AS url, (SELECT package_id FROM d) AS package_id, $9::text AS error",
+          "options": {
+            "queryReplacement": "={{ [ $('Prepare').first().json.name, $json.b64, $('Prepare').first().json.package_id, $('Prepare').first().json.base_design_id, $('Prepare').first().json.mode, $('Prepare').first().json.brief, $('Prepare').first().json.prompt, $('Prepare').first().json.feedback, $json.error ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "f55ed418-f455-4133-838d-55ac5a14b380",
+        "name": "Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          96
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nif (!r.url) return [{ json: { ok: false, error: r.error || 'image generation failed' } }];\nreturn [{ json: { ok: true, design_id: r.design_id, image_url: r.url, package_id: r.package_id, show_to_user: '![\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + '](' + r.url + ')\\n\\n[[\\u2705 \\u0627\\u0639\\u062a\\u0645\\u0627\\u062f \\u0627\\u0644\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + ']] [[\\u270f\\ufe0f \\u062a\\u0639\\u062f\\u064a\\u0644 \\u0627\\u0644\\u062a\\u0635\\u0645\\u064a\\u0645 ' + r.design_id + ']] [[\\ud83d\\udd04 \\u062a\\u0635\\u0645\\u064a\\u0645 \\u062c\\u062f\\u064a\\u062f \\u0628\\u062f\\u0644 ' + r.design_id + ']]', note: 'Paste show_to_user exactly at the end of your reply. Not approved yet; the package photo changes only after approval.' } }];"
+        }
+      },
+      {
+        "id": "33a4e7e4-4c33-4449-8e04-9acd76fdb8f3",
+        "name": "Get Logo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          900,
+          200
+        ],
+        "parameters": {
+          "method": "GET",
+          "options": {
+            "response": {
+              "response": {
+                "outputPropertyName": "data",
+                "responseFormat": "file"
+              }
+            },
+            "timeout": 30000
+          },
+          "url": "https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png"
+        }
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Get Base Design",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Base Design": {
+        "main": [
+          [
+            {
+              "node": "Prepare",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare": {
+        "main": [
+          [
+            {
+              "node": "Is Edit?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Edit?": {
+        "main": [
+          [
+            {
+              "node": "Edit Image",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get Logo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Image": {
+        "main": [
+          [
+            {
+              "node": "Pick Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pick Image": {
+        "main": [
+          [
+            {
+              "node": "Save Design",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Design": {
+        "main": [
+          [
+            {
+              "node": "Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Logo": {
+        "main": [
+          [
+            {
+              "node": "Edit Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Use real office logo in new designs",
+    "description": "Added nodes: Get Logo\nRemoved nodes: Generate Image\nUpdated nodes: Prepare, Edit Image\nConnections: 2 added, 2 removed",
+    "autosaved": false,
+    "createdAt": "2026-10-10T14:23:44.432Z",
+    "updatedAt": "2026-10-10T14:23:44.432Z",
+    "workflowPublishHistory": [
+      {
+        "id": 302,
+        "workflowId": "i1BEdaQAzpYtnYsT",
+        "versionId": "fbebc3bc-8b23-4998-bb0f-6700d4f639d7",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T14:23:47.273Z"
+      }
+    ]
+  }
+}
