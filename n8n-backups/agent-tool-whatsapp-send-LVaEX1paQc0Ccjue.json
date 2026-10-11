@@ -1,0 +1,425 @@
+{
+  "id": "LVaEX1paQc0Ccjue",
+  "name": "Agent Tool - WhatsApp Send",
+  "description": "Sub-workflow for the AI agent: sends a WhatsApp message (free text or the approved booking-confirmation template) via Twilio and logs it to audit_log.",
+  "active": true,
+  "activeVersionId": "e317ffb6-27d1-45cd-b1bc-07d413d5327c",
+  "createdAt": "2026-10-10T12:42:20.232Z",
+  "updatedAt": "2026-10-10T12:42:20.232Z",
+  "isArchived": false,
+  "versionId": "e317ffb6-27d1-45cd-b1bc-07d413d5327c",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "0129ecf5-2173-4c9b-b4e1-13c4ff8300e2",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "mode",
+              "type": "string"
+            },
+            {
+              "name": "phone",
+              "type": "string"
+            },
+            {
+              "name": "text",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "ref",
+              "type": "string"
+            },
+            {
+              "name": "details",
+              "type": "string"
+            },
+            {
+              "name": "staff",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "95ad25ad-d66e-42db-ad22-c15f49abf85d",
+      "name": "Prepare Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const i = $input.first().json;\nlet d = String(i.phone || '').replace(/[^0-9]/g, '');\nif (d.startsWith('00')) d = d.slice(2);\nif (d.length === 8) d = '973' + d;\nconst mode = String(i.mode || 'text');\nconst p = { To: 'whatsapp:+' + d, MessagingServiceSid: 'MG4cf17c1ce3add815f97ff92153a3033d' };\nif (mode === 'booking_confirm') { p.ContentSid = 'HX55091e8f14f238dd8ba066cadf962fac'; p.ContentVariables = JSON.stringify({ '1': String(i.name || 'عميلنا العزيز'), '2': String(i.ref || ''), '3': String(i.details || '') }); }\nelse p.Body = String(i.text || '');\nconst bad = d.length < 10 || (mode !== 'booking_confirm' && !p.Body) || (mode === 'booking_confirm' && !i.ref);\nif (bad) p.To = '';\nconst form = Object.keys(p).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(p[k]); }).join('&');\nreturn [{ json: { bad, phone: '+' + d, mode, staff: String(i.staff || ''), preview: p.Body || ('booking_confirm ' + (i.ref || '')), form } }];"
+      }
+    },
+    {
+      "id": "bd987f31-c44d-4fe2-917e-529113881eea",
+      "name": "Send via Twilio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "specifyBody": "string",
+        "body": "={{ $json.form }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "NIIn1eNIQz6Zu5UB",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "fe114099-0be8-4347-8809-c533d3b42977",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) VALUES ('agent', 'staff_' || $1::text, 'whatsapp_send', 'customer_phone', $2::text, 'Agent Tool - WhatsApp Send', jsonb_build_object('mode', $3::text, 'status', $4::text, 'preview', left($5::text, 300), 'error', $6::text)) RETURNING $4::text AS status, $6::text AS error, $2::text AS phone, $7::text AS sid",
+        "options": {
+          "queryReplacement": "={{ [ $('Prepare Message').first().json.staff, $('Prepare Message').first().json.phone, $('Prepare Message').first().json.mode, String($json.statusCode || ''), $('Prepare Message').first().json.preview, $('Prepare Message').first().json.bad ? 'invalid phone or empty message' : (($json.body && $json.body.message) || ''), ($json.body && $json.body.sid) || '' ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "c5cc6006-c604-4aa0-a55a-c50a6b00fad6",
+      "name": "Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst ok = /^2/.test(String(r.status)) && !r.error;\nreturn [{ json: { ok, phone: r.phone, message_sid: r.sid, error: ok ? '' : (r.error || ('HTTP ' + r.status)), hint: ok ? 'Sent' : 'If the error mentions 24 hours / outside window, free text cannot be sent until the customer messages us first; use the booking_confirm template or ask the owner.' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Prepare Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Message": {
+      "main": [
+        [
+          {
+            "node": "Send via Twilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send via Twilio": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Result": {
+      "main": [
+        [
+          {
+            "node": "Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "LVaEX1paQc0Ccjue",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:42:20.234Z",
+      "updatedAt": "2026-10-10T12:42:20.234Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "e317ffb6-27d1-45cd-b1bc-07d413d5327c",
+    "workflowId": "LVaEX1paQc0Ccjue",
+    "nodes": [
+      {
+        "id": "0129ecf5-2173-4c9b-b4e1-13c4ff8300e2",
+        "name": "When Called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "phone",
+                "type": "string"
+              },
+              {
+                "name": "text",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "ref",
+                "type": "string"
+              },
+              {
+                "name": "details",
+                "type": "string"
+              },
+              {
+                "name": "staff",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "95ad25ad-d66e-42db-ad22-c15f49abf85d",
+        "name": "Prepare Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const i = $input.first().json;\nlet d = String(i.phone || '').replace(/[^0-9]/g, '');\nif (d.startsWith('00')) d = d.slice(2);\nif (d.length === 8) d = '973' + d;\nconst mode = String(i.mode || 'text');\nconst p = { To: 'whatsapp:+' + d, MessagingServiceSid: 'MG4cf17c1ce3add815f97ff92153a3033d' };\nif (mode === 'booking_confirm') { p.ContentSid = 'HX55091e8f14f238dd8ba066cadf962fac'; p.ContentVariables = JSON.stringify({ '1': String(i.name || 'عميلنا العزيز'), '2': String(i.ref || ''), '3': String(i.details || '') }); }\nelse p.Body = String(i.text || '');\nconst bad = d.length < 10 || (mode !== 'booking_confirm' && !p.Body) || (mode === 'booking_confirm' && !i.ref);\nif (bad) p.To = '';\nconst form = Object.keys(p).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(p[k]); }).join('&');\nreturn [{ json: { bad, phone: '+' + d, mode, staff: String(i.staff || ''), preview: p.Body || ('booking_confirm ' + (i.ref || '')), form } }];"
+        }
+      },
+      {
+        "id": "bd987f31-c44d-4fe2-917e-529113881eea",
+        "name": "Send via Twilio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.twilio.com/2010-04-01/Accounts/[REDACTED_TWILIO_ACCOUNT_SID]/Messages.json",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "twilioApi",
+          "sendBody": true,
+          "contentType": "form-urlencoded",
+          "specifyBody": "string",
+          "body": "={{ $json.form }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 30000
+          }
+        },
+        "credentials": {
+          "twilioApi": {
+            "id": "NIIn1eNIQz6Zu5UB",
+            "name": "Twilio account"
+          }
+        }
+      },
+      {
+        "id": "fe114099-0be8-4347-8809-c533d3b42977",
+        "name": "Log Result",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) VALUES ('agent', 'staff_' || $1::text, 'whatsapp_send', 'customer_phone', $2::text, 'Agent Tool - WhatsApp Send', jsonb_build_object('mode', $3::text, 'status', $4::text, 'preview', left($5::text, 300), 'error', $6::text)) RETURNING $4::text AS status, $6::text AS error, $2::text AS phone, $7::text AS sid",
+          "options": {
+            "queryReplacement": "={{ [ $('Prepare Message').first().json.staff, $('Prepare Message').first().json.phone, $('Prepare Message').first().json.mode, String($json.statusCode || ''), $('Prepare Message').first().json.preview, $('Prepare Message').first().json.bad ? 'invalid phone or empty message' : (($json.body && $json.body.message) || ''), ($json.body && $json.body.sid) || '' ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "c5cc6006-c604-4aa0-a55a-c50a6b00fad6",
+        "name": "Result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nconst ok = /^2/.test(String(r.status)) && !r.error;\nreturn [{ json: { ok, phone: r.phone, message_sid: r.sid, error: ok ? '' : (r.error || ('HTTP ' + r.status)), hint: ok ? 'Sent' : 'If the error mentions 24 hours / outside window, free text cannot be sent until the customer messages us first; use the booking_confirm template or ask the owner.' } }];"
+        }
+      }
+    ],
+    "connections": {
+      "When Called": {
+        "main": [
+          [
+            {
+              "node": "Prepare Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Message": {
+        "main": [
+          [
+            {
+              "node": "Send via Twilio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send via Twilio": {
+        "main": [
+          [
+            {
+              "node": "Log Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log Result": {
+        "main": [
+          [
+            {
+              "node": "Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial WhatsApp send tool",
+    "description": "Created with 5 nodes: When Called, Prepare Message, Send via Twilio, Log Result, Result",
+    "autosaved": false,
+    "createdAt": "2026-10-10T12:42:20.235Z",
+    "updatedAt": "2026-10-10T12:42:20.235Z",
+    "workflowPublishHistory": [
+      {
+        "id": 292,
+        "workflowId": "LVaEX1paQc0Ccjue",
+        "versionId": "e317ffb6-27d1-45cd-b1bc-07d413d5327c",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T12:42:45.695Z"
+      }
+    ]
+  }
+}
