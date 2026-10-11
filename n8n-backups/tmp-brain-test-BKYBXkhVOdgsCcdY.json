@@ -1,0 +1,142 @@
+{
+  "id": "BKYBXkhVOdgsCcdY",
+  "name": "TMP brain test",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T14:32:10.910Z",
+  "updatedAt": "2026-10-10T14:32:50.000Z",
+  "isArchived": true,
+  "versionId": "9964676a-0e07-4adf-b041-1fa0bdd3210b",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "a5d13bba-80c8-428e-bfe8-cfa2a3e5aa35",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ae78b3f9-024c-4418-897b-1f027e09495c",
+      "name": "WA Test",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KuQ3xZdDgVF2hOiI"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "whatsapp",
+            "contact": "+97300000001",
+            "name": "تجربة",
+            "message": "كم سعر رحلة كربلاء 8 أيام؟ وكم تطلع بالدينار؟"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact",
+              "displayName": "contact",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "WA Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "BKYBXkhVOdgsCcdY",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T14:32:10.912Z",
+      "updatedAt": "2026-10-10T14:32:10.912Z"
+    }
+  ],
+  "activeVersion": null
+}
