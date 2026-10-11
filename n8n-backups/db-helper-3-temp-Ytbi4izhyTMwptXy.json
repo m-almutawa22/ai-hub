@@ -1,0 +1,94 @@
+{
+  "id": "Ytbi4izhyTMwptXy",
+  "name": "DB helper 3 (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T09:45:47.207Z",
+  "updatedAt": "2026-10-10T09:48:53.000Z",
+  "isArchived": true,
+  "versionId": "f96cd807-ebd3-4594-aa06-deaa59abc49f",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "acbc4d51-47a9-4944-8b3d-01d41aae3d7a",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "47741111-d09a-4fc9-944a-46dc995a9935",
+      "name": "Q",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT (SELECT json_object_agg(table_name, cols) FROM (SELECT table_name, json_agg(column_name || ':' || data_type ORDER BY ordinal_position) cols FROM information_schema.columns WHERE table_name IN ('bookings','travelers','packages','customers') GROUP BY table_name) x) AS schema, (SELECT count(*) FROM bookings) nb, (SELECT count(*) FROM travelers) nt, (SELECT count(*) FROM packages) np, (SELECT json_agg(t) FROM (SELECT id, title, departure_date, status FROM packages ORDER BY id DESC LIMIT 5) t) pk, (SELECT json_agg(k) FROM (SELECT section, title, left(content, 400) c FROM knowledge_base WHERE content ILIKE '%مسافر%' OR content ILIKE '%manifest%' OR content ILIKE '%airtable%' OR content ILIKE '%قائمة%') k) kb",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Ytbi4izhyTMwptXy",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:45:47.208Z",
+      "updatedAt": "2026-10-10T09:45:47.208Z"
+    }
+  ],
+  "activeVersion": null
+}
