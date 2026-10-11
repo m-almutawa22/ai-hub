@@ -1,0 +1,1165 @@
+{
+  "id": "VbbXsiGa1Z8VN09k",
+  "name": "Public - Website Chat (shared brain)",
+  "description": "Website chat widget (floating box replacing the WhatsApp button): serves /webhook/chat-widget.js and the /webhook/site-chat API, answered by the shared WhatsApp+website customer brain.",
+  "active": true,
+  "activeVersionId": "8073f8ee-9eaa-4bce-a6e9-c7502ca0917c",
+  "createdAt": "2026-10-10T14:30:34.351Z",
+  "updatedAt": "2026-10-10T14:33:36.641Z",
+  "isArchived": false,
+  "versionId": "8073f8ee-9eaa-4bce-a6e9-c7502ca0917c",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 3,
+  "nodes": [
+    {
+      "id": "d70c5d9b-98c5-4b99-a363-b545d2870b79",
+      "name": "Chat API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "site-chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "043006f6-be98-4915-beb9-ac511a1c5bb1"
+    },
+    {
+      "id": "06997599-4707-4aaf-b207-288bbc655352",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        192
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const b = $input.first().json.body || {};\nconst vid = String(b.vid || '');\nconst ok = /^[a-z0-9]{16,40}$/.test(vid);\nconst action = ok ? (b.action === 'history' ? 'history' : (b.action === 'send' ? 'send' : 'bad')) : 'bad';\nconst message = String(b.message || '').trim().slice(0, 1200);\nreturn [{ json: { action: action === 'send' && !message ? 'bad' : action, contact: 'web:' + vid, message } }];"
+      }
+    },
+    {
+      "id": "a441e5e0-2af2-4234-807b-458813bfc9c5",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        176
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "history",
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "history"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "outputKey": "send",
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "send"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "bad"
+        }
+      }
+    },
+    {
+      "id": "e02378f0-4ae2-4da7-8f0d-447e366ba59d",
+      "name": "Get History",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT coalesce(json_agg(json_build_object('direction', direction, 'body', body) ORDER BY timestamp), '[]'::json) AS messages FROM (SELECT * FROM messages WHERE customer_phone = $1::text ORDER BY timestamp DESC LIMIT 40) m",
+        "options": {
+          "queryReplacement": "={{ [ $json.contact ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "565b3fd8-7764-4ae9-b55c-adb474b53b80",
+      "name": "Respond History",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ messages: $json.messages || [] }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "6238cb57-ee18-4d2f-8629-73e525bb4900",
+      "name": "Save Inbound",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        192
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH i AS (INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1::text, 'Inbound', $2::text, 'web') RETURNING id) SELECT (SELECT id FROM i) AS id, (SELECT count(*) FROM messages WHERE customer_phone = $1::text AND direction = 'Inbound' AND timestamp > now() - interval '1 hour') AS recent",
+        "options": {
+          "queryReplacement": "={{ [ $json.contact, $json.message ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "6dcf6c12-22d3-463b-b38a-029e7540c12a",
+      "name": "Over Limit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        192
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ Number($json.recent) }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "rightValue": 40
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "6c6494d9-5183-49c8-850a-ad3e17f058c5",
+      "name": "Respond Limit",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1120,
+        96
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: 'وصلت رسائل كثيرة خلال وقت قصير. كلمنا على واتساب https://wa.me/97333444748 ونخدمك مباشرة.' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "f1e7e7ae-6291-4121-899d-c88574774f63",
+      "name": "Ask Shared Brain",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        288
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "KuQ3xZdDgVF2hOiI"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "web",
+            "contact": "={{ $('Validate').first().json.contact }}",
+            "name": "",
+            "message": "={{ $('Validate').first().json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact",
+              "displayName": "contact",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "0afbf4af-bbc6-4fb5-963e-d26ae43783c2",
+      "name": "Save Outbound",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        288
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1::text, 'Outbound', $2::text, 'web') RETURNING body AS reply",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate').first().json.contact, ($json.reply || 'المعذرة، صار خلل بسيط. راسلنا على واتساب https://wa.me/97333444748 ونخدمك فوراً.') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "2722ee5a-86d8-43d0-8ad9-1dceeb626305",
+      "name": "Respond Reply",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1568,
+        288
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: $json.reply }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "63d693ff-2324-4295-8607-0f0a5b0d5ea1",
+      "name": "Respond Bad",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        384
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"bad request\"}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "482411bf-ef91-4476-8dfb-0b6ca2957f75",
+      "name": "Widget Script",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        608
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "chat-widget.js",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "webhookId": "7aab5673-b14a-4469-bea8-e53fcef04cd4"
+    },
+    {
+      "id": "b576103a-f813-4d2f-9296-d54aa1735dc2",
+      "name": "Serve Widget",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        608
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "(function () {\n  if (window.__amChat) return; window.__amChat = 1;\n  var S = document.currentScript; var SRC = (S && S.src) || '';\n  var API = SRC ? SRC.replace(/\\/webhook\\/chat-widget\\.js.*$/, '/webhook/site-chat') : '/webhook/site-chat';\n  var LOGO = 'https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png';\n  var WA = 'https://wa.me/97333444748';\n  var EN = (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0;\n  var T = EN ? {\n    title: 'Al Mutawa Tourism', sub: 'Online now · replies in seconds', ph: 'Type your message…', hi: 'Hi 👋 I\\'m the Al Mutawa Tourism assistant. How can I help you?',\n    chips: [['pk', '🕋 Available packages'], ['fl', '✈️ Flight tickets'], ['ht', '🏨 Hotel booking'], ['vs', '🛂 Visa'], ['q', '💬 Other question']],\n    pkq: 'What packages do you have now?', send: 'Send', from: 'From', to: 'To', dep: 'Departure', ret: 'Return (optional)', ad: 'Adults', ch: 'Children', city: 'City / hotel', cin: 'Check-in', cout: 'Check-out', rooms: 'Rooms', ppl: 'Guests', country: 'Country', tdate: 'Travel date', err: 'Connection problem, please try again.', wa: 'WhatsApp', teaser: 'Need help planning your trip?', open: 'Chat with us', q: 'Ask your question below 👇'\n  } : {\n    title: 'المطوع للسياحة', sub: 'متصلين الحين · نرد خلال ثواني', ph: 'اكتب رسالتك…', hi: 'هلا وغلا 👋 أنا مساعد المطوع للسياحة. شلون أقدر أخدمك؟',\n    chips: [['pk', '🕋 الباقات المتوفرة'], ['fl', '✈️ تذاكر طيران'], ['ht', '🏨 حجز فندق'], ['vs', '🛂 تأشيرة'], ['q', '💬 سؤال ثاني']],\n    pkq: 'وش الباقات المتوفرة عندكم الحين؟', send: 'إرسال', from: 'من', to: 'إلى', dep: 'تاريخ الذهاب', ret: 'تاريخ العودة (اختياري)', ad: 'بالغين', ch: 'أطفال', city: 'المدينة / الفندق', cin: 'تاريخ الدخول', cout: 'تاريخ الخروج', rooms: 'عدد الغرف', ppl: 'عدد الأشخاص', country: 'الدولة', tdate: 'تاريخ السفر', err: 'صار خلل في الاتصال، جرب مرة ثانية.', wa: 'واتساب', teaser: 'تحتاج مساعدة في رحلتك؟', open: 'كلمنا', q: 'تفضل اكتب سؤالك تحت 👇'\n  };\n  var PFX = '[طلب من نموذج الشات] ';\n  var PLACES = EN ? ['Bahrain', 'Makkah', 'Madinah', 'Istanbul', 'Karbala', 'Najaf', 'Mashhad', 'Dubai', 'Cairo', 'London', 'Baku', 'Tbilisi', 'Kuala Lumpur', 'Bangkok'] : ['البحرين', 'مكة المكرمة', 'المدينة المنورة', 'إسطنبول', 'كربلاء', 'النجف', 'مشهد', 'دبي', 'القاهرة', 'لندن', 'باكو', 'تبليسي', 'كوالالمبور', 'بانكوك', 'الدمام'];\n  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }\n  var vid = ls('am_chat_vid'); if (!vid || !/^[a-z0-9]{16,40}$/.test(vid)) { vid = ''; for (var i = 0; i < 24; i++) vid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]; ls('am_chat_vid', vid); }\n  var css = '#amc-l{position:fixed;bottom:20px;right:20px;z-index:2147483000;width:62px;height:62px;border-radius:50%;background:#134576;border:0;box-shadow:0 8px 24px rgba(19,69,118,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s}#amc-l:hover{transform:scale(1.06)}#amc-l svg{width:30px;height:30px;fill:#fff}#amc-l .dot{position:absolute;top:6px;right:6px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff}'\n    + '#amc-t{position:fixed;bottom:92px;right:20px;z-index:2147483000;background:#fff;color:#1d2939;padding:10px 14px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.15);font:14px Tahoma,Arial,sans-serif;cursor:pointer;max-width:240px;display:none}'\n    + '#amc-p{position:fixed;bottom:92px;right:20px;z-index:2147483001;width:380px;max-width:calc(100vw - 24px);height:620px;max-height:calc(100vh - 110px);background:#f7f8fa;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;font:14px/1.6 Tahoma,Arial,sans-serif;color:#1d2939}'\n    + '#amc-p.open{display:flex}#amc-h{background:linear-gradient(135deg,#134576,#0d2f52);color:#fff;padding:14px 14px;display:flex;align-items:center;gap:10px}#amc-h img{width:42px;height:42px;border-radius:50%;background:#fff;object-fit:contain;padding:3px}#amc-h b{display:block;font-size:15px}#amc-h small{opacity:.85;font-size:12px}#amc-h .sp{flex:1}#amc-h a,#amc-h button{color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:10px;padding:6px 9px;cursor:pointer;font:12px Tahoma,Arial,sans-serif;text-decoration:none}'\n    + '#amc-m{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}.amc-b{max-width:85%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.06)}.amc-b.me{align-self:flex-end;background:#134576;color:#fff;border-bottom-right-radius:4px}.amc-b.bot{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}.amc-b a{color:inherit;text-decoration:underline}.amc-b img{max-width:100%;border-radius:10px;margin-top:6px;display:block}'\n    + '.amc-chips{display:flex;flex-wrap:wrap;gap:6px;align-self:stretch}.amc-c{border:1px solid #134576;color:#134576;background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;font:13px Tahoma,Arial,sans-serif}.amc-c:hover{background:#134576;color:#fff}'\n    + '.amc-f{align-self:stretch;background:#fff;border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr 1fr;gap:8px}.amc-f label{font-size:12px;color:#475467;display:flex;flex-direction:column;gap:3px}.amc-f label.w{grid-column:1/-1}.amc-f input{border:1px solid #d0d5dd;border-radius:8px;padding:7px 8px;font:13px Tahoma,Arial,sans-serif;width:100%;box-sizing:border-box}.amc-f button{grid-column:1/-1;background:#c9a227;color:#fff;border:0;border-radius:10px;padding:9px;font:bold 14px Tahoma,Arial,sans-serif;cursor:pointer}'\n    + '.amc-ty{align-self:flex-start;background:#fff;border-radius:14px;padding:10px 14px}.amc-ty i{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#98a2b3;animation:amcb 1s infinite}.amc-ty i:nth-child(2){animation-delay:.15s}.amc-ty i:nth-child(3){animation-delay:.3s}@keyframes amcb{0%,80%,100%{opacity:.3}40%{opacity:1}}'\n    + '#amc-in{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eaecf0}#amc-in textarea{flex:1;resize:none;border:1px solid #d0d5dd;border-radius:12px;padding:9px 10px;font:14px Tahoma,Arial,sans-serif;max-height:110px;height:42px;box-sizing:border-box}#amc-in button{background:#134576;color:#fff;border:0;border-radius:12px;width:46px;cursor:pointer}#amc-in button svg{width:20px;height:20px;fill:#fff}'\n    + '@media(max-width:520px){#amc-p{right:0;bottom:0;width:100vw;max-width:100vw;height:100%;max-height:100%;border-radius:0}#amc-l{bottom:16px;right:16px}}';\n  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);\n  function el(t, a, h) { var e = document.createElement(t); if (a) for (var k in a) e.setAttribute(k, a[k]); if (h != null) e.innerHTML = h; return e; }\n  var dir = EN ? 'ltr' : 'rtl';\n  var L = el('button', { id: 'amc-l', 'aria-label': T.open }, '<svg viewBox=\"0 0 24 24\"><path d=\"M12 3C6.5 3 2 6.9 2 11.7c0 2.4 1.1 4.6 3 6.2L4.2 21.5l4.3-2.1c1.1.3 2.3.5 3.5.5 5.5 0 10-3.9 10-8.7S17.5 3 12 3zm-4 9.7a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4zm4 0a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4zm4 0a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4z\"/></svg><span class=\"dot\"></span>');\n  var TZ = el('div', { id: 'amc-t', dir: dir }, T.teaser);\n  var P = el('div', { id: 'amc-p', dir: dir, role: 'dialog', 'aria-label': T.title });\n  P.innerHTML = '<div id=\"amc-h\"><img alt=\"\" src=\"' + LOGO + '\"><div><b>' + T.title + '</b><small>● ' + T.sub + '</small></div><div class=\"sp\"></div><a target=\"_blank\" rel=\"noopener\" href=\"' + WA + '\">' + T.wa + '</a><button type=\"button\" id=\"amc-x\" aria-label=\"close\">✕</button></div><div id=\"amc-m\"></div><div id=\"amc-in\"><textarea id=\"amc-ta\" rows=\"1\" placeholder=\"' + T.ph + '\"></textarea><button type=\"button\" id=\"amc-s\" aria-label=\"' + T.send + '\"><svg viewBox=\"0 0 24 24\"><path d=\"M3 20l18-8L3 4v6l12 2-12 2z\"/></svg></button></div>';\n  document.body.appendChild(L); document.body.appendChild(TZ); document.body.appendChild(P);\n  var M = P.querySelector('#amc-m'), TA = P.querySelector('#amc-ta'), busy = false, loaded = false;\n  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); }\n  function md(s) {\n    var chips = []; s = String(s || '').replace(/\\[\\[([^\\]\\n]{1,60})\\]\\]/g, function (m, t) { chips.push(t.trim()); return ''; });\n    var h = esc(s.trim());\n    h = h.replace(/!\\[([^\\]]*)\\]\\((https:[^)\\s]+)\\)/g, '<img src=\"$2\" alt=\"$1\" loading=\"lazy\">');\n    h = h.replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>').replace(/(^|[^*])\\*([^*\\n]+)\\*/g, '$1<b>$2</b>');\n    h = h.replace(/\\[([^\\]]+)\\]\\((https?:[^)\\s]+)\\)/g, '<a href=\"$2\" target=\"_blank\" rel=\"noopener\">$1</a>');\n    h = h.replace(/(^|[\\s(])(https?:\\/\\/[^\\s<)]+)/g, '$1<a href=\"$2\" target=\"_blank\" rel=\"noopener\">$2</a>');\n    return { html: h, chips: chips };\n  }\n  function scroll() { M.scrollTop = M.scrollHeight; }\n  function bubble(who, text) { var r = md(text); if (r.html) { var b = el('div', { 'class': 'amc-b ' + who }, r.html); M.appendChild(b); } if (who === 'bot' && r.chips.length) chipsRow(r.chips.map(function (c) { return ['msg', c]; })); scroll(); }\n  function chipsRow(list) { var w = el('div', { 'class': 'amc-chips' }); list.forEach(function (c) { var b = el('button', { type: 'button', 'class': 'amc-c' }, esc(c[1])); b.onclick = function () { w.remove(); act(c[0], c[1]); }; w.appendChild(b); }); M.appendChild(w); scroll(); }\n  function act(k, label) {\n    if (k === 'msg') return send(label);\n    if (k === 'pk') return send(T.pkq);\n    if (k === 'q') { bubble('bot', T.q); TA.focus(); return; }\n    form(k, label);\n  }\n  function inp(lbl, name, type, val, w, list) { return '<label' + (w ? ' class=\"w\"' : '') + '>' + lbl + '<input name=\"' + name + '\" type=\"' + type + '\"' + (val ? ' value=\"' + esc(val) + '\"' : '') + (list ? ' list=\"amc-dl\"' : '') + (type === 'number' ? ' min=\"0\" max=\"50\"' : '') + '></label>'; }\n  function form(k, label) {\n    var today = new Date().toISOString().slice(0, 10), h = '';\n    if (k === 'fl') h = inp(T.from, 'from', 'text', EN ? 'Bahrain' : 'البحرين', 0, 1) + inp(T.to, 'to', 'text', '', 0, 1) + inp(T.dep, 'dep', 'date') + inp(T.ret, 'ret', 'date') + inp(T.ad, 'ad', 'number', '1') + inp(T.ch, 'ch', 'number', '0');\n    if (k === 'ht') h = inp(T.city, 'city', 'text', '', 1, 1) + inp(T.cin, 'cin', 'date') + inp(T.cout, 'cout', 'date') + inp(T.rooms, 'rooms', 'number', '1') + inp(T.ppl, 'ppl', 'number', '2');\n    if (k === 'vs') h = inp(T.country, 'country', 'text', '', 1, 1) + inp(T.tdate, 'tdate', 'date') + inp(T.ppl, 'ppl', 'number', '1');\n    var f = el('form', { 'class': 'amc-f' }, h + '<datalist id=\"amc-dl\">' + PLACES.map(function (p) { return '<option value=\"' + esc(p) + '\">'; }).join('') + '</datalist><button type=\"submit\">' + T.send + '</button>');\n    f.querySelectorAll('input[type=date]').forEach(function (d) { d.min = today; });\n    f.onsubmit = function (e) {\n      e.preventDefault(); var v = {}; f.querySelectorAll('input').forEach(function (i) { v[i.name] = i.value.trim(); });\n      var t = PFX + label.replace(/^\\S+\\s/, '') + ': ';\n      if (k === 'fl') t += 'من ' + (v.from || '-') + ' إلى ' + (v.to || '-') + '، ذهاب ' + (v.dep || 'غير محدد') + '، ' + (v.ret ? 'عودة ' + v.ret : 'ذهاب فقط أو العودة غير محددة') + '، ' + (v.ad || 1) + ' بالغين، ' + (v.ch || 0) + ' أطفال';\n      if (k === 'ht') t += 'المدينة/الفندق: ' + (v.city || '-') + '، دخول ' + (v.cin || 'غير محدد') + '، خروج ' + (v.cout || 'غير محدد') + '، ' + (v.rooms || 1) + ' غرف، ' + (v.ppl || 1) + ' أشخاص';\n      if (k === 'vs') t += 'الدولة: ' + (v.country || '-') + '، تاريخ السفر ' + (v.tdate || 'غير محدد') + '، عدد الأشخاص ' + (v.ppl || 1);\n      f.remove(); send(t);\n    };\n    M.appendChild(f); scroll(); var first = f.querySelector('input[name=to],input[name=city],input[name=country]'); if (first) first.focus();\n  }\n  function typing(on) { var t = M.querySelector('.amc-ty'); if (on && !t) { M.appendChild(el('div', { 'class': 'amc-ty' }, '<i></i><i></i><i></i>')); scroll(); } if (!on && t) t.remove(); }\n  function post(body, cb) {\n    var x = new XMLHttpRequest(); x.open('POST', API, true); x.setRequestHeader('Content-Type', 'application/json'); x.timeout = 120000;\n    x.onload = function () { var d = null; try { d = JSON.parse(x.responseText); } catch (e) {} cb(x.status < 400 && d ? d : null); };\n    x.onerror = x.ontimeout = function () { cb(null); };\n    x.send(JSON.stringify(body));\n  }\n  function send(text) {\n    text = String(text || '').trim(); if (!text || busy) return; busy = true;\n    var shown = text.indexOf(PFX) === 0 ? text.slice(PFX.length) : text;\n    bubble('me', shown); typing(true);\n    post({ action: 'send', vid: vid, message: text, page: location.pathname, lang: EN ? 'en' : 'ar' }, function (d) { typing(false); busy = false; bubble('bot', d && d.reply ? d.reply : T.err); });\n  }\n  function load() {\n    if (loaded) return; loaded = true;\n    post({ action: 'history', vid: vid }, function (d) {\n      var msgs = (d && d.messages) || [];\n      if (!msgs.length) { bubble('bot', T.hi); chipsRow(T.chips); return; }\n      msgs.forEach(function (m) { var t = String(m.body || ''); if (t.indexOf(PFX) === 0) t = t.slice(PFX.length); bubble(m.direction === 'Outbound' ? 'bot' : 'me', t); });\n      chipsRow(T.chips);\n    });\n  }\n  function open() { P.classList.add('open'); TZ.style.display = 'none'; ls('am_chat_open', '1'); load(); setTimeout(function () { TA.focus(); }, 50); }\n  function close() { P.classList.remove('open'); ls('am_chat_open', '0'); }\n  L.onclick = function () { P.classList.contains('open') ? close() : open(); };\n  TZ.onclick = open; P.querySelector('#amc-x').onclick = close;\n  P.querySelector('#amc-s').onclick = function () { var t = TA.value; TA.value = ''; send(t); };\n  TA.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); var t = TA.value; TA.value = ''; send(t); } });\n  if (ls('am_chat_open') === '1' && window.innerWidth > 520) open();\n  else if (!sessionStorage.getItem('am_chat_teased')) setTimeout(function () { if (!P.classList.contains('open')) { TZ.style.display = 'block'; try { sessionStorage.setItem('am_chat_teased', '1'); } catch (e) {} } }, 8000);\n  function hideWa() {\n    document.querySelectorAll('a[href*=\"wa.me\"],a[href*=\"api.whatsapp.com\"],a[href*=\"whatsapp://\"]').forEach(function (a) {\n      var n = a, fixed = false; for (var i = 0; i < 4 && n && n !== document.body; i++) { var p = getComputedStyle(n).position; if (p === 'fixed') { fixed = n.offsetWidth < 220; break; } n = n.parentElement; }\n      if (fixed && !P.contains(a)) n.style.display = 'none';\n    });\n  }\n  hideWa(); setTimeout(hideWa, 1500); setTimeout(hideWa, 4000);\n})();\n",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/javascript; charset=utf-8"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "public, max-age=300"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "f37520ee-cf89-4f15-9c03-2d4d9d459661",
+      "name": "Demo Page",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        900
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "options": {},
+        "path": "chat-demo",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "d034f3f2-106c-4e86-8935-dfdb383c8b89"
+    },
+    {
+      "id": "9e3f9353-5d19-42c3-b633-28a3a6002c66",
+      "name": "Serve Demo",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        900
+      ],
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        },
+        "respondWith": "text",
+        "responseBody": "<!doctype html><html lang=\"ar\" dir=\"rtl\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>تجربة شات الموقع | المطوع للسياحة</title><style>html,body{margin:0;height:100%;background:#fff}iframe{border:0;width:100%;height:100%;display:block}.tag{position:fixed;top:10px;left:10px;z-index:10;background:#c9a227;color:#fff;font:bold 12px Tahoma,Arial;padding:5px 10px;border-radius:8px}</style></head><body><div class=\"tag\">نسخة تجريبية للشات</div><iframe src=\"https://almutawabh.com/\" title=\"site\"></iframe><script src=\"https://almutawabh.com/webhook/chat-widget.js\" defer></script></body></html>"
+      }
+    }
+  ],
+  "connections": {
+    "Chat API": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Get History",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Inbound",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Bad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get History": {
+      "main": [
+        [
+          {
+            "node": "Respond History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Inbound": {
+      "main": [
+        [
+          {
+            "node": "Over Limit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Over Limit?": {
+      "main": [
+        [
+          {
+            "node": "Respond Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Shared Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Shared Brain": {
+      "main": [
+        [
+          {
+            "node": "Save Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Outbound": {
+      "main": [
+        [
+          {
+            "node": "Respond Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Widget Script": {
+      "main": [
+        [
+          {
+            "node": "Serve Widget",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demo Page": {
+      "main": [
+        [
+          {
+            "node": "Serve Demo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "VbbXsiGa1Z8VN09k",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T14:30:34.353Z",
+      "updatedAt": "2026-10-10T14:30:34.353Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "8073f8ee-9eaa-4bce-a6e9-c7502ca0917c",
+    "workflowId": "VbbXsiGa1Z8VN09k",
+    "nodes": [
+      {
+        "id": "d70c5d9b-98c5-4b99-a363-b545d2870b79",
+        "name": "Chat API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          192
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "site-chat",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "043006f6-be98-4915-beb9-ac511a1c5bb1"
+      },
+      {
+        "id": "06997599-4707-4aaf-b207-288bbc655352",
+        "name": "Validate",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          192
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const b = $input.first().json.body || {};\nconst vid = String(b.vid || '');\nconst ok = /^[a-z0-9]{16,40}$/.test(vid);\nconst action = ok ? (b.action === 'history' ? 'history' : (b.action === 'send' ? 'send' : 'bad')) : 'bad';\nconst message = String(b.message || '').trim().slice(0, 1200);\nreturn [{ json: { action: action === 'send' && !message ? 'bad' : action, contact: 'web:' + vid, message } }];"
+        }
+      },
+      {
+        "id": "a441e5e0-2af2-4234-807b-458813bfc9c5",
+        "name": "Route",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          448,
+          176
+        ],
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "outputKey": "history",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "history"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "outputKey": "send",
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.action }}",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "rightValue": "send"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "bad"
+          }
+        }
+      },
+      {
+        "id": "e02378f0-4ae2-4da7-8f0d-447e366ba59d",
+        "name": "Get History",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT coalesce(json_agg(json_build_object('direction', direction, 'body', body) ORDER BY timestamp), '[]'::json) AS messages FROM (SELECT * FROM messages WHERE customer_phone = $1::text ORDER BY timestamp DESC LIMIT 40) m",
+          "options": {
+            "queryReplacement": "={{ [ $json.contact ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "565b3fd8-7764-4ae9-b55c-adb474b53b80",
+        "name": "Respond History",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ messages: $json.messages || [] }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "6238cb57-ee18-4d2f-8629-73e525bb4900",
+        "name": "Save Inbound",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          672,
+          192
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH i AS (INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1::text, 'Inbound', $2::text, 'web') RETURNING id) SELECT (SELECT id FROM i) AS id, (SELECT count(*) FROM messages WHERE customer_phone = $1::text AND direction = 'Inbound' AND timestamp > now() - interval '1 hour') AS recent",
+          "options": {
+            "queryReplacement": "={{ [ $json.contact, $json.message ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "6dcf6c12-22d3-463b-b38a-029e7540c12a",
+        "name": "Over Limit?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          192
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ Number($json.recent) }}",
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                },
+                "rightValue": 40
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "6c6494d9-5183-49c8-850a-ad3e17f058c5",
+        "name": "Respond Limit",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1120,
+          96
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ reply: 'وصلت رسائل كثيرة خلال وقت قصير. كلمنا على واتساب https://wa.me/97333444748 ونخدمك مباشرة.' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "f1e7e7ae-6291-4121-899d-c88574774f63",
+        "name": "Ask Shared Brain",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          1120,
+          288
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "KuQ3xZdDgVF2hOiI"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "channel": "web",
+              "contact": "={{ $('Validate').first().json.contact }}",
+              "name": "",
+              "message": "={{ $('Validate').first().json.message }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "channel",
+                "displayName": "channel",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "contact",
+                "displayName": "contact",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "name",
+                "displayName": "name",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "message",
+                "displayName": "message",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "0afbf4af-bbc6-4fb5-963e-d26ae43783c2",
+        "name": "Save Outbound",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1344,
+          288
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO messages (customer_phone, direction, body, message_type) VALUES ($1::text, 'Outbound', $2::text, 'web') RETURNING body AS reply",
+          "options": {
+            "queryReplacement": "={{ [ $('Validate').first().json.contact, ($json.reply || 'المعذرة، صار خلل بسيط. راسلنا على واتساب https://wa.me/97333444748 ونخدمك فوراً.') ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "2722ee5a-86d8-43d0-8ad9-1dceeb626305",
+        "name": "Respond Reply",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          1568,
+          288
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ reply: $json.reply }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "63d693ff-2324-4295-8607-0f0a5b0d5ea1",
+        "name": "Respond Bad",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          672,
+          384
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\"error\":\"bad request\"}",
+          "options": {
+            "responseCode": 400
+          }
+        }
+      },
+      {
+        "id": "482411bf-ef91-4476-8dfb-0b6ca2957f75",
+        "name": "Widget Script",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          608
+        ],
+        "parameters": {
+          "httpMethod": "GET",
+          "path": "chat-widget.js",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "7aab5673-b14a-4469-bea8-e53fcef04cd4"
+      },
+      {
+        "id": "b576103a-f813-4d2f-9296-d54aa1735dc2",
+        "name": "Serve Widget",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          224,
+          608
+        ],
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "(function () {\n  if (window.__amChat) return; window.__amChat = 1;\n  var S = document.currentScript; var SRC = (S && S.src) || '';\n  var API = SRC ? SRC.replace(/\\/webhook\\/chat-widget\\.js.*$/, '/webhook/site-chat') : '/webhook/site-chat';\n  var LOGO = 'https://raw.githubusercontent.com/m-almutawa22/ai-hub/main/assets/almutawa-logo.png';\n  var WA = 'https://wa.me/97333444748';\n  var EN = (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0;\n  var T = EN ? {\n    title: 'Al Mutawa Tourism', sub: 'Online now · replies in seconds', ph: 'Type your message…', hi: 'Hi 👋 I\\'m the Al Mutawa Tourism assistant. How can I help you?',\n    chips: [['pk', '🕋 Available packages'], ['fl', '✈️ Flight tickets'], ['ht', '🏨 Hotel booking'], ['vs', '🛂 Visa'], ['q', '💬 Other question']],\n    pkq: 'What packages do you have now?', send: 'Send', from: 'From', to: 'To', dep: 'Departure', ret: 'Return (optional)', ad: 'Adults', ch: 'Children', city: 'City / hotel', cin: 'Check-in', cout: 'Check-out', rooms: 'Rooms', ppl: 'Guests', country: 'Country', tdate: 'Travel date', err: 'Connection problem, please try again.', wa: 'WhatsApp', teaser: 'Need help planning your trip?', open: 'Chat with us', q: 'Ask your question below 👇'\n  } : {\n    title: 'المطوع للسياحة', sub: 'متصلين الحين · نرد خلال ثواني', ph: 'اكتب رسالتك…', hi: 'هلا وغلا 👋 أنا مساعد المطوع للسياحة. شلون أقدر أخدمك؟',\n    chips: [['pk', '🕋 الباقات المتوفرة'], ['fl', '✈️ تذاكر طيران'], ['ht', '🏨 حجز فندق'], ['vs', '🛂 تأشيرة'], ['q', '💬 سؤال ثاني']],\n    pkq: 'وش الباقات المتوفرة عندكم الحين؟', send: 'إرسال', from: 'من', to: 'إلى', dep: 'تاريخ الذهاب', ret: 'تاريخ العودة (اختياري)', ad: 'بالغين', ch: 'أطفال', city: 'المدينة / الفندق', cin: 'تاريخ الدخول', cout: 'تاريخ الخروج', rooms: 'عدد الغرف', ppl: 'عدد الأشخاص', country: 'الدولة', tdate: 'تاريخ السفر', err: 'صار خلل في الاتصال، جرب مرة ثانية.', wa: 'واتساب', teaser: 'تحتاج مساعدة في رحلتك؟', open: 'كلمنا', q: 'تفضل اكتب سؤالك تحت 👇'\n  };\n  var PFX = '[طلب من نموذج الشات] ';\n  var PLACES = EN ? ['Bahrain', 'Makkah', 'Madinah', 'Istanbul', 'Karbala', 'Najaf', 'Mashhad', 'Dubai', 'Cairo', 'London', 'Baku', 'Tbilisi', 'Kuala Lumpur', 'Bangkok'] : ['البحرين', 'مكة المكرمة', 'المدينة المنورة', 'إسطنبول', 'كربلاء', 'النجف', 'مشهد', 'دبي', 'القاهرة', 'لندن', 'باكو', 'تبليسي', 'كوالالمبور', 'بانكوك', 'الدمام'];\n  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }\n  var vid = ls('am_chat_vid'); if (!vid || !/^[a-z0-9]{16,40}$/.test(vid)) { vid = ''; for (var i = 0; i < 24; i++) vid += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]; ls('am_chat_vid', vid); }\n  var css = '#amc-l{position:fixed;bottom:20px;right:20px;z-index:2147483000;width:62px;height:62px;border-radius:50%;background:#134576;border:0;box-shadow:0 8px 24px rgba(19,69,118,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s}#amc-l:hover{transform:scale(1.06)}#amc-l svg{width:30px;height:30px;fill:#fff}#amc-l .dot{position:absolute;top:6px;right:6px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff}'\n    + '#amc-t{position:fixed;bottom:92px;right:20px;z-index:2147483000;background:#fff;color:#1d2939;padding:10px 14px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.15);font:14px Tahoma,Arial,sans-serif;cursor:pointer;max-width:240px;display:none}'\n    + '#amc-p{position:fixed;bottom:92px;right:20px;z-index:2147483001;width:380px;max-width:calc(100vw - 24px);height:620px;max-height:calc(100vh - 110px);background:#f7f8fa;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;font:14px/1.6 Tahoma,Arial,sans-serif;color:#1d2939}'\n    + '#amc-p.open{display:flex}#amc-h{background:linear-gradient(135deg,#134576,#0d2f52);color:#fff;padding:14px 14px;display:flex;align-items:center;gap:10px}#amc-h img{width:42px;height:42px;border-radius:50%;background:#fff;object-fit:contain;padding:3px}#amc-h b{display:block;font-size:15px}#amc-h small{opacity:.85;font-size:12px}#amc-h .sp{flex:1}#amc-h a,#amc-h button{color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:10px;padding:6px 9px;cursor:pointer;font:12px Tahoma,Arial,sans-serif;text-decoration:none}'\n    + '#amc-m{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}.amc-b{max-width:85%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 2px rgba(0,0,0,.06)}.amc-b.me{align-self:flex-end;background:#134576;color:#fff;border-bottom-right-radius:4px}.amc-b.bot{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}.amc-b a{color:inherit;text-decoration:underline}.amc-b img{max-width:100%;border-radius:10px;margin-top:6px;display:block}'\n    + '.amc-chips{display:flex;flex-wrap:wrap;gap:6px;align-self:stretch}.amc-c{border:1px solid #134576;color:#134576;background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;font:13px Tahoma,Arial,sans-serif}.amc-c:hover{background:#134576;color:#fff}'\n    + '.amc-f{align-self:stretch;background:#fff;border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:grid;grid-template-columns:1fr 1fr;gap:8px}.amc-f label{font-size:12px;color:#475467;display:flex;flex-direction:column;gap:3px}.amc-f label.w{grid-column:1/-1}.amc-f input{border:1px solid #d0d5dd;border-radius:8px;padding:7px 8px;font:13px Tahoma,Arial,sans-serif;width:100%;box-sizing:border-box}.amc-f button{grid-column:1/-1;background:#c9a227;color:#fff;border:0;border-radius:10px;padding:9px;font:bold 14px Tahoma,Arial,sans-serif;cursor:pointer}'\n    + '.amc-ty{align-self:flex-start;background:#fff;border-radius:14px;padding:10px 14px}.amc-ty i{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#98a2b3;animation:amcb 1s infinite}.amc-ty i:nth-child(2){animation-delay:.15s}.amc-ty i:nth-child(3){animation-delay:.3s}@keyframes amcb{0%,80%,100%{opacity:.3}40%{opacity:1}}'\n    + '#amc-in{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eaecf0}#amc-in textarea{flex:1;resize:none;border:1px solid #d0d5dd;border-radius:12px;padding:9px 10px;font:14px Tahoma,Arial,sans-serif;max-height:110px;height:42px;box-sizing:border-box}#amc-in button{background:#134576;color:#fff;border:0;border-radius:12px;width:46px;cursor:pointer}#amc-in button svg{width:20px;height:20px;fill:#fff}'\n    + '@media(max-width:520px){#amc-p{right:0;bottom:0;width:100vw;max-width:100vw;height:100%;max-height:100%;border-radius:0}#amc-l{bottom:16px;right:16px}}';\n  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);\n  function el(t, a, h) { var e = document.createElement(t); if (a) for (var k in a) e.setAttribute(k, a[k]); if (h != null) e.innerHTML = h; return e; }\n  var dir = EN ? 'ltr' : 'rtl';\n  var L = el('button', { id: 'amc-l', 'aria-label': T.open }, '<svg viewBox=\"0 0 24 24\"><path d=\"M12 3C6.5 3 2 6.9 2 11.7c0 2.4 1.1 4.6 3 6.2L4.2 21.5l4.3-2.1c1.1.3 2.3.5 3.5.5 5.5 0 10-3.9 10-8.7S17.5 3 12 3zm-4 9.7a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4zm4 0a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4zm4 0a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4z\"/></svg><span class=\"dot\"></span>');\n  var TZ = el('div', { id: 'amc-t', dir: dir }, T.teaser);\n  var P = el('div', { id: 'amc-p', dir: dir, role: 'dialog', 'aria-label': T.title });\n  P.innerHTML = '<div id=\"amc-h\"><img alt=\"\" src=\"' + LOGO + '\"><div><b>' + T.title + '</b><small>● ' + T.sub + '</small></div><div class=\"sp\"></div><a target=\"_blank\" rel=\"noopener\" href=\"' + WA + '\">' + T.wa + '</a><button type=\"button\" id=\"amc-x\" aria-label=\"close\">✕</button></div><div id=\"amc-m\"></div><div id=\"amc-in\"><textarea id=\"amc-ta\" rows=\"1\" placeholder=\"' + T.ph + '\"></textarea><button type=\"button\" id=\"amc-s\" aria-label=\"' + T.send + '\"><svg viewBox=\"0 0 24 24\"><path d=\"M3 20l18-8L3 4v6l12 2-12 2z\"/></svg></button></div>';\n  document.body.appendChild(L); document.body.appendChild(TZ); document.body.appendChild(P);\n  var M = P.querySelector('#amc-m'), TA = P.querySelector('#amc-ta'), busy = false, loaded = false;\n  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); }\n  function md(s) {\n    var chips = []; s = String(s || '').replace(/\\[\\[([^\\]\\n]{1,60})\\]\\]/g, function (m, t) { chips.push(t.trim()); return ''; });\n    var h = esc(s.trim());\n    h = h.replace(/!\\[([^\\]]*)\\]\\((https:[^)\\s]+)\\)/g, '<img src=\"$2\" alt=\"$1\" loading=\"lazy\">');\n    h = h.replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>').replace(/(^|[^*])\\*([^*\\n]+)\\*/g, '$1<b>$2</b>');\n    h = h.replace(/\\[([^\\]]+)\\]\\((https?:[^)\\s]+)\\)/g, '<a href=\"$2\" target=\"_blank\" rel=\"noopener\">$1</a>');\n    h = h.replace(/(^|[\\s(])(https?:\\/\\/[^\\s<)]+)/g, '$1<a href=\"$2\" target=\"_blank\" rel=\"noopener\">$2</a>');\n    return { html: h, chips: chips };\n  }\n  function scroll() { M.scrollTop = M.scrollHeight; }\n  function bubble(who, text) { var r = md(text); if (r.html) { var b = el('div', { 'class': 'amc-b ' + who }, r.html); M.appendChild(b); } if (who === 'bot' && r.chips.length) chipsRow(r.chips.map(function (c) { return ['msg', c]; })); scroll(); }\n  function chipsRow(list) { var w = el('div', { 'class': 'amc-chips' }); list.forEach(function (c) { var b = el('button', { type: 'button', 'class': 'amc-c' }, esc(c[1])); b.onclick = function () { w.remove(); act(c[0], c[1]); }; w.appendChild(b); }); M.appendChild(w); scroll(); }\n  function act(k, label) {\n    if (k === 'msg') return send(label);\n    if (k === 'pk') return send(T.pkq);\n    if (k === 'q') { bubble('bot', T.q); TA.focus(); return; }\n    form(k, label);\n  }\n  function inp(lbl, name, type, val, w, list) { return '<label' + (w ? ' class=\"w\"' : '') + '>' + lbl + '<input name=\"' + name + '\" type=\"' + type + '\"' + (val ? ' value=\"' + esc(val) + '\"' : '') + (list ? ' list=\"amc-dl\"' : '') + (type === 'number' ? ' min=\"0\" max=\"50\"' : '') + '></label>'; }\n  function form(k, label) {\n    var today = new Date().toISOString().slice(0, 10), h = '';\n    if (k === 'fl') h = inp(T.from, 'from', 'text', EN ? 'Bahrain' : 'البحرين', 0, 1) + inp(T.to, 'to', 'text', '', 0, 1) + inp(T.dep, 'dep', 'date') + inp(T.ret, 'ret', 'date') + inp(T.ad, 'ad', 'number', '1') + inp(T.ch, 'ch', 'number', '0');\n    if (k === 'ht') h = inp(T.city, 'city', 'text', '', 1, 1) + inp(T.cin, 'cin', 'date') + inp(T.cout, 'cout', 'date') + inp(T.rooms, 'rooms', 'number', '1') + inp(T.ppl, 'ppl', 'number', '2');\n    if (k === 'vs') h = inp(T.country, 'country', 'text', '', 1, 1) + inp(T.tdate, 'tdate', 'date') + inp(T.ppl, 'ppl', 'number', '1');\n    var f = el('form', { 'class': 'amc-f' }, h + '<datalist id=\"amc-dl\">' + PLACES.map(function (p) { return '<option value=\"' + esc(p) + '\">'; }).join('') + '</datalist><button type=\"submit\">' + T.send + '</button>');\n    f.querySelectorAll('input[type=date]').forEach(function (d) { d.min = today; });\n    f.onsubmit = function (e) {\n      e.preventDefault(); var v = {}; f.querySelectorAll('input').forEach(function (i) { v[i.name] = i.value.trim(); });\n      var t = PFX + label.replace(/^\\S+\\s/, '') + ': ';\n      if (k === 'fl') t += 'من ' + (v.from || '-') + ' إلى ' + (v.to || '-') + '، ذهاب ' + (v.dep || 'غير محدد') + '، ' + (v.ret ? 'عودة ' + v.ret : 'ذهاب فقط أو العودة غير محددة') + '، ' + (v.ad || 1) + ' بالغين، ' + (v.ch || 0) + ' أطفال';\n      if (k === 'ht') t += 'المدينة/الفندق: ' + (v.city || '-') + '، دخول ' + (v.cin || 'غير محدد') + '، خروج ' + (v.cout || 'غير محدد') + '، ' + (v.rooms || 1) + ' غرف، ' + (v.ppl || 1) + ' أشخاص';\n      if (k === 'vs') t += 'الدولة: ' + (v.country || '-') + '، تاريخ السفر ' + (v.tdate || 'غير محدد') + '، عدد الأشخاص ' + (v.ppl || 1);\n      f.remove(); send(t);\n    };\n    M.appendChild(f); scroll(); var first = f.querySelector('input[name=to],input[name=city],input[name=country]'); if (first) first.focus();\n  }\n  function typing(on) { var t = M.querySelector('.amc-ty'); if (on && !t) { M.appendChild(el('div', { 'class': 'amc-ty' }, '<i></i><i></i><i></i>')); scroll(); } if (!on && t) t.remove(); }\n  function post(body, cb) {\n    var x = new XMLHttpRequest(); x.open('POST', API, true); x.setRequestHeader('Content-Type', 'application/json'); x.timeout = 120000;\n    x.onload = function () { var d = null; try { d = JSON.parse(x.responseText); } catch (e) {} cb(x.status < 400 && d ? d : null); };\n    x.onerror = x.ontimeout = function () { cb(null); };\n    x.send(JSON.stringify(body));\n  }\n  function send(text) {\n    text = String(text || '').trim(); if (!text || busy) return; busy = true;\n    var shown = text.indexOf(PFX) === 0 ? text.slice(PFX.length) : text;\n    bubble('me', shown); typing(true);\n    post({ action: 'send', vid: vid, message: text, page: location.pathname, lang: EN ? 'en' : 'ar' }, function (d) { typing(false); busy = false; bubble('bot', d && d.reply ? d.reply : T.err); });\n  }\n  function load() {\n    if (loaded) return; loaded = true;\n    post({ action: 'history', vid: vid }, function (d) {\n      var msgs = (d && d.messages) || [];\n      if (!msgs.length) { bubble('bot', T.hi); chipsRow(T.chips); return; }\n      msgs.forEach(function (m) { var t = String(m.body || ''); if (t.indexOf(PFX) === 0) t = t.slice(PFX.length); bubble(m.direction === 'Outbound' ? 'bot' : 'me', t); });\n      chipsRow(T.chips);\n    });\n  }\n  function open() { P.classList.add('open'); TZ.style.display = 'none'; ls('am_chat_open', '1'); load(); setTimeout(function () { TA.focus(); }, 50); }\n  function close() { P.classList.remove('open'); ls('am_chat_open', '0'); }\n  L.onclick = function () { P.classList.contains('open') ? close() : open(); };\n  TZ.onclick = open; P.querySelector('#amc-x').onclick = close;\n  P.querySelector('#amc-s').onclick = function () { var t = TA.value; TA.value = ''; send(t); };\n  TA.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); var t = TA.value; TA.value = ''; send(t); } });\n  if (ls('am_chat_open') === '1' && window.innerWidth > 520) open();\n  else if (!sessionStorage.getItem('am_chat_teased')) setTimeout(function () { if (!P.classList.contains('open')) { TZ.style.display = 'block'; try { sessionStorage.setItem('am_chat_teased', '1'); } catch (e) {} } }, 8000);\n  function hideWa() {\n    document.querySelectorAll('a[href*=\"wa.me\"],a[href*=\"api.whatsapp.com\"],a[href*=\"whatsapp://\"]').forEach(function (a) {\n      var n = a, fixed = false; for (var i = 0; i < 4 && n && n !== document.body; i++) { var p = getComputedStyle(n).position; if (p === 'fixed') { fixed = n.offsetWidth < 220; break; } n = n.parentElement; }\n      if (fixed && !P.contains(a)) n.style.display = 'none';\n    });\n  }\n  hideWa(); setTimeout(hideWa, 1500); setTimeout(hideWa, 4000);\n})();\n",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "application/javascript; charset=utf-8"
+                },
+                {
+                  "name": "Cache-Control",
+                  "value": "public, max-age=300"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "f37520ee-cf89-4f15-9c03-2d4d9d459661",
+        "name": "Demo Page",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          900
+        ],
+        "parameters": {
+          "httpMethod": "GET",
+          "options": {},
+          "path": "chat-demo",
+          "responseMode": "responseNode"
+        },
+        "webhookId": "d034f3f2-106c-4e86-8935-dfdb383c8b89"
+      },
+      {
+        "id": "9e3f9353-5d19-42c3-b633-28a3a6002c66",
+        "name": "Serve Demo",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          240,
+          900
+        ],
+        "parameters": {
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ]
+            }
+          },
+          "respondWith": "text",
+          "responseBody": "<!doctype html><html lang=\"ar\" dir=\"rtl\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>تجربة شات الموقع | المطوع للسياحة</title><style>html,body{margin:0;height:100%;background:#fff}iframe{border:0;width:100%;height:100%;display:block}.tag{position:fixed;top:10px;left:10px;z-index:10;background:#c9a227;color:#fff;font:bold 12px Tahoma,Arial;padding:5px 10px;border-radius:8px}</style></head><body><div class=\"tag\">نسخة تجريبية للشات</div><iframe src=\"https://almutawabh.com/\" title=\"site\"></iframe><script src=\"https://almutawabh.com/webhook/chat-widget.js\" defer></script></body></html>"
+        }
+      }
+    ],
+    "connections": {
+      "Chat API": {
+        "main": [
+          [
+            {
+              "node": "Validate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate": {
+        "main": [
+          [
+            {
+              "node": "Route",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route": {
+        "main": [
+          [
+            {
+              "node": "Get History",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Save Inbound",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Bad",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get History": {
+        "main": [
+          [
+            {
+              "node": "Respond History",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Inbound": {
+        "main": [
+          [
+            {
+              "node": "Over Limit?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Over Limit?": {
+        "main": [
+          [
+            {
+              "node": "Respond Limit",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Ask Shared Brain",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ask Shared Brain": {
+        "main": [
+          [
+            {
+              "node": "Save Outbound",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Outbound": {
+        "main": [
+          [
+            {
+              "node": "Respond Reply",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Widget Script": {
+        "main": [
+          [
+            {
+              "node": "Serve Widget",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Demo Page": {
+        "main": [
+          [
+            {
+              "node": "Serve Demo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Add demo page",
+    "description": "Added nodes: Demo Page, Serve Demo\nConnections: 1 added, 0 removed",
+    "autosaved": false,
+    "createdAt": "2026-10-10T14:33:36.642Z",
+    "updatedAt": "2026-10-10T14:33:36.642Z",
+    "workflowPublishHistory": [
+      {
+        "id": 312,
+        "workflowId": "VbbXsiGa1Z8VN09k",
+        "versionId": "8073f8ee-9eaa-4bce-a6e9-c7502ca0917c",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T14:33:36.998Z"
+      }
+    ]
+  }
+}
