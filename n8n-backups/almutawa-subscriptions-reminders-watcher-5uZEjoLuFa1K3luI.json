@@ -1,0 +1,416 @@
+{
+  "id": "5uZEjoLuFa1K3luI",
+  "name": "Almutawa - Subscriptions & Reminders Watcher",
+  "description": "Hourly: sends inbox + Telegram reminders for due subscriptions/top-ups (with payment link), custom reminders, and a weekly nudge for subscriptions missing details.",
+  "active": true,
+  "activeVersionId": "b1bf0b8d-e4af-441e-aa3f-a9b790fecf4a",
+  "createdAt": "2026-10-10T09:08:03.084Z",
+  "updatedAt": "2026-10-10T09:36:16.880Z",
+  "isArchived": false,
+  "versionId": "b1bf0b8d-e4af-441e-aa3f-a9b790fecf4a",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "0107eddf-83e2-4f6e-be15-618e96d2026a",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b5a94474-b6b5-48c8-b6ac-3c02662341d9",
+      "name": "Collect Due Items",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH bh AS (SELECT (now() AT TIME ZONE 'Asia/Bahrain') AS t),\nr AS (UPDATE reminders SET last_sent_at = now(), status = CASE WHEN repeat_daily_until_done THEN status ELSE 'sent' END WHERE status = 'pending' AND due_at <= now() AND (last_sent_at IS NULL OR (repeat_daily_until_done AND last_sent_at < now() - interval '23 hours')) RETURNING id, title, body, link),\ns AS (UPDATE subscriptions SET last_reminded_on = (SELECT t::date FROM bh) WHERE (SELECT extract(hour FROM t) FROM bh) >= 9 AND status = 'active' AND decision <> 'cancel' AND next_due IS NOT NULL AND (snooze_until IS NULL OR snooze_until <= (SELECT t::date FROM bh)) AND next_due - remind_days_before <= (SELECT t::date FROM bh) AND (last_reminded_on IS NULL OR last_reminded_on < (SELECT t::date FROM bh)) RETURNING id, name, next_due, cost, currency, manage_url, kind),\nw AS (SELECT count(*) AS c FROM subscriptions WHERE status = 'to_review'),\nitems AS (\nSELECT 'reminder' AS category, '⏰ تذكير: ' || title AS title, coalesce(body, '') || CASE WHEN link IS NOT NULL THEN E'\\nالرابط: ' || link ELSE '' END AS body, 'high' AS priority, 'reminders' AS entity, id::text AS entity_id,\n '⏰ تذكير (رقم ' || id || '): ' || title || coalesce(E'\\n' || body, '') || coalesce(E'\\nالرابط: ' || link, '') || E'\\n\\nخلصتها؟ رد علي هنا: تم / ذكرني بكرة / ذكرني الساعة كذا' AS agent_msg FROM r\nUNION ALL\nSELECT 'subscription', CASE WHEN next_due < (SELECT t::date FROM bh) THEN '⚠️ فات موعد ' || name ELSE CASE WHEN kind = 'prepaid' THEN '💳 وقت شحن رصيد ' || name ELSE '💳 قرّب تجديد ' || name END END,\n 'الموعد: ' || to_char(next_due, 'YYYY-MM-DD') || coalesce(' · المبلغ: ' || cost || ' ' || currency, '') || E'\\nرد على الوكيل: دفعت / لا تجدده / ذكرني بعد يوم' || coalesce(E'\\nرابط الدفع: ' || manage_url, ''),\n CASE WHEN next_due < (SELECT t::date FROM bh) THEN 'urgent' ELSE 'high' END, 'subscriptions', id::text,\n CASE WHEN next_due < (SELECT t::date FROM bh) THEN '⚠️ ' || name || ' (اشتراك رقم ' || id || '): فات موعده بتاريخ ' ELSE '💳 ' || name || ' (اشتراك رقم ' || id || '): موعد ' || CASE WHEN kind = 'prepaid' THEN 'الشحن ' ELSE 'التجديد ' END END || to_char(next_due, 'YYYY-MM-DD') || coalesce(E'\\nالمبلغ: ' || cost || ' ' || currency, '') || coalesce(E'\\nرابط الدفع: ' || manage_url, '') || E'\\n\\nدفعت؟ رد علي هنا: دفعت / لا تجدده / ذكرني بعد يوم' FROM s\nUNION ALL\nSELECT 'subscription', '📋 عندك ' || c || ' اشتراكات ناقصة معلوماتها', 'افتح محادثة متابعات الوكيل ونكملها وحدة وحدة.', 'normal', 'subscriptions', 'review',\n '📋 عندك ' || c || E' اشتراكات ناقصة معلوماتها (ليش مشتركين، متى التجديد، كم السعر).\\nتبي نكملها الحين؟ قول: يلا' FROM w, bh WHERE c > 0 AND extract(dow FROM t) = 0 AND extract(hour FROM t) = 9\n),\nins AS (INSERT INTO agent_chat_histories (session_id, message) SELECT 'staff1_followups', jsonb_build_object('type', 'ai', 'content', agent_msg, 'tool_calls', '[]'::jsonb, 'additional_kwargs', '{}'::jsonb, 'response_metadata', '{}'::jsonb, 'invalid_tool_calls', '[]'::jsonb) FROM items RETURNING id),\ncs AS (INSERT INTO chat_sessions (session_id, staff_id, title, status) SELECT 'staff1_followups', 1, '📌 متابعات الوكيل', 'open' WHERE EXISTS (SELECT 1 FROM items) ON CONFLICT (session_id) DO UPDATE SET status = 'open', closed_at = NULL, title = EXCLUDED.title RETURNING session_id)\nSELECT category, '📌 الوكيل: ' || title AS title, body || E'\\nرد عليه في محادثة «متابعات الوكيل»' AS body, priority, entity, entity_id, (SELECT count(*) FROM ins) AS posted, (SELECT count(*) FROM cs) AS session FROM items",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "0f5dc8d6-b820-4f83-8d36-63a4b1e551e7",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "mode": "each",
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zT6BZybZ1sxpZIf7"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "={{ $json.category }}",
+            "title": "={{ $json.title }}",
+            "body": "={{ $json.body }}",
+            "priority": "={{ $json.priority }}",
+            "entity": "={{ $json.entity }}",
+            "entityId": "={{ $json.entity_id }}",
+            "source": "subscriptions_watcher"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "entity",
+              "displayName": "entity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "entityId",
+              "displayName": "entityId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Collect Due Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Due Items": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA",
+    "timezone": "Asia/Bahrain"
+  },
+  "staticData": {
+    "node:Every Hour": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "5uZEjoLuFa1K3luI",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:08:03.085Z",
+      "updatedAt": "2026-10-10T09:08:03.085Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b1bf0b8d-e4af-441e-aa3f-a9b790fecf4a",
+    "workflowId": "5uZEjoLuFa1K3luI",
+    "nodes": [
+      {
+        "id": "0107eddf-83e2-4f6e-be15-618e96d2026a",
+        "name": "Every Hour",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "b5a94474-b6b5-48c8-b6ac-3c02662341d9",
+        "name": "Collect Due Items",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH bh AS (SELECT (now() AT TIME ZONE 'Asia/Bahrain') AS t),\nr AS (UPDATE reminders SET last_sent_at = now(), status = CASE WHEN repeat_daily_until_done THEN status ELSE 'sent' END WHERE status = 'pending' AND due_at <= now() AND (last_sent_at IS NULL OR (repeat_daily_until_done AND last_sent_at < now() - interval '23 hours')) RETURNING id, title, body, link),\ns AS (UPDATE subscriptions SET last_reminded_on = (SELECT t::date FROM bh) WHERE (SELECT extract(hour FROM t) FROM bh) >= 9 AND status = 'active' AND decision <> 'cancel' AND next_due IS NOT NULL AND (snooze_until IS NULL OR snooze_until <= (SELECT t::date FROM bh)) AND next_due - remind_days_before <= (SELECT t::date FROM bh) AND (last_reminded_on IS NULL OR last_reminded_on < (SELECT t::date FROM bh)) RETURNING id, name, next_due, cost, currency, manage_url, kind),\nw AS (SELECT count(*) AS c FROM subscriptions WHERE status = 'to_review'),\nitems AS (\nSELECT 'reminder' AS category, '⏰ تذكير: ' || title AS title, coalesce(body, '') || CASE WHEN link IS NOT NULL THEN E'\\nالرابط: ' || link ELSE '' END AS body, 'high' AS priority, 'reminders' AS entity, id::text AS entity_id,\n '⏰ تذكير (رقم ' || id || '): ' || title || coalesce(E'\\n' || body, '') || coalesce(E'\\nالرابط: ' || link, '') || E'\\n\\nخلصتها؟ رد علي هنا: تم / ذكرني بكرة / ذكرني الساعة كذا' AS agent_msg FROM r\nUNION ALL\nSELECT 'subscription', CASE WHEN next_due < (SELECT t::date FROM bh) THEN '⚠️ فات موعد ' || name ELSE CASE WHEN kind = 'prepaid' THEN '💳 وقت شحن رصيد ' || name ELSE '💳 قرّب تجديد ' || name END END,\n 'الموعد: ' || to_char(next_due, 'YYYY-MM-DD') || coalesce(' · المبلغ: ' || cost || ' ' || currency, '') || E'\\nرد على الوكيل: دفعت / لا تجدده / ذكرني بعد يوم' || coalesce(E'\\nرابط الدفع: ' || manage_url, ''),\n CASE WHEN next_due < (SELECT t::date FROM bh) THEN 'urgent' ELSE 'high' END, 'subscriptions', id::text,\n CASE WHEN next_due < (SELECT t::date FROM bh) THEN '⚠️ ' || name || ' (اشتراك رقم ' || id || '): فات موعده بتاريخ ' ELSE '💳 ' || name || ' (اشتراك رقم ' || id || '): موعد ' || CASE WHEN kind = 'prepaid' THEN 'الشحن ' ELSE 'التجديد ' END END || to_char(next_due, 'YYYY-MM-DD') || coalesce(E'\\nالمبلغ: ' || cost || ' ' || currency, '') || coalesce(E'\\nرابط الدفع: ' || manage_url, '') || E'\\n\\nدفعت؟ رد علي هنا: دفعت / لا تجدده / ذكرني بعد يوم' FROM s\nUNION ALL\nSELECT 'subscription', '📋 عندك ' || c || ' اشتراكات ناقصة معلوماتها', 'افتح محادثة متابعات الوكيل ونكملها وحدة وحدة.', 'normal', 'subscriptions', 'review',\n '📋 عندك ' || c || E' اشتراكات ناقصة معلوماتها (ليش مشتركين، متى التجديد، كم السعر).\\nتبي نكملها الحين؟ قول: يلا' FROM w, bh WHERE c > 0 AND extract(dow FROM t) = 0 AND extract(hour FROM t) = 9\n),\nins AS (INSERT INTO agent_chat_histories (session_id, message) SELECT 'staff1_followups', jsonb_build_object('type', 'ai', 'content', agent_msg, 'tool_calls', '[]'::jsonb, 'additional_kwargs', '{}'::jsonb, 'response_metadata', '{}'::jsonb, 'invalid_tool_calls', '[]'::jsonb) FROM items RETURNING id),\ncs AS (INSERT INTO chat_sessions (session_id, staff_id, title, status) SELECT 'staff1_followups', 1, '📌 متابعات الوكيل', 'open' WHERE EXISTS (SELECT 1 FROM items) ON CONFLICT (session_id) DO UPDATE SET status = 'open', closed_at = NULL, title = EXCLUDED.title RETURNING session_id)\nSELECT category, '📌 الوكيل: ' || title AS title, body || E'\\nرد عليه في محادثة «متابعات الوكيل»' AS body, priority, entity, entity_id, (SELECT count(*) FROM ins) AS posted, (SELECT count(*) FROM cs) AS session FROM items",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "0f5dc8d6-b820-4f83-8d36-63a4b1e551e7",
+        "name": "Notify Owner",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "mode": "each",
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "zT6BZybZ1sxpZIf7"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "category": "={{ $json.category }}",
+              "title": "={{ $json.title }}",
+              "body": "={{ $json.body }}",
+              "priority": "={{ $json.priority }}",
+              "entity": "={{ $json.entity }}",
+              "entityId": "={{ $json.entity_id }}",
+              "source": "subscriptions_watcher"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "body",
+                "displayName": "body",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "entity",
+                "displayName": "entity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "entityId",
+                "displayName": "entityId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every Hour": {
+        "main": [
+          [
+            {
+              "node": "Collect Due Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Due Items": {
+        "main": [
+          [
+            {
+              "node": "Notify Owner",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Post follow-ups as agent messages",
+    "description": "Updated nodes: Collect Due Items",
+    "autosaved": false,
+    "createdAt": "2026-10-10T09:36:16.880Z",
+    "updatedAt": "2026-10-10T09:36:16.880Z",
+    "workflowPublishHistory": [
+      {
+        "id": 288,
+        "workflowId": "5uZEjoLuFa1K3luI",
+        "versionId": "b1bf0b8d-e4af-441e-aa3f-a9b790fecf4a",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T09:38:34.244Z"
+      }
+    ]
+  }
+}
