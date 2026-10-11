@@ -1,0 +1,94 @@
+{
+  "id": "iD59zbc5SxCeQQDU",
+  "name": "Test memory query (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T08:18:38.145Z",
+  "updatedAt": "2026-10-10T08:18:54.000Z",
+  "isArchived": true,
+  "versionId": "7084267b-4748-4d46-9ff0-92901d9d3ea2",
+  "versionCounter": 2,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "b72e3b77-10b1-4094-b919-7c9093e68c20",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1c0c2a8b-50e2-494b-8131-7865ec98de04",
+      "name": "Q",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE work_playbook SET when_text = 'إذا وصل إشعار أو إيميل حركة على الحساب الذي ينتهي بـ 43150000 فقط (لا يشمل باقي حسابات Fawri+ مثل حساب المكتب 17100100)', updated_at = now() WHERE id = 3 RETURNING id, title, when_text, action_text",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "iD59zbc5SxCeQQDU",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T08:18:38.146Z",
+      "updatedAt": "2026-10-10T08:18:38.146Z"
+    }
+  ],
+  "activeVersion": null
+}
