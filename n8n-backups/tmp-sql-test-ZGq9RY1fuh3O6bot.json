@@ -1,0 +1,298 @@
+{
+  "id": "ZGq9RY1fuh3O6bot",
+  "name": "TMP sql test",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T12:49:24.494Z",
+  "updatedAt": "2026-10-10T12:54:56.000Z",
+  "isArchived": true,
+  "versionId": "52e3d62b-c45a-4f78-a326-6d4172c3c281",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "6b671682-55ba-4b11-a494-7af68124fc44",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "d967c4e9-be10-4b47-b264-b5d872cef06d",
+      "name": "booking_create",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ph AS (SELECT '+' || CASE WHEN length(d) = 8 THEN '973' || d ELSE regexp_replace(d, '^00', '') END FROM (SELECT regexp_replace($2, '[^0-9]', '', 'g') AS d) z) , pk AS (UPDATE packages SET seats_available = seats_available - GREATEST(COALESCE(NULLIF($3,'')::int, 1), 1) WHERE id = NULLIF($1,'')::int AND (seats_available IS NULL OR seats_available >= GREATEST(COALESCE(NULLIF($3,'')::int, 1), 1)) RETURNING id, title, price, seats_available, departure_date), cu AS (INSERT INTO customers (phone, full_name) SELECT ph.p, NULLIF($4,'') FROM (SELECT (SELECT * FROM ph) AS p) ph ON CONFLICT (phone) DO UPDATE SET full_name = COALESCE(customers.full_name, EXCLUDED.full_name) RETURNING id), bk AS (INSERT INTO bookings (package_id, customer_phone, lead_name, lead_email, travelers_count, notes, booking_status, payment_status, amount_paid, total_amount) SELECT pk.id, (SELECT * FROM ph), NULLIF($4,''), NULLIF($5,''), GREATEST(COALESCE(NULLIF($3,'')::int, 1), 1), NULLIF($8,''), COALESCE(NULLIF($9,''), 'confirmed'), CASE WHEN COALESCE(NULLIF($7,'')::numeric, 0) <= 0 THEN 'unpaid' WHEN COALESCE(NULLIF($7,'')::numeric, 0) >= COALESCE(NULLIF($6,'')::numeric, pk.price * GREATEST(COALESCE(NULLIF($3,'')::int, 1), 1)) THEN 'paid' ELSE 'partial' END, COALESCE(NULLIF($7,'')::numeric, 0), COALESCE(NULLIF($6,'')::numeric, pk.price * GREATEST(COALESCE(NULLIF($3,'')::int, 1), 1)) FROM pk RETURNING *), lg AS (INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) SELECT 'agent', 'staff_' || $10, 'booking_create', 'bookings', id::text, 'Personal AI Agent', jsonb_build_object('package_id', package_id, 'travelers', travelers_count, 'total', total_amount) FROM bk) SELECT (SELECT row_to_json(bk) FROM bk) AS booking, (SELECT row_to_json(pk) FROM pk) AS package_after, CASE WHEN NOT EXISTS (SELECT 1 FROM pk) THEN 'Package not found or not enough seats. Nothing was booked.' ELSE '' END AS error",
+        "options": {
+          "queryReplacement": "={{ ['28','33112233','2','Test User','','100','40','test booking','','1'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "7e7c5917-c60e-4197-98b3-a3df2d6cb1ca",
+      "name": "booking_update",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH old AS (SELECT * FROM bookings WHERE id = NULLIF($1,'')::int), u AS (UPDATE bookings b SET booking_status = COALESCE(NULLIF($2,''), b.booking_status), payment_status = COALESCE(NULLIF($3,''), b.payment_status), amount_paid = COALESCE(NULLIF($4,'')::numeric, b.amount_paid), total_amount = COALESCE(NULLIF($5,'')::numeric, b.total_amount), travelers_count = COALESCE(NULLIF($6,'')::int, b.travelers_count), notes = COALESCE(NULLIF($7,''), b.notes) WHERE b.id = NULLIF($1,'')::int RETURNING b.*), seat AS (UPDATE packages p SET seats_available = p.seats_available + (CASE WHEN u.booking_status = 'cancelled' AND COALESCE(old.booking_status,'') <> 'cancelled' THEN COALESCE(old.travelers_count,0) WHEN u.booking_status <> 'cancelled' AND COALESCE(old.booking_status,'') = 'cancelled' THEN -COALESCE(u.travelers_count,0) WHEN u.booking_status <> 'cancelled' THEN COALESCE(old.travelers_count,0) - COALESCE(u.travelers_count,0) ELSE 0 END) FROM u, old WHERE p.id = u.package_id RETURNING p.id, p.seats_available), lg AS (INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) SELECT 'agent', 'staff_' || $8, 'booking_update', 'bookings', u.id::text, 'Personal AI Agent', jsonb_build_object('before', to_jsonb(old), 'after', to_jsonb(u)) FROM u, old) SELECT (SELECT row_to_json(u) FROM u) AS booking, (SELECT row_to_json(seat) FROM seat) AS package_seats, CASE WHEN NOT EXISTS (SELECT 1 FROM u) THEN 'Booking not found' ELSE '' END AS error",
+        "options": {
+          "queryReplacement": "={{ [String($('booking_create').first().json.booking.id),'cancelled','','','','','','1'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "fff709dc-c4d5-466f-8870-66b3202c1a61",
+      "name": "customer_save",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH x AS (INSERT INTO customers (phone, full_name, notes, whatsapp_opt_in) VALUES ((SELECT '+' || CASE WHEN length(d) = 8 THEN '973' || d ELSE regexp_replace(d, '^00', '') END FROM (SELECT regexp_replace($1, '[^0-9]', '', 'g') AS d) z), NULLIF($2,''), NULLIF($3,''), COALESCE(NULLIF($4,'')::boolean, true)) ON CONFLICT (phone) DO UPDATE SET full_name = COALESCE(NULLIF($2,''), customers.full_name), notes = COALESCE(NULLIF($3,''), customers.notes), whatsapp_opt_in = COALESCE(NULLIF($4,'')::boolean, customers.whatsapp_opt_in) RETURNING id, phone, full_name, notes, whatsapp_opt_in), lg AS (INSERT INTO audit_log (actor_type, actor_id, action, entity, entity_id, workflow, details) SELECT 'agent', 'staff_' || $5, 'customer_save', 'customers', id::text, 'Personal AI Agent', jsonb_build_object('name', full_name) FROM x) SELECT * FROM x",
+        "options": {
+          "queryReplacement": "={{ ['33112233','Test User 2','note x','','1'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "da9b28c6-e8b9-4cad-8a7e-62037198c78f",
+      "name": "travelers_add",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO travelers (booking_id, title, first_name, last_name, dob, nationality, passport_number) SELECT NULLIF($1,'')::int, x.title, x.first_name, x.last_name, x.dob, x.nationality, x.passport_number FROM jsonb_to_recordset(COALESCE(NULLIF($2,''),'[]')::jsonb) AS x(title text, first_name text, last_name text, dob date, nationality text, passport_number text) RETURNING id, booking_id, first_name, last_name, passport_number",
+        "options": {
+          "queryReplacement": "={{ [String($('booking_create').first().json.booking.id), JSON.stringify([{title:'Mr',first_name:'Ali',last_name:'Test',dob:'1990-01-01',nationality:'BH',passport_number:'X1'}])] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "6742195a-7bf3-4dd2-abdf-69a2d76ff62b",
+      "name": "invoice_create",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH it AS (SELECT coalesce(jsonb_agg(jsonb_build_object('desc', x->>'desc', 'qty', COALESCE((x->>'qty')::numeric, 1), 'price', COALESCE((x->>'price')::numeric, 0), 'amount', COALESCE((x->>'qty')::numeric, 1) * COALESCE((x->>'price')::numeric, 0))), '[]'::jsonb) AS items, coalesce(sum(COALESCE((x->>'qty')::numeric, 1) * COALESCE((x->>'price')::numeric, 0)), 0) AS sub FROM jsonb_array_elements(COALESCE(NULLIF($4,''), '[]')::jsonb) x) INSERT INTO invoices (number, customer_name, customer_phone, booking_id, items, subtotal, discount, total, notes, created_by) SELECT 'INV-' || to_char(now() AT TIME ZONE 'Asia/Bahrain', 'YYYYMMDD') || '-' || lpad(((SELECT coalesce(max(id), 0) FROM invoices) + 1)::text, 3, '0'), NULLIF($1,''), NULLIF($2,''), NULLIF($3,'')::int, it.items, it.sub, COALESCE(NULLIF($5,'')::numeric, 0), it.sub - COALESCE(NULLIF($5,'')::numeric, 0), NULLIF($6,''), 'staff_' || $7 FROM it RETURNING *",
+        "options": {
+          "queryReplacement": "={{ ['Test User','+97333112233','', JSON.stringify([{desc:'Umrah',qty:2,price:50}]),'10','','1'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "582bad3b-eaf7-4f0d-be4a-a048253d3f75",
+      "name": "database_change",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT agent_db_change($1, 'staff_' || $2, $3) AS result",
+        "options": {
+          "queryReplacement": "={{ [\"UPDATE customers SET notes = 'changed' WHERE phone = '+97333112233'\",'1','test'] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "cd7fafb7-007a-4cef-b67b-60f909f746be",
+      "name": "Cleanup",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM travelers WHERE passport_number='X1'; DELETE FROM bookings WHERE notes='test booking'; DELETE FROM customers WHERE phone='+97333112233'; DELETE FROM invoices WHERE customer_name='Test User'; DELETE FROM audit_log WHERE actor_id='staff_1' AND at > now() - interval '10 minutes' AND action IN ('booking_create','booking_update','customer_save','db_change'); SELECT 1 AS cleaned",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "booking_create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "booking_create": {
+      "main": [
+        [
+          {
+            "node": "booking_update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "booking_update": {
+      "main": [
+        [
+          {
+            "node": "customer_save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "customer_save": {
+      "main": [
+        [
+          {
+            "node": "travelers_add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "travelers_add": {
+      "main": [
+        [
+          {
+            "node": "invoice_create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "invoice_create": {
+      "main": [
+        [
+          {
+            "node": "database_change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "database_change": {
+      "main": [
+        [
+          {
+            "node": "Cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "ZGq9RY1fuh3O6bot",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:49:24.495Z",
+      "updatedAt": "2026-10-10T12:49:24.495Z"
+    }
+  ],
+  "activeVersion": null
+}
