@@ -1,0 +1,299 @@
+{
+  "id": "OsZj2wYmxM6CRCH9",
+  "name": "Public - Media Files",
+  "description": "Public GET /webhook/media?id=&k= that serves stored images/files (agent designs, package photos) from the media table.",
+  "active": true,
+  "activeVersionId": "cb85f63a-0cb2-4e77-8ff1-5ea5ab0fd31f",
+  "createdAt": "2026-10-10T12:42:41.381Z",
+  "updatedAt": "2026-10-10T12:42:41.381Z",
+  "isArchived": false,
+  "versionId": "cb85f63a-0cb2-4e77-8ff1-5ea5ab0fd31f",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "9b3356a5-f103-4fcc-a848-50bde02df4fb",
+      "name": "Media Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "media",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "afd58036-e662-4619-b2a5-7cbd7b0658b8"
+    },
+    {
+      "id": "f80c2297-490e-42ab-9d50-32497e003e00",
+      "name": "Get Media",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT count(*) AS found, max(mime) AS mime, max(name) AS name, max(encode(data, 'base64')) AS b64 FROM media WHERE id::text = $1 AND k = $2",
+        "options": {
+          "queryReplacement": "={{ [ String($json.query.id || ''), String($json.query.k || '') ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "8b547ddd-eeef-4ff1-bb2f-06c096a4bb9c",
+      "name": "To Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nif (Number(r.found) < 1) return [{ json: { code: 404 }, binary: { data: { data: Buffer.from('not found').toString('base64'), mimeType: 'text/plain', fileName: 'nf.txt' } } }];\nconst ext = (r.mime || '').split('/')[1] || 'bin';\nreturn [{ json: { code: 200 }, binary: { data: { data: r.b64, mimeType: r.mime, fileName: (r.name || 'file').replace(/[^\\w.-]+/g, '_') + '.' + ext } } }];"
+      }
+    },
+    {
+      "id": "8287a95d-09f3-4429-9195-f9d35a4dfdf0",
+      "name": "Send File",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "respondWith": "binary",
+        "inputDataFieldName": "data",
+        "options": {
+          "responseCode": "={{ $json.code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "public, max-age=86400"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Media Request": {
+      "main": [
+        [
+          {
+            "node": "Get Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Media": {
+      "main": [
+        [
+          {
+            "node": "To Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "To Binary": {
+      "main": [
+        [
+          {
+            "node": "Send File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "OsZj2wYmxM6CRCH9",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:42:41.383Z",
+      "updatedAt": "2026-10-10T12:42:41.383Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "cb85f63a-0cb2-4e77-8ff1-5ea5ab0fd31f",
+    "workflowId": "OsZj2wYmxM6CRCH9",
+    "nodes": [
+      {
+        "id": "9b3356a5-f103-4fcc-a848-50bde02df4fb",
+        "name": "Media Request",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "GET",
+          "path": "media",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "webhookId": "afd58036-e662-4619-b2a5-7cbd7b0658b8"
+      },
+      {
+        "id": "f80c2297-490e-42ab-9d50-32497e003e00",
+        "name": "Get Media",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT count(*) AS found, max(mime) AS mime, max(name) AS name, max(encode(data, 'base64')) AS b64 FROM media WHERE id::text = $1 AND k = $2",
+          "options": {
+            "queryReplacement": "={{ [ String($json.query.id || ''), String($json.query.k || '') ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "8b547ddd-eeef-4ff1-bb2f-06c096a4bb9c",
+        "name": "To Binary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nif (Number(r.found) < 1) return [{ json: { code: 404 }, binary: { data: { data: Buffer.from('not found').toString('base64'), mimeType: 'text/plain', fileName: 'nf.txt' } } }];\nconst ext = (r.mime || '').split('/')[1] || 'bin';\nreturn [{ json: { code: 200 }, binary: { data: { data: r.b64, mimeType: r.mime, fileName: (r.name || 'file').replace(/[^\\w.-]+/g, '_') + '.' + ext } } }];"
+        }
+      },
+      {
+        "id": "8287a95d-09f3-4429-9195-f9d35a4dfdf0",
+        "name": "Send File",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "respondWith": "binary",
+          "inputDataFieldName": "data",
+          "options": {
+            "responseCode": "={{ $json.code }}",
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Cache-Control",
+                  "value": "public, max-age=86400"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Media Request": {
+        "main": [
+          [
+            {
+              "node": "Get Media",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Media": {
+        "main": [
+          [
+            {
+              "node": "To Binary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "To Binary": {
+        "main": [
+          [
+            {
+              "node": "Send File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial media endpoint",
+    "description": "Created with 4 nodes: Media Request, Get Media, To Binary, Send File",
+    "autosaved": false,
+    "createdAt": "2026-10-10T12:42:41.384Z",
+    "updatedAt": "2026-10-10T12:42:41.384Z",
+    "workflowPublishHistory": [
+      {
+        "id": 294,
+        "workflowId": "OsZj2wYmxM6CRCH9",
+        "versionId": "cb85f63a-0cb2-4e77-8ff1-5ea5ab0fd31f",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T12:42:46.459Z"
+      }
+    ]
+  }
+}
