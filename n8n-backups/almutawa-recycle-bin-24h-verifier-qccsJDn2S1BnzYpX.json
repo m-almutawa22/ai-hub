@@ -1,0 +1,803 @@
+{
+  "id": "qccsJDn2S1BnzYpX",
+  "name": "Almutawa - Recycle Bin 24h Verifier",
+  "description": "Hourly: a second AI agent checks soft-deleted items (and automation changes) after 24h against system errors since the change, then purges them or flags them and alerts the owner.",
+  "active": true,
+  "activeVersionId": "e5a2570b-0dfc-454a-b271-39948c6062df",
+  "createdAt": "2026-10-10T12:45:42.625Z",
+  "updatedAt": "2026-10-10T12:46:33.128Z",
+  "isArchived": false,
+  "versionId": "e5a2570b-0dfc-454a-b271-39948c6062df",
+  "versionCounter": 3,
+  "sourceWorkflowId": null,
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "id": "b0cca6a6-b023-4cdf-ae8e-92127524a1f5",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "61cd2e8e-85b9-4b69-a48b-53ec1e0653ec",
+      "name": "Get Due Items",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT json_agg(json_build_object('id', id, 'table', table_name, 'row_id', row_id, 'reason', reason, 'deleted_by', deleted_by, 'deleted_at', deleted_at, 'data', left(data::text, 600)) ORDER BY id) AS items, min(deleted_at) AS since FROM (SELECT * FROM recycle_bin WHERE status = 'held' AND purge_after <= now() ORDER BY id LIMIT 20) b HAVING count(*) > 0",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "368c6f9b-ae39-4152-bedc-4b513f905ed8",
+      "name": "Get Recent Errors",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://n8n-production-47b1.up.railway.app/api/v1/executions?status=error&includeData=true&limit=100",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ZPXPfbGscORggoTy",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "2b18cb04-0d1e-4ce4-8e82-ef4fa0c09845",
+      "name": "Build Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const due = $('Get Due Items').first().json;\nconst items = due.items || [];\nconst since = new Date(due.since).getTime();\nconst res = $input.first().json;\nconst apiOk = (res.statusCode || 200) < 400;\nconst all = ((res.body && res.body.data) || []).map(function (e) { const rd = (e.data && e.data.resultData) || {}; const er = rd.error || {}; return { workflow_id: e.workflowId, workflow: (e.workflowData && e.workflowData.name) || '', at: e.startedAt, node: rd.lastNodeExecuted || '', error: String(er.message || er.description || '').slice(0, 300) }; });\nconst errors = all.filter(function (e) { return new Date(e.at).getTime() >= since; });\nconst hard = {};\nitems.forEach(function (it) { errors.forEach(function (e) { if (new Date(e.at).getTime() < new Date(it.deleted_at).getTime()) return; const txt = (e.error + ' ' + e.node).toLowerCase(); if ((it.table !== 'workflow' && txt.indexOf(String(it.table).toLowerCase()) > -1) || (it.table === 'workflow' && e.workflow_id === it.row_id)) hard[it.id] = (hard[it.id] || []).concat([e.workflow + ': ' + e.error.slice(0, 120)]); }); });\nconst sys = 'You are the second-check agent (وكيل التحقق) of Al Mutawa Tourism system. Items were soft-deleted (or automations changed) 24+ hours ago. For each item decide if it is SAFE to purge permanently: safe unless an error that happened AFTER its deleted_at plausibly relates to it (same table/entity, its id, missing record, foreign key, null reference in a workflow that uses that data; for table=workflow: any error in that workflow id). Be strict but do not block on unrelated errors. Reply JSON only: {\"verdicts\":[{\"id\":<id>,\"ok\":true|false,\"note\":\"short Arabic reason\"}]}';\nconst user = JSON.stringify({ items: items, errors_since_first_delete: errors.slice(0, 60), error_api_available: apiOk });\nreturn [{ json: { items, hard, apiOk, body: { model: 'gpt-5.5', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] } } }];"
+      }
+    },
+    {
+      "id": "5d4e18b6-77bd-464a-9771-1c6c1a924f4a",
+      "name": "Second Agent Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "xEhei2uTKNn8yPj5",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "5afa592a-8cd0-488e-8fd8-4f127ea296db",
+      "name": "Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const p = $('Build Review').first().json;\nconst r = $input.first().json;\nlet v = [];\ntry { const c = r.body.choices[0].message.content; v = JSON.parse(c).verdicts || []; } catch (e) { v = []; }\nconst map = {}; v.forEach(function (x) { map[String(x.id)] = x; });\nconst out = [];\nif (p.apiOk && v.length) p.items.forEach(function (it) { const x = map[String(it.id)]; if (!x) return; const hard = p.hard[it.id]; const ok = !!x.ok && !hard; out.push({ id: it.id, ok: ok, note: (hard ? 'أخطاء مرتبطة: ' + hard.join(' | ') + '. ' : '') + String(x.note || '') }); });\nreturn [{ json: { verdicts: JSON.stringify(out), checked: out.length, skipped: p.items.length - out.length } }];"
+      }
+    },
+    {
+      "id": "d102507f-a8ac-417d-a1b4-83ef34f7fc24",
+      "name": "Purge Or Flag",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH v AS (SELECT * FROM jsonb_to_recordset($1::jsonb) AS x(id int, ok boolean, note text)), up AS (UPDATE recycle_bin b SET status = CASE WHEN v.ok THEN 'purged' ELSE 'flagged' END, data = CASE WHEN v.ok THEN jsonb_build_object('purged', true) ELSE b.data END, check_note = v.note, checked_at = now() FROM v WHERE b.id = v.id AND b.status = 'held' RETURNING b.id, b.table_name, b.row_id, b.status, b.check_note) SELECT count(*) FILTER (WHERE status = 'purged') AS purged, count(*) FILTER (WHERE status = 'flagged') AS flagged, coalesce(string_agg(CASE WHEN status = 'purged' THEN '✅ ' ELSE '⚠️ ' END || table_name || ' #' || row_id || ' (سلة ' || id || '): ' || coalesce(check_note, ''), E'\\n'), '') AS lines FROM up",
+        "options": {
+          "queryReplacement": "={{ [ $json.verdicts ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "d5f7aadb-ac9c-4dd0-aec5-865f4eac9d60",
+      "name": "Build Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const r = $input.first().json;\nconst d = $('Decide').first().json;\nconst f = Number(r.flagged || 0), pu = Number(r.purged || 0);\nif (!f && !pu) return [{ json: { category: 'system', title: '🗑️ تعذر فحص سلة المحذوفات', body: 'وكيل التحقق ما قدر يراجع ' + d.skipped + ' عنصر هالمرة. بيعيد المحاولة الساعة الجاية.', priority: 'low' } }];\nreturn [{ json: { category: 'system', title: f ? '⚠️ وكيل التحقق أوقف حذف ' + f + ' عنصر' : '🗑️ تم الحذف النهائي لـ ' + pu + ' عنصر بعد التحقق', body: r.lines + (f ? '\\n\\nالعناصر الموقوفة باقية في سلة المحذوفات ويقدر الوكيل يرجعها (database_restore).' : ''), priority: f ? 'high' : 'low' } }];"
+      }
+    },
+    {
+      "id": "8a767070-31cb-4a2e-a0ae-00bd9bfb2498",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "zT6BZybZ1sxpZIf7"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "category": "={{ $json.category }}",
+            "title": "={{ $json.title }}",
+            "body": "={{ $json.body }}",
+            "priority": "={{ $json.priority }}",
+            "entity": "recycle_bin",
+            "entityId": "",
+            "source": "recycle_verifier"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "displayName": "body",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity",
+              "displayName": "entity",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entityId",
+              "displayName": "entityId",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Get Due Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Items": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Errors": {
+      "main": [
+        [
+          {
+            "node": "Build Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Review": {
+      "main": [
+        [
+          {
+            "node": "Second Agent Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Second Agent Check": {
+      "main": [
+        [
+          {
+            "node": "Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide": {
+      "main": [
+        [
+          {
+            "node": "Purge Or Flag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Purge Or Flag": {
+      "main": [
+        [
+          {
+            "node": "Build Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Report": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "errorWorkflow": "MfD6wYIbloXnfULA",
+    "timezone": "Asia/Bahrain",
+    "saveDataSuccessExecution": "none"
+  },
+  "staticData": {
+    "node:Every Hour": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "qccsJDn2S1BnzYpX",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:45:42.627Z",
+      "updatedAt": "2026-10-10T12:45:42.627Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "e5a2570b-0dfc-454a-b271-39948c6062df",
+    "workflowId": "qccsJDn2S1BnzYpX",
+    "nodes": [
+      {
+        "id": "b0cca6a6-b023-4cdf-ae8e-92127524a1f5",
+        "name": "Every Hour",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "61cd2e8e-85b9-4b69-a48b-53ec1e0653ec",
+        "name": "Get Due Items",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT json_agg(json_build_object('id', id, 'table', table_name, 'row_id', row_id, 'reason', reason, 'deleted_by', deleted_by, 'deleted_at', deleted_at, 'data', left(data::text, 600)) ORDER BY id) AS items, min(deleted_at) AS since FROM (SELECT * FROM recycle_bin WHERE status = 'held' AND purge_after <= now() ORDER BY id LIMIT 20) b HAVING count(*) > 0",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "368c6f9b-ae39-4152-bedc-4b513f905ed8",
+        "name": "Get Recent Errors",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          448,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://n8n-production-47b1.up.railway.app/api/v1/executions?status=error&includeData=true&limit=100",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 60000
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ZPXPfbGscORggoTy",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "id": "2b18cb04-0d1e-4ce4-8e82-ef4fa0c09845",
+        "name": "Build Review",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const due = $('Get Due Items').first().json;\nconst items = due.items || [];\nconst since = new Date(due.since).getTime();\nconst res = $input.first().json;\nconst apiOk = (res.statusCode || 200) < 400;\nconst all = ((res.body && res.body.data) || []).map(function (e) { const rd = (e.data && e.data.resultData) || {}; const er = rd.error || {}; return { workflow_id: e.workflowId, workflow: (e.workflowData && e.workflowData.name) || '', at: e.startedAt, node: rd.lastNodeExecuted || '', error: String(er.message || er.description || '').slice(0, 300) }; });\nconst errors = all.filter(function (e) { return new Date(e.at).getTime() >= since; });\nconst hard = {};\nitems.forEach(function (it) { errors.forEach(function (e) { if (new Date(e.at).getTime() < new Date(it.deleted_at).getTime()) return; const txt = (e.error + ' ' + e.node).toLowerCase(); if ((it.table !== 'workflow' && txt.indexOf(String(it.table).toLowerCase()) > -1) || (it.table === 'workflow' && e.workflow_id === it.row_id)) hard[it.id] = (hard[it.id] || []).concat([e.workflow + ': ' + e.error.slice(0, 120)]); }); });\nconst sys = 'You are the second-check agent (وكيل التحقق) of Al Mutawa Tourism system. Items were soft-deleted (or automations changed) 24+ hours ago. For each item decide if it is SAFE to purge permanently: safe unless an error that happened AFTER its deleted_at plausibly relates to it (same table/entity, its id, missing record, foreign key, null reference in a workflow that uses that data; for table=workflow: any error in that workflow id). Be strict but do not block on unrelated errors. Reply JSON only: {\"verdicts\":[{\"id\":<id>,\"ok\":true|false,\"note\":\"short Arabic reason\"}]}';\nconst user = JSON.stringify({ items: items, errors_since_first_delete: errors.slice(0, 60), error_api_available: apiOk });\nreturn [{ json: { items, hard, apiOk, body: { model: 'gpt-5.5', response_format: { type: 'json_object' }, messages: [{ role: 'system', content: sys }, { role: 'user', content: user }] } } }];"
+        }
+      },
+      {
+        "id": "5d4e18b6-77bd-464a-9771-1c6c1a924f4a",
+        "name": "Second Agent Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/chat/completions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "xEhei2uTKNn8yPj5",
+            "name": "OpenAI account"
+          }
+        }
+      },
+      {
+        "id": "5afa592a-8cd0-488e-8fd8-4f127ea296db",
+        "name": "Decide",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const p = $('Build Review').first().json;\nconst r = $input.first().json;\nlet v = [];\ntry { const c = r.body.choices[0].message.content; v = JSON.parse(c).verdicts || []; } catch (e) { v = []; }\nconst map = {}; v.forEach(function (x) { map[String(x.id)] = x; });\nconst out = [];\nif (p.apiOk && v.length) p.items.forEach(function (it) { const x = map[String(it.id)]; if (!x) return; const hard = p.hard[it.id]; const ok = !!x.ok && !hard; out.push({ id: it.id, ok: ok, note: (hard ? 'أخطاء مرتبطة: ' + hard.join(' | ') + '. ' : '') + String(x.note || '') }); });\nreturn [{ json: { verdicts: JSON.stringify(out), checked: out.length, skipped: p.items.length - out.length } }];"
+        }
+      },
+      {
+        "id": "d102507f-a8ac-417d-a1b4-83ef34f7fc24",
+        "name": "Purge Or Flag",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1344,
+          0
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH v AS (SELECT * FROM jsonb_to_recordset($1::jsonb) AS x(id int, ok boolean, note text)), up AS (UPDATE recycle_bin b SET status = CASE WHEN v.ok THEN 'purged' ELSE 'flagged' END, data = CASE WHEN v.ok THEN jsonb_build_object('purged', true) ELSE b.data END, check_note = v.note, checked_at = now() FROM v WHERE b.id = v.id AND b.status = 'held' RETURNING b.id, b.table_name, b.row_id, b.status, b.check_note) SELECT count(*) FILTER (WHERE status = 'purged') AS purged, count(*) FILTER (WHERE status = 'flagged') AS flagged, coalesce(string_agg(CASE WHEN status = 'purged' THEN '✅ ' ELSE '⚠️ ' END || table_name || ' #' || row_id || ' (سلة ' || id || '): ' || coalesce(check_note, ''), E'\\n'), '') AS lines FROM up",
+          "options": {
+            "queryReplacement": "={{ [ $json.verdicts ] }}"
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2k1Ti2SitOd5gAN3",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "id": "d5f7aadb-ac9c-4dd0-aec5-865f4eac9d60",
+        "name": "Build Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          0
+        ],
+        "parameters": {
+          "language": "javaScript",
+          "jsCode": "const r = $input.first().json;\nconst d = $('Decide').first().json;\nconst f = Number(r.flagged || 0), pu = Number(r.purged || 0);\nif (!f && !pu) return [{ json: { category: 'system', title: '🗑️ تعذر فحص سلة المحذوفات', body: 'وكيل التحقق ما قدر يراجع ' + d.skipped + ' عنصر هالمرة. بيعيد المحاولة الساعة الجاية.', priority: 'low' } }];\nreturn [{ json: { category: 'system', title: f ? '⚠️ وكيل التحقق أوقف حذف ' + f + ' عنصر' : '🗑️ تم الحذف النهائي لـ ' + pu + ' عنصر بعد التحقق', body: r.lines + (f ? '\\n\\nالعناصر الموقوفة باقية في سلة المحذوفات ويقدر الوكيل يرجعها (database_restore).' : ''), priority: f ? 'high' : 'low' } }];"
+        }
+      },
+      {
+        "id": "8a767070-31cb-4a2e-a0ae-00bd9bfb2498",
+        "name": "Notify Owner",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          1792,
+          0
+        ],
+        "parameters": {
+          "source": "database",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "zT6BZybZ1sxpZIf7"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "category": "={{ $json.category }}",
+              "title": "={{ $json.title }}",
+              "body": "={{ $json.body }}",
+              "priority": "={{ $json.priority }}",
+              "entity": "recycle_bin",
+              "entityId": "",
+              "source": "recycle_verifier"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "category",
+                "displayName": "category",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "body",
+                "displayName": "body",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "priority",
+                "displayName": "priority",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "entity",
+                "displayName": "entity",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "entityId",
+                "displayName": "entityId",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "type": "string",
+                "display": true,
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every Hour": {
+        "main": [
+          [
+            {
+              "node": "Get Due Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Due Items": {
+        "main": [
+          [
+            {
+              "node": "Get Recent Errors",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Recent Errors": {
+        "main": [
+          [
+            {
+              "node": "Build Review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Review": {
+        "main": [
+          [
+            {
+              "node": "Second Agent Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Second Agent Check": {
+        "main": [
+          [
+            {
+              "node": "Decide",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Decide": {
+        "main": [
+          [
+            {
+              "node": "Purge Or Flag",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Purge Or Flag": {
+        "main": [
+          [
+            {
+              "node": "Build Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Report": {
+        "main": [
+          [
+            {
+              "node": "Notify Owner",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
+    "name": "Initial verifier",
+    "description": "Created with 9 nodes: Every Hour, Get Due Items, Get Recent Errors, Build Review, Second Agent Check and 4 more",
+    "autosaved": false,
+    "createdAt": "2026-10-10T12:45:42.628Z",
+    "updatedAt": "2026-10-10T12:45:42.628Z",
+    "workflowPublishHistory": [
+      {
+        "id": 295,
+        "workflowId": "qccsJDn2S1BnzYpX",
+        "versionId": "e5a2570b-0dfc-454a-b271-39948c6062df",
+        "event": "activated",
+        "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-10-10T12:46:36.329Z"
+      }
+    ]
+  }
+}
