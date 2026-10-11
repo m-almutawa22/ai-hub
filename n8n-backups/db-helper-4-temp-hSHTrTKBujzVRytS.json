@@ -1,0 +1,94 @@
+{
+  "id": "hSHTrTKBujzVRytS",
+  "name": "DB helper 4 (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T12:32:52.917Z",
+  "updatedAt": "2026-10-10T15:43:27.761Z",
+  "isArchived": false,
+  "versionId": "20af7d09-69c3-4a99-97a9-fa86d92db1cc",
+  "versionCounter": 19,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "9297eb5f-4740-4b52-8a54-a2b506c3718e",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "291e423e-641e-4720-a606-81d67827cc19",
+      "name": "Q",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT session_id, id, message->>'type' AS t, left(message->>'content', 3000) AS c FROM agent_chat_histories WHERE session_id IN ('staff1_role_developer','staff1_mv2jpbxsp3l84v','staff1_mv2jnbff8vt7qb','staff1_mv2hqsyogjw5i0','staff1_mv2is7p8b6o3go','staff1_mv1cc2wmtzjth6') ORDER BY session_id, id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "hSHTrTKBujzVRytS",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T12:32:52.918Z",
+      "updatedAt": "2026-10-10T12:32:52.918Z"
+    }
+  ],
+  "activeVersion": null
+}
