@@ -1,0 +1,376 @@
+{
+  "id": "sgKvfYsp17jyVLUY",
+  "name": "Agent Tool - Trip Travelers List (Airtable)",
+  "description": "Sub-workflow for the AI agent: given a trip name, date or package number, returns the travelers list (name, passport, nationality, DOB, booking, payment) from Airtable.",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T09:47:49.533Z",
+  "updatedAt": "2026-10-10T09:48:54.000Z",
+  "isArchived": true,
+  "versionId": "4a8ffe44-536b-427d-80a6-b6e85daf636f",
+  "versionCounter": 1,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "f7f27ad8-8d71-41d4-ace8-d41c3dd5e7a3",
+      "name": "When Called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "trip",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "945085b1-912d-4155-b73c-c40b4eb9c7ea",
+      "name": "Build Trip Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const t = String($input.first().json.trip || '').trim().replace(/'/g, \"\\\\'\");\nconst f = t ? \"OR(FIND(LOWER('\" + t + \"'), LOWER({Title})), DATETIME_FORMAT({Departure Date}, 'YYYY-MM-DD') = '\" + t + \"', {Package ID} & '' = '\" + t + \"')\" : 'FALSE()';\nreturn [{ json: { trip: t, f } }];"
+      }
+    },
+    {
+      "id": "32b85f38-fee4-4a5d-bd73-b95146e17aad",
+      "name": "Get Trips",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblbCLAD8HLLwA9R7",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "={{ $json.f }}"
+            },
+            {
+              "name": "maxRecords",
+              "value": "6"
+            },
+            {
+              "name": "sort[0][field]",
+              "value": "Departure Date"
+            },
+            {
+              "name": "sort[0][direction]",
+              "value": "desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "e0e62495-9bbc-4d80-966b-ea2b2e63afc0",
+      "name": "Build Booking Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const recs = $input.first().json.records || [];\nconst ids = [];\nrecs.forEach(r => (r.fields.Bookings || []).forEach(b => ids.push(b)));\nconst f = ids.length ? 'OR(' + ids.map(i => \"RECORD_ID()='\" + i + \"'\").join(',') + ')' : 'FALSE()';\nreturn [{ json: { trips: recs.map(r => ({ id: r.fields['Package ID'], title: r.fields.Title, departure: r.fields['Departure Date'], return: r.fields['Return Date'], status: r.fields.Status, seats_left: r.fields['Seats Available'], bookings: (r.fields.Bookings || []).length })), f } }];"
+      }
+    },
+    {
+      "id": "b4dbf4d0-8e29-4dcc-baf2-5dad112ab3c1",
+      "name": "Get Bookings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblZ6AQCBmEY2KYHr",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "={{ $json.f }}"
+            },
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "70d2e7e5-1043-4ba7-bf59-e4c1d46a8e01",
+      "name": "Build Traveler Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const recs = $input.first().json.records || [];\nconst tids = [], cids = [];\nrecs.forEach(r => { (r.fields.Travelers || []).forEach(x => tids.push(x)); (r.fields.Customer || []).forEach(x => cids.push(x)); });\nconst mk = a => a.length ? 'OR(' + a.map(i => \"RECORD_ID()='\" + i + \"'\").join(',') + ')' : 'FALSE()';\nreturn [{ json: { tf: mk(tids), cf: mk([...new Set(cids)]) } }];"
+      }
+    },
+    {
+      "id": "a3d44f78-f683-45a4-97c0-5c74345fabcb",
+      "name": "Get Travelers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblMaJFE8yIqxFj1N",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "={{ $json.tf }}"
+            },
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "e26a2bd8-cd5d-4210-8049-410275cb7aa9",
+      "name": "Get Customers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.airtable.com/v0/appPB4D3VkkSJKjRK/tblm8JWYMAoamikUz",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "={{ $('Build Traveler Filter').first().json.cf }}"
+            },
+            {
+              "name": "pageSize",
+              "value": "100"
+            },
+            {
+              "name": "fields[]",
+              "value": "Phone"
+            },
+            {
+              "name": "fields[]",
+              "value": "Full Name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dJPlPtRxY8Txd9y9",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "id": "9bd30c20-8bff-4c39-9352-9ef460009130",
+      "name": "Assemble List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        0
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const trips = $('Build Booking Filter').first().json.trips;\nconst bookings = $('Get Bookings').first().json.records || [];\nconst travelers = $('Get Travelers').first().json.records || [];\nconst customers = $('Get Customers').first().json.records || [];\nconst cmap = {}; customers.forEach(c => cmap[c.id] = c.fields || {});\nconst tmap = {}; travelers.forEach(t => tmap[t.id] = t.fields || {});\nconst rows = []; let missing = 0;\nbookings.forEach(b => { const f = b.fields || {}; const cust = cmap[(f.Customer || [])[0]] || {}; const tids = f.Travelers || [];\n  tids.forEach(id => { const t = tmap[id] || {}; rows.push({ title: t.Title || '', name: t['Full Name'] || '', passport: t['Passport Number'] || '', nationality: t.Nationality || '', dob: t['Date of Birth'] || '', role: t.Role || '', has_passport_photo: !!(t['Passport Photo'] || []).length, booking: f['Booking Reference'] || ('#' + (f['Booking ID'] || '')), lead: cust['Full Name'] || '', phone: cust.Phone || '', payment: f['Payment Status'] || '', booking_status: f['Booking Status'] || '' }); });\n  missing += Math.max((f['Number of Travelers'] || (tids.length ? 0 : 1)) - tids.length, 0);\n});\nrows.sort((a, b) => (a.booking + a.name).localeCompare(b.booking + b.name));\nrows.forEach((r, i) => r.n = i + 1);\nreturn [{ json: { matched_trips: trips, bookings: bookings.length, travelers_listed: rows.length, travelers_missing_details: missing, travelers: rows, note: trips.length > 1 ? 'More than one trip matched; ask which one if unclear.' : (trips.length ? '' : 'No trip matched. Try the departure date YYYY-MM-DD or the package number.') } }];"
+      }
+    }
+  ],
+  "connections": {
+    "When Called": {
+      "main": [
+        [
+          {
+            "node": "Build Trip Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Trip Filter": {
+      "main": [
+        [
+          {
+            "node": "Get Trips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Trips": {
+      "main": [
+        [
+          {
+            "node": "Build Booking Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Booking Filter": {
+      "main": [
+        [
+          {
+            "node": "Get Bookings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bookings": {
+      "main": [
+        [
+          {
+            "node": "Build Traveler Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Traveler Filter": {
+      "main": [
+        [
+          {
+            "node": "Get Travelers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Travelers": {
+      "main": [
+        [
+          {
+            "node": "Get Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Customers": {
+      "main": [
+        [
+          {
+            "node": "Assemble List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "sgKvfYsp17jyVLUY",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:47:49.534Z",
+      "updatedAt": "2026-10-10T09:47:49.534Z"
+    }
+  ],
+  "activeVersion": null
+}
