@@ -1,0 +1,94 @@
+{
+  "id": "tzMZJAGbytYu2812",
+  "name": "DB helper (temp)",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-10-10T09:06:01.983Z",
+  "updatedAt": "2026-10-10T09:14:49.000Z",
+  "isArchived": true,
+  "versionId": "00a752f2-aa23-4fc8-a854-03934a644f2e",
+  "versionCounter": 4,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "id": "2823e8b5-a916-4dae-9985-d5d34c80171a",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "dda89d69-7b11-480f-b48f-151344e7207a",
+      "name": "Q",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT (SELECT string_agg('[' || id || '] ' || name || ' | ' || kind || ' | status ' || status || ' | decision ' || decision || ' | next due ' || coalesce(to_char(next_due,'YYYY-MM-DD'),'?') || ' | cost ' || coalesce(cost::text || ' ' || currency,'?') || ' ' || coalesce(billing_cycle,'') || ' | why: ' || coalesce(purpose,'?') || ' | link: ' || coalesce(manage_url,'?'), E'\\n' ORDER BY id) FROM subscriptions WHERE status <> 'cancelled') AS subs, (SELECT string_agg('[' || id || '] ' || title || ' @ ' || to_char(due_at AT TIME ZONE 'Asia/Bahrain','YYYY-MM-DD HH24:MI') || CASE WHEN repeat_daily_until_done THEN ' (daily until done)' ELSE '' END, E'\\n' ORDER BY due_at) FROM reminders WHERE status = 'pending') AS reminders, (SELECT status FROM reminders WHERE id = 1) AS test_status",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2k1Ti2SitOd5gAN3",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Q",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "tzMZJAGbytYu2812",
+      "projectId": "ZezQkiEVlKRHznao",
+      "project": {
+        "id": "ZezQkiEVlKRHznao",
+        "name": "MOHAMED m.almutawa22@gmail.com <m.almutawa22@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
+        "createdAt": "2026-09-15T06:02:34.080Z",
+        "updatedAt": "2026-09-15T06:03:52.991Z"
+      },
+      "createdAt": "2026-10-10T09:06:01.984Z",
+      "updatedAt": "2026-10-10T09:06:01.984Z"
+    }
+  ],
+  "activeVersion": null
+}
