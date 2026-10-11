@@ -3,12 +3,12 @@
   "name": "Almutawa - Daily Backup to GitHub",
   "description": "Daily automated backup workflow: lists all n8n workflows via the API, exports each one's full JSON, and commits it to the GitHub repo m-almutawa22/ai-hub under n8n-backups/, updating existing files or creating new ones. Sends a Telegram summary to the off",
   "active": true,
-  "activeVersionId": "9d28b9f6-3cc5-40f2-ad3b-ea2fb5be5db8",
+  "activeVersionId": "daca6f3c-ba7b-449a-8f82-e59638c66b6f",
   "createdAt": "2026-09-16T16:08:23.101Z",
-  "updatedAt": "2026-09-18T11:43:39.054Z",
+  "updatedAt": "2026-10-10T09:35:45.878Z",
   "isArchived": false,
-  "versionId": "9d28b9f6-3cc5-40f2-ad3b-ea2fb5be5db8",
-  "versionCounter": 3,
+  "versionId": "daca6f3c-ba7b-449a-8f82-e59638c66b6f",
+  "versionCounter": 4,
   "sourceWorkflowId": null,
   "triggerCount": 1,
   "nodes": [
@@ -93,7 +93,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-1004357436155",
+        "chatId": "8132574840",
         "text": "=Daily backup completed.\nAll workflows exported to GitHub (m-almutawa22/ai-hub).\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}",
         "additionalFields": {
           "appendAttribution": false
@@ -385,7 +385,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "9d28b9f6-3cc5-40f2-ad3b-ea2fb5be5db8",
+    "versionId": "daca6f3c-ba7b-449a-8f82-e59638c66b6f",
     "workflowId": "v6iKF6Tahvrk4Lpu",
     "nodes": [
       {
@@ -469,7 +469,7 @@
         "parameters": {
           "resource": "message",
           "operation": "sendMessage",
-          "chatId": "-1004357436155",
+          "chatId": "8132574840",
           "text": "=Daily backup completed.\nAll workflows exported to GitHub (m-almutawa22/ai-hub).\nTime: {{ $now.toFormat(\"yyyy-MM-dd HH:mm\") }}",
           "additionalFields": {
             "appendAttribution": false
@@ -720,19 +720,19 @@
     },
     "nodeGroups": [],
     "authors": "MOHAMED m.almutawa22@gmail.com (via MCP)",
-    "name": "Redact secret-like values from backups (fix GitHub push protection block)",
-    "description": "Updated nodes: Build Backup File",
+    "name": "Backup summary to owner private chat",
+    "description": "Updated nodes: Send Backup Summary",
     "autosaved": false,
-    "createdAt": "2026-09-18T11:43:39.055Z",
-    "updatedAt": "2026-09-18T11:43:39.055Z",
+    "createdAt": "2026-10-10T09:35:45.879Z",
+    "updatedAt": "2026-10-10T09:35:45.879Z",
     "workflowPublishHistory": [
       {
-        "id": 82,
+        "id": 284,
         "workflowId": "v6iKF6Tahvrk4Lpu",
-        "versionId": "9d28b9f6-3cc5-40f2-ad3b-ea2fb5be5db8",
+        "versionId": "daca6f3c-ba7b-449a-8f82-e59638c66b6f",
         "event": "activated",
         "userId": "7392611c-2e4e-43e2-b6e4-38d1962f881c",
-        "createdAt": "2026-09-18T11:43:41.657Z"
+        "createdAt": "2026-10-10T09:35:48.522Z"
       }
     ]
   }
